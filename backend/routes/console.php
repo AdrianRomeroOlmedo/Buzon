@@ -1,8 +1,10 @@
 <?php
 
 use App\Models\User;
+use App\Support\InstagramUltimoPost;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Str;
 
 Artisan::command('inspire', function () {
@@ -52,3 +54,22 @@ Artisan::command('buzon:revisor {email} {--quitar : Retira el permiso de revisi�
 
     return 0;
 })->purpose('Concede o retira el permiso de revisión de sugerencias');
+
+/*
+ * Renueva el token de Instagram de la landing (caduca a los 60 días si no se renueva).
+ * Se programa semanalmente; requiere el cron de `php artisan schedule:run`.
+ */
+Artisan::command('redes:instagram-token', function (InstagramUltimoPost $instagram) {
+    if (! $instagram->token()) {
+        $this->warn('No hay token de Instagram configurado (INSTAGRAM_ACCESS_TOKEN).');
+
+        return 0;
+    }
+
+    $dias = $instagram->refrescarToken();
+    $this->info("Token de Instagram renovado: caduca dentro de {$dias} días.");
+
+    return 0;
+})->purpose('Renueva el token de larga duración de Instagram');
+
+Schedule::command('redes:instagram-token')->weekly();

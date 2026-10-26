@@ -26,7 +26,7 @@ class SugerenciaController extends Controller
     {
         if ($this->pareceSpam($request)) {
             // Respuesta falsa de éxito: el bot no sabe que ha sido descartado
-            return redirect('/#formulario')->with('success', 'Tu sugerencia se ha registrado correctamente. Gracias por participar.');
+            return redirect()->to(route('sugerencias.create').'#formulario')->with('success', 'Tu sugerencia se ha registrado correctamente. Gracias por participar.');
         }
 
         $datos = $request->validated();
@@ -72,7 +72,7 @@ class SugerenciaController extends Controller
         // Formulario clásico (vista renderizada por Laravel): volvemos con un aviso.
         // Si el envío fuera por fetch/AJAX, cambia esto por:
         //   return response()->json(['mensaje' => '...'], 201);
-        return redirect('/#formulario')->with('exito', 'Tu sugerencia se ha registrado correctamente. Gracias por participar.');
+        return redirect()->to(route('sugerencias.create').'#formulario')->with('exito', 'Tu sugerencia se ha registrado correctamente. Gracias por participar.');
     }
 
 

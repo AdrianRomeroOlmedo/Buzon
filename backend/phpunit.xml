@@ -26,6 +26,12 @@
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="DB_URL" value=""/>
+        <env name="INSTAGRAM_URL" value=""/>
+        <env name="INSTAGRAM_ACCESS_TOKEN" value=""/>
+        <env name="FACEBOOK_URL" value=""/>
+        <env name="FACEBOOK_EMBED" value="false"/>
+        <env name="LINKEDIN_URL" value=""/>
+        <env name="LINKEDIN_POST_EMBED_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

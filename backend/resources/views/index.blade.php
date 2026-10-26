@@ -12,10 +12,10 @@
 <body>
 <header class="nav">
   <div class="wrap">
-    <div class="nav-brand">
+    <a class="nav-brand" href="{{ route('inicio') }}" style="text-decoration:none;">
       <img src="{{ asset('logo-nav.webp') }}" alt="Cátedra Ceuta-IATEB" />
       <span>Ceuta Me Preocupa</span>
-    </div>
+    </a>
     <a class="btn btn-accent btn-sm" href="#formulario">Enviar mi preocupación</a>
   </div>
 </header>
