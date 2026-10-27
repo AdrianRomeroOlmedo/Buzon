@@ -35,6 +35,7 @@
       <a href="{{ route('inicio') }}#quienes-somos">Quiénes somos</a>
       <a href="{{ route('inicio') }}#lineas">Líneas de trabajo</a>
       <a href="{{ route('proyectos.index') }}" @if (request()->routeIs('proyectos.*')) aria-current="page" @endif>Proyectos</a>
+      <a href="{{ route('recursos.index') }}" @if (request()->routeIs('recursos.*')) aria-current="page" @endif>Recursos</a>
       <a class="btn btn-accent btn-sm" href="{{ route('sugerencias.create') }}">Buzón ciudadano</a>
     </nav>
   </div>
@@ -53,6 +54,7 @@
       </div>
       <div class="footer-links">
         <a href="{{ route('proyectos.index') }}">Proyectos</a>
+        <a href="{{ route('recursos.index') }}">Recursos</a>
         <a href="{{ route('sugerencias.create') }}">Buzón ciudadano</a>
         <a href="{{ route('privacidad') }}">Privacidad</a>
         <a href="https://catedras.ugr.es/iateb/" target="_blank" rel="noopener">catedras.ugr.es/iateb</a>
