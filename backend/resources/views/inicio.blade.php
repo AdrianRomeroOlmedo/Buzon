@@ -1,68 +1,22 @@
-<!doctype html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Cátedra UGR - Ciudad Autónoma de Ceuta en Inteligencia Artificial y Tecnologías Emergentes para el Bienestar">
-<title>Cátedra Ceuta-IATEB</title>
-<link rel="icon" type="image/svg+xml" href="{{ asset('paloma2.svg') }}">
-<link rel="stylesheet" href="{{ asset('styles.css') }}">
-<style>
-  .nav-brand img{height:52px; border-radius:6px;}
-  .nav-brand span{font-size:1.2rem;}
-  @media (max-width:639px){ .nav-brand img{height:44px;} .nav-brand span{display:none;} }
+<x-catedra>
+  @push('estilos')
+  <style>
+    .hero-grid{display:grid; grid-template-columns:minmax(0, 1fr);}
+    .hero-grid .redes{padding-bottom:56px; max-width:440px;}
+    .hero-grid .hero-inner{padding-bottom:40px;}
+    @media (min-width:1000px){
+      .hero-grid{grid-template-columns:minmax(0, 1fr) 360px; gap:56px; align-items:center;}
+      .hero-grid .hero-inner{padding-bottom:72px;}
+      .hero-grid .redes{padding-block:48px;}
+    }
 
-  .nav-links{display:flex; align-items:center; gap:22px;}
-  .nav-links a:not(.btn){font-size:.9rem; font-weight:600; color:var(--ink-soft); text-decoration:none; white-space:nowrap;}
-  .nav-links a:not(.btn):hover{color:var(--primary);}
-  @media (max-width:899px){ .nav-links a:not(.btn){display:none;} }
+    .pt-grid{display:grid; grid-template-columns:1fr; gap:20px;}
+    @media (min-width:640px){ .pt-grid{grid-template-columns:1fr 1fr;} }
+    @media (min-width:960px){ .pt-grid{grid-template-columns:1fr 1fr 1fr;} }
+    .proyectos-pie{margin-top:28px;}
+  </style>
+  @endpush
 
-  .hero-grid{display:grid; grid-template-columns:minmax(0, 1fr);}
-  .hero-grid .redes{padding-bottom:56px; max-width:440px;}
-  .hero-grid .hero-inner{padding-bottom:40px;}
-  @media (min-width:1000px){
-    .hero-grid{grid-template-columns:minmax(0, 1fr) 360px; gap:56px; align-items:center;}
-    .hero-grid .hero-inner{padding-bottom:72px;}
-    .hero-grid .redes{padding-block:48px;}
-  }
-
-  .project{
-    display:grid;
-    grid-template-columns:1fr;
-    gap:24px;
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-left:4px solid var(--accent);
-    border-radius:14px;
-    padding:28px;
-  }
-  @media (min-width:760px){ .project{grid-template-columns:1.4fr 1fr; align-items:center;} }
-  .project h3{font-size:1.35rem; color:var(--ink); margin-bottom:10px;}
-  .project p{margin:0 0 12px; color:var(--ink-soft); line-height:1.6;}
-  .project-tags{display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 20px;}
-  .project-tags span{font-size:.78rem; font-weight:700; letter-spacing:.04em; color:var(--primary); background:var(--surface-2); border-radius:999px; padding:5px 12px;}
-  .project-side{display:flex; flex-direction:column; gap:12px;}
-  .project-side .card{padding:18px 20px;}
-  .projects-more{margin-top:20px; color:var(--ink-faint); font-size:.95rem;}
-</style>
-</head>
-<body>
-<header class="nav">
-  <div class="wrap">
-    <a class="nav-brand" href="{{ route('inicio') }}" style="text-decoration:none;">
-      <img src="{{ asset('logo-nav.webp') }}" alt="Cátedra Ceuta-IATEB" />
-      <span>Cátedra Ceuta-IATEB</span>
-    </a>
-    <nav class="nav-links" aria-label="Secciones">
-      <a href="#quienes-somos">Quiénes somos</a>
-      <a href="#lineas">Líneas de trabajo</a>
-      <a href="#proyectos">Proyectos</a>
-      <a class="btn btn-accent btn-sm" href="{{ route('sugerencias.create') }}">Buzón ciudadano</a>
-    </nav>
-  </div>
-</header>
-
-<main>
   <section class="hero">
     <div class="wrap hero-grid">
       <div class="hero-inner">
@@ -146,31 +100,19 @@
         <h2>Lo que estamos construyendo</h2>
       </div>
 
-      <article class="project">
-        <div>
-          <h3>Ceuta Me Preocupa</h3>
-          <div class="project-tags">
-            <span>Buzón ciudadano</span>
-            <span>Participación</span>
-            <span>En marcha</span>
-          </div>
-          <p>Un buzón anónimo para que la ciudadanía cuente, con sus propias palabras, qué preocupaciones, incidencias no urgentes o propuestas de mejora tiene sobre la gestión pública de Ceuta.</p>
-          <p>Las aportaciones se seudonimizan, un equipo humano las revisa y clasifica, y los resultados se publican de forma agregada.</p>
-          <a class="btn btn-accent" style="margin-top:8px;" href="{{ route('sugerencias.create') }}">Ir al buzón →</a>
+      @if ($proyectos->count() === 1)
+        <x-proyecto-tarjeta :proyecto="$proyectos->first()" destacado />
+      @elseif ($proyectos->isNotEmpty())
+        <div class="pt-grid">
+          @foreach ($proyectos as $proyecto)
+            <x-proyecto-tarjeta :proyecto="$proyecto" />
+          @endforeach
         </div>
-        <div class="project-side">
-          <div class="card">
-            <h3>Anónimo por diseño</h3>
-            <p>No se piden datos identificativos para participar.</p>
-          </div>
-          <div class="card">
-            <h3>Resultados públicos</h3>
-            <p>Recuentos y tendencias por categoría, nunca textos individuales.</p>
-          </div>
-        </div>
-      </article>
+      @endif
 
-      <p class="projects-more">Próximamente iremos incorporando aquí nuevos proyectos de la cátedra.</p>
+      <div class="proyectos-pie">
+        <a class="btn btn-ghost" href="{{ route('proyectos.index') }}">Ver todos los proyectos →</a>
+      </div>
     </div>
   </section>
 
@@ -183,24 +125,4 @@
       <a class="btn btn-accent" href="https://catedras.ugr.es/iateb/" target="_blank" rel="noopener">Web de la cátedra →</a>
     </div>
   </section>
-</main>
-
-<footer>
-  <div class="wrap">
-    <div class="footer-row">
-      <div class="footer-brand">
-        <img src="{{ asset('logo-footer.webp') }}" alt="Cátedra Ceuta-IATEB" />
-        <span class="footer-brand-text">Cátedra Ceuta-IATEB<br>Universidad de Granada · Ciudad Autónoma de Ceuta</span>
-      </div>
-      <div class="footer-links">
-        <a href="{{ route('sugerencias.create') }}">Buzón ciudadano</a>
-        <a href="{{ route('privacidad') }}">Privacidad</a>
-        <a href="https://catedras.ugr.es/iateb/" target="_blank" rel="noopener">catedras.ugr.es/iateb</a>
-        <a href="https://www.ugr.es" target="_blank" rel="noopener">ugr.es</a>
-        <a href="https://www.ceuta.es" target="_blank" rel="noopener">ceuta.es</a>
-      </div>
-    </div>
-  </div>
-</footer>
-</body>
-</html>
+</x-catedra>

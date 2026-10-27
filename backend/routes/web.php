@@ -3,12 +3,18 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\SugerenciaController;
 use App\Http\Controllers\Admin\SugerenciaAdminController;
+use App\Models\Proyecto;
 use App\Support\InstagramUltimoPost;
 use Illuminate\Support\Facades\Storage;
 
-Route::view('/', 'inicio')->name('inicio');
+Route::get('/', fn () => view('inicio', [
+    'proyectos' => Proyecto::publicados()->take(3)->get(),
+]))->name('inicio');
+Route::get('/proyectos', [ProyectoController::class, 'index'])->name('proyectos.index');
+Route::get('/proyectos/{proyecto}', [ProyectoController::class, 'show'])->name('proyectos.show');
 // Imagen del último post de Instagram, servida desde aquí para no cargar nada de Meta en la landing.
 Route::get('/redes/instagram.jpg', function (InstagramUltimoPost $instagram) {
     abort_unless($instagram->tieneImagen(), 404);
