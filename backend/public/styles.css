@@ -99,6 +99,14 @@
     overflow:hidden;
     text-overflow:ellipsis;
   }
+  /* Nav común de la web de la cátedra (componente x-catedra-nav) */
+  .nav-brand img{height:52px; border-radius:6px;}
+  .nav-brand span{font-size:1.2rem;}
+  @media (max-width:639px){ .nav-brand img{height:44px;} .nav-brand span{display:none;} }
+  .nav-links{display:flex; align-items:center; gap:22px;}
+  .nav-links a:not(.btn){font-size:.9rem; font-weight:600; color:var(--ink-soft); text-decoration:none; white-space:nowrap;}
+  .nav-links a:not(.btn):hover, .nav-links a:not(.btn)[aria-current="page"]{color:var(--primary);}
+  @media (max-width:899px){ .nav-links a:not(.btn){display:none;} }
   .btn{
     display:inline-flex;
     align-items:center;

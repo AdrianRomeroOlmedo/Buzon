@@ -15,6 +15,10 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    // Se añade a public/styles.css (?v=...) para que los navegadores descarguen la versión nueva.
+    // Cámbialo cada vez que modifiques styles.css.
+    'version_estilos' => '2026-10-27',
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

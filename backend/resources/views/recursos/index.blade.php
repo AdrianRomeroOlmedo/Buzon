@@ -33,8 +33,8 @@
   <section class="hero hero-recursos">
     <div class="wrap">
       <div class="hero-inner">
-        <span class="eyebrow">Recursos</span>
-        <h1>Infografías de la cátedra</h1>
+        <span class="eyebrow">Infografías</span>
+        <h1>Recursos de la cátedra</h1>
         <p class="lead">Materiales divulgativos sobre inteligencia artificial y tecnologías emergentes, para consultar, descargar y compartir citando su autoría.</p>
       </div>
     </div>

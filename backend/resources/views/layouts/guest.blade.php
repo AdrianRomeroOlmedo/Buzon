@@ -7,7 +7,7 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
         <link rel="icon" type="image/svg+xml" href="{{ asset('paloma2.svg') }}">
-        <link rel="stylesheet" href="{{ asset('styles.css') }}">
+        <link rel="stylesheet" href="{{ asset('styles.css') }}?v={{ config('app.version_estilos') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

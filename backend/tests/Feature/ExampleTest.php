@@ -34,6 +34,18 @@ class ExampleTest extends TestCase
         $response->assertSee(route('proyectos.index'));
     }
 
+    public function test_buzon_and_privacy_pages_use_the_shared_nav(): void
+    {
+        foreach (['/buzon', '/privacidad'] as $ruta) {
+            $response = $this->get($ruta);
+
+            $response->assertOk();
+            $response->assertSee('aria-label="Secciones"', false);
+            $response->assertSee(route('proyectos.index'), false);
+            $response->assertSee(route('recursos.index'), false);
+        }
+    }
+
     public function test_el_buzon_se_sirve_en_su_propia_ruta(): void
     {
         $response = $this->get('/buzon');
