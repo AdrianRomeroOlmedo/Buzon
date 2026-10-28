@@ -17,7 +17,7 @@
 <meta name="description" content="Información sobre el tratamiento de datos personales en el buzón ciudadano Ceuta Me Preocupa.">
 <title>Privacidad · Ceuta Me Preocupa</title>
 <link rel="icon" type="image/svg+xml" href="{{ asset('paloma2.svg') }}">
-<link rel="stylesheet" href="{{ asset('styles.css') }}">
+<link rel="stylesheet" href="{{ asset('styles.css') }}?v={{ config('app.version_estilos') }}">
 <style>
   /* Estilos propios de esta página, sobre los tokens de styles.css */
   .hero-privacidad .hero-inner{padding-block:48px 52px;}
@@ -79,15 +79,7 @@
 </style>
 </head>
 <body>
-<header class="nav">
-  <div class="wrap">
-    <a class="nav-brand" href="{{ route('inicio') }}" style="text-decoration:none;">
-      <img src="{{ asset('logo-nav.webp') }}" alt="Cátedra Ceuta-IATEB" />
-      <span>Ceuta Me Preocupa</span>
-    </a>
-    <a class="btn btn-accent btn-sm" href="{{ route('sugerencias.create') }}#formulario">Volver al formulario</a>
-  </div>
-</header>
+<x-catedra-nav />
 
 <main>
   <section class="hero hero-privacidad">
@@ -263,21 +255,6 @@
   </section>
 </main>
 
-<footer>
-  <div class="wrap">
-    <div class="footer-row">
-      <div class="footer-brand">
-        <img src="{{ asset('logo-footer.webp') }}" alt="Cátedra Ceuta-IATEB" />
-        <span class="footer-brand-text">Cátedra Ceuta-IATEB<br>Universidad de Granada · Ciudad Autónoma de Ceuta</span>
-      </div>
-      <div class="footer-links">
-        <a href="{{ route('privacidad') }}">Privacidad</a>
-        <a href="https://catedras.ugr.es/iateb/" target="_blank" rel="noopener">Cátedra Ceuta-IATEB</a>
-        <a href="https://www.ugr.es" target="_blank" rel="noopener">ugr.es</a>
-        <a href="https://www.ceuta.es" target="_blank" rel="noopener">ceuta.es</a>
-      </div>
-    </div>
-  </div>
-</footer>
+<x-catedra-footer />
 </body>
 </html>
