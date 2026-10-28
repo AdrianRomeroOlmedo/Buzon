@@ -81,11 +81,11 @@
 <body>
 <header class="nav">
   <div class="wrap">
-    <a class="nav-brand" href="{{ url('/') }}" style="text-decoration:none;">
+    <a class="nav-brand" href="{{ route('inicio') }}" style="text-decoration:none;">
       <img src="{{ asset('logo-nav.webp') }}" alt="Cátedra Ceuta-IATEB" />
       <span>Ceuta Me Preocupa</span>
     </a>
-    <a class="btn btn-accent btn-sm" href="{{ url('/') }}#formulario">Volver al formulario</a>
+    <a class="btn btn-accent btn-sm" href="{{ route('sugerencias.create') }}#formulario">Volver al formulario</a>
   </div>
 </header>
 
@@ -258,7 +258,7 @@
         <h2>¿Todo claro?</h2>
         <p>Puedes volver al formulario y contarnos tu preocupación.</p>
       </div>
-      <a class="btn btn-accent" href="{{ url('/') }}#formulario">Ir al formulario →</a>
+      <a class="btn btn-accent" href="{{ route('sugerencias.create') }}#formulario">Ir al formulario →</a>
     </div>
   </section>
 </main>

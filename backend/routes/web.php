@@ -5,8 +5,19 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SugerenciaController;
 use App\Http\Controllers\Admin\SugerenciaAdminController;
+use App\Support\InstagramUltimoPost;
+use Illuminate\Support\Facades\Storage;
 
-Route::get('/', [SugerenciaController::class, 'create'])->name('sugerencias.create');
+Route::view('/', 'inicio')->name('inicio');
+// Imagen del último post de Instagram, servida desde aquí para no cargar nada de Meta en la landing.
+Route::get('/redes/instagram.jpg', function (InstagramUltimoPost $instagram) {
+    abort_unless($instagram->tieneImagen(), 404);
+
+    return response()->file(Storage::disk('local')->path(InstagramUltimoPost::RUTA_IMAGEN), [
+        'Cache-Control' => 'public, max-age=3600',
+    ]);
+})->name('redes.instagram.imagen');
+Route::get('/buzon', [SugerenciaController::class, 'create'])->name('sugerencias.create');
 Route::post('/sugerencias', [SugerenciaController::class, 'store'])
     ->middleware('throttle:buzon')
     ->name('sugerencias.store');
