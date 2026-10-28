@@ -6,19 +6,11 @@
 <meta name="description" content="Landing del buzón ciudadano de preocupaciones de la Cátedra Ceuta-IATEB">
 <title>Ceuta Me Preocupa</title>
 <link rel="icon" type="image/svg+xml" href="{{ asset('paloma2.svg') }}">
-<link rel="stylesheet" href="{{ asset('styles.css') }}">
+<link rel="stylesheet" href="{{ asset('styles.css') }}?v={{ config('app.version_estilos') }}">
 
 </head>
 <body>
-<header class="nav">
-  <div class="wrap">
-    <div class="nav-brand">
-      <img src="{{ asset('logo-nav.webp') }}" alt="Cátedra Ceuta-IATEB" />
-      <span>Ceuta Me Preocupa</span>
-    </div>
-    <a class="btn btn-accent btn-sm" href="#formulario">Enviar mi preocupación</a>
-  </div>
-</header>
+<x-catedra-nav />
 
 <main>
   <section class="hero">
@@ -283,21 +275,7 @@
   </section>
 </main>
 
-<footer>
-  <div class="wrap">
-    <div class="footer-row">
-      <div class="footer-brand">
-        <img src="{{ asset('logo-footer.webp') }}" alt="Cátedra Ceuta-IATEB" />
-        <span class="footer-brand-text">Cátedra Ceuta-IATEB<br>Universidad de Granada · Ciudad Autónoma de Ceuta</span>
-      </div>
-      <div class="footer-links">
-        <a href="https://catedras.ugr.es/iateb/" target="_blank" rel="noopener">Cátedra Ceuta-IATEB</a>
-        <a href="https://www.ugr.es" target="_blank" rel="noopener">ugr.es</a>
-        <a href="https://www.ceuta.es" target="_blank" rel="noopener">ceuta.es</a>
-      </div>
-    </div>
-  </div>
-</footer>
+<x-catedra-footer />
 
 
   <script>

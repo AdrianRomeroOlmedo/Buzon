@@ -7,7 +7,7 @@ use Illuminate\Validation\Rule;
 
 class GuardarSugerenciaRequest extends FormRequest
 {
-    protected $redirect = '/#formulario';
+    protected $redirect = '/buzon#formulario';
 
     public function authorize(): bool
     {
