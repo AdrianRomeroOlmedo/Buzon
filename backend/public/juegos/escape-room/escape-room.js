@@ -1,6 +1,8 @@
 // Escape room «Ceuta Educadora 2030: Misión Verificación IA».
-// Todo ocurre en el navegador: los textos y las claves salen de config.json y el progreso
-// solo se guarda en el localStorage de quien juega. No se envía nada al servidor.
+// Se cuenta un suceso en varias fases; en cada una hay tres informaciones (una real y dos bulos)
+// y quien juega elige la que cree verdadera. Al final se compara la historia que ha construido
+// con lo que pasó de verdad. Todo ocurre en el navegador: los textos salen de config.json y el
+// progreso solo se guarda en el localStorage de quien juega. No se envía nada al servidor.
 (function () {
   'use strict';
 
@@ -28,18 +30,18 @@
     return nodo;
   }
 
-  // Devuelve el párrafo con las expresiones de «resaltar» envueltas en <mark>.
-  function textoResaltado(texto, expresiones) {
-    if (!expresiones || !expresiones.length) return [texto];
-    const escapadas = expresiones.map((e) => e.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-    const patron = new RegExp('(' + escapadas.join('|') + ')', 'gi');
-    return texto.split(patron).filter(Boolean).map((trozo) =>
-      expresiones.some((e) => e.toLowerCase() === trozo.toLowerCase()) ? el('mark', {}, trozo) : trozo
-    );
+  // Orden aleatorio de las tres noticias de cada fase, para que la real no esté siempre en el mismo sitio.
+  function barajar(cantidad) {
+    const orden = Array.from({ length: cantidad }, (_, i) => i);
+    for (let i = orden.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [orden[i], orden[j]] = [orden[j], orden[i]];
+    }
+    return orden;
   }
 
   function estadoInicial() {
-    return { pantalla: 'intro', indice: 0, resueltos: [], fallos: {}, caidas: 0, verificado: false, inicio: null, fin: null };
+    return { pantalla: 'intro', indice: 0, orden: {}, elecciones: {}, seleccion: null, inicio: null, fin: null };
   }
 
   function cargarProgreso() {
@@ -62,24 +64,38 @@
     pintar();
   }
 
+  function empezar() {
+    const orden = {};
+    config.fases.forEach((fase) => { orden[fase.id] = barajar(fase.noticias.length); });
+    cambiar({ pantalla: 'fase', indice: 0, orden, elecciones: {}, seleccion: null, inicio: Date.now(), fin: null });
+  }
+
   function reiniciar() {
-    if (!confirm('¿Seguro que quieres empezar la misión desde el principio?')) return;
+    if (!confirm('¿Seguro que quieres empezar desde el principio?')) return;
     estado = estadoInicial();
     guardarProgreso();
     pintar();
   }
 
-  // Solo se mueve el foco al cambiar de pantalla o de expediente, no al pedir una pista.
+  function noticiaElegida(fase) {
+    const i = estado.elecciones[fase.id];
+    return i === undefined ? null : fase.noticias[i];
+  }
+
+  function noticiaReal(fase) {
+    return fase.noticias.find((noticia) => noticia.real);
+  }
+
+  function aciertos() {
+    return config.fases.filter((fase) => (noticiaElegida(fase) || {}).real).length;
+  }
+
+  // Solo se mueve el foco al cambiar de pantalla o de fase, no al seleccionar una noticia.
   let ultimaVista = null;
   function enfocarTitulo() {
-    const vista = estado.pantalla + ':' + estado.indice + ':' + estado.resueltos.length + ':' + estado.verificado;
+    const vista = estado.pantalla + ':' + estado.indice;
     if (ultimaVista === null || vista === ultimaVista) {
       ultimaVista = vista;
-      // Tras descartar una opción, el botón pulsado ya no existe: el foco pasa a la siguiente disponible.
-      if (document.activeElement === document.body) {
-        const siguiente = raiz.querySelector('.er-opcion:not(:disabled)');
-        if (siguiente) siguiente.focus();
-      }
       return;
     }
     ultimaVista = vista;
@@ -91,190 +107,172 @@
   // ---------- Piezas comunes ----------
 
   function barraTerminal() {
-    const total = config.enigmas.length;
     return el('div', { class: 'er-barra' },
       el('span', { class: 'er-luces', 'aria-hidden': 'true' }, el('i'), el('i'), el('i')),
       el('span', { class: 'er-barra-titulo' }, config.terminal),
-      estado.pantalla === 'enigma'
-        ? el('span', { class: 'er-barra-progreso' }, `Expediente ${estado.indice + 1} de ${total}`)
+      estado.pantalla === 'fase'
+        ? el('span', { class: 'er-barra-progreso' }, `Fase ${estado.indice + 1} de ${config.fases.length}`)
         : null
     );
   }
 
   function progreso() {
-    return el('ol', { class: 'er-progreso', 'aria-label': 'Progreso de la misión' },
-      config.enigmas.map((enigma, i) => {
-        const hecho = estado.resueltos.includes(enigma.id);
-        const actual = estado.pantalla === 'enigma' && i === estado.indice;
+    return el('ol', { class: 'er-progreso', 'aria-label': 'Fases del suceso', style: `--fases:${config.fases.length}` },
+      config.fases.map((fase, i) => {
+        const hecho = estado.elecciones[fase.id] !== undefined;
+        const actual = estado.pantalla === 'fase' && i === estado.indice;
         return el('li', { class: (hecho ? 'hecho ' : '') + (actual ? 'actual' : ''), 'aria-current': actual ? 'step' : false },
           el('span', { class: 'er-progreso-num' }, hecho ? '✓' : i + 1),
-          el('span', { class: 'er-progreso-txt' }, enigma.titulo)
+          el('span', { class: 'er-progreso-txt' }, fase.momento)
         );
       })
     );
   }
 
-  function documento(enigma, resuelto) {
-    const d = enigma.documento;
-    const resaltar = resuelto ? enigma.resaltar : null;
-    return el('article', { class: `er-doc er-doc-${d.formato}`, 'aria-label': `Documento del expediente ${enigma.codigo}` },
-      el('span', { class: 'er-marca', 'aria-hidden': 'true' }, 'SIMULACIÓN'),
-      el('p', { class: 'er-doc-cabecera' }, d.cabecera),
-      el('h3', { class: 'er-doc-titular' }, d.titular),
-      d.cuerpo.map((parrafo) => el('p', {}, textoResaltado(parrafo, resaltar))),
-      d.pie ? el('p', { class: 'er-doc-pie' }, d.pie) : null,
-      el('p', { class: 'er-doc-aviso' }, 'Contenido ficticio creado para esta actividad educativa.')
-    );
+  // Contenido de una noticia según su formato: noticia de un medio, publicación en redes o mensaje reenviado.
+  function contenidoNoticia(noticia) {
+    if (noticia.formato === 'redes') {
+      return [
+        el('div', { class: 'er-post-cabecera' },
+          el('span', { class: 'er-avatar', 'aria-hidden': 'true' }, noticia.fuente.replace('@', '').charAt(0).toUpperCase()),
+          el('span', {}, el('strong', {}, noticia.fuente), noticia.detalle ? el('small', {}, noticia.detalle) : null),
+          el('span', { class: 'er-hora' }, noticia.hora)
+        ),
+        el('p', { class: 'er-titular' }, noticia.titular),
+        noticia.imagen ? el('div', { class: 'er-imagen', role: 'img', 'aria-label': noticia.imagen }, noticia.imagen) : null,
+        el('p', {}, noticia.texto),
+      ];
+    }
+    if (noticia.formato === 'whatsapp') {
+      return [
+        el('p', { class: 'er-reenviado' }, '↪ ', noticia.fuente),
+        el('div', { class: 'er-burbuja' },
+          el('p', { class: 'er-titular' }, noticia.titular),
+          el('p', {}, noticia.texto),
+          el('span', { class: 'er-hora' }, noticia.hora)
+        ),
+      ];
+    }
+    return [
+      el('p', { class: 'er-medio' }, el('span', {}, noticia.fuente), el('span', { class: 'er-hora' }, noticia.hora)),
+      el('p', { class: 'er-titular' }, noticia.titular),
+      el('p', {}, noticia.texto),
+    ];
   }
 
   // ---------- Pantallas ----------
 
   function pantallaIntro() {
-    const empezado = estado.inicio !== null;
+    const s = config.suceso;
     return el('div', { class: 'er-pantalla er-intro' },
-      el('p', { class: 'er-prompt' }, '> conexión segura establecida'),
-      el('h2', { tabindex: '-1', 'data-enfocar': true }, config.titulo),
-      config.intro.parrafos.map((p) => el('p', {}, p)),
-      el('p', { class: 'er-meta' }, config.intro.duracion),
+      el('p', { class: 'er-prompt' }, `> ${s.momento}`),
+      el('h2', { tabindex: '-1', 'data-enfocar': true }, s.titulo),
+      s.parrafos.map((p) => el('p', {}, p)),
+      el('p', { class: 'er-meta' }, s.duracion),
       el('div', { class: 'er-acciones' },
-        el('button', {
-          type: 'button',
-          class: 'btn btn-accent',
-          onclick: () => cambiar({ pantalla: 'enigma', inicio: estado.inicio || Date.now() }),
-        }, empezado ? 'Continuar la auditoría' : config.intro.boton),
-        empezado ? el('button', { type: 'button', class: 'btn btn-ghost', onclick: reiniciar }, 'Empezar de cero') : null
+        el('button', { type: 'button', class: 'btn btn-accent', onclick: empezar }, s.boton)
       ),
       el('p', { class: 'er-aviso' }, config.aviso)
     );
   }
 
-  function pantallaEnigma() {
-    const enigma = config.enigmas[estado.indice];
-    const resuelto = estado.resueltos.includes(enigma.id);
-    const esTrampa = enigma.tipo === 'trampa';
-    const bloqueadoPorTrampa = esTrampa && !estado.verificado;
+  function pantallaFase() {
+    const fase = config.fases[estado.indice];
+    const orden = estado.orden[fase.id] || fase.noticias.map((_, i) => i);
+    const ultima = estado.indice === config.fases.length - 1;
 
-    const panel = el('div', { class: 'er-panel' },
-      el('p', { class: 'er-expediente' }, `${enigma.codigo} · ${enigma.minutos} min`),
-      el('h2', { tabindex: '-1', 'data-enfocar': true }, enigma.titulo)
-    );
-
-    if (bloqueadoPorTrampa) {
-      panel.append(bloqueTrampa(enigma));
-    } else {
-      if (esTrampa) panel.append(el('div', { class: 'er-ok', role: 'status' }, enigma.trampa.verificacion));
-      if (enigma.lecturaLateral) panel.append(bloqueLecturaLateral(enigma.lecturaLateral));
-      panel.append(resuelto ? bloqueResuelto(enigma) : bloqueOpciones(enigma));
-    }
+    const elegir = (i) => cambiar({ seleccion: i });
+    const confirmar = () => {
+      const elecciones = Object.assign({}, estado.elecciones, { [fase.id]: estado.seleccion });
+      if (ultima) cambiar({ elecciones, seleccion: null, pantalla: 'final', fin: Date.now() });
+      else cambiar({ elecciones, seleccion: null, indice: estado.indice + 1 });
+    };
 
     return el('div', { class: 'er-pantalla' },
       progreso(),
-      el('div', { class: 'er-enigma' + (bloqueadoPorTrampa ? ' er-alarma' : '') },
-        documento(enigma, resuelto),
-        panel
-      )
-    );
-  }
-
-  function bloqueLecturaLateral(lectura) {
-    return el('div', { class: 'er-lateral' },
-      el('p', { class: 'kicker' }, 'Tu misión'),
-      el('p', {}, lectura.texto),
-      lectura.busquedas && lectura.busquedas.length
-        ? el('ul', { class: 'er-busquedas' },
-            lectura.busquedas.map((termino) => el('li', {},
-              el('a', {
-                href: 'https://duckduckgo.com/?q=' + encodeURIComponent('"' + termino + '"'),
-                target: '_blank',
-                rel: 'noopener noreferrer',
-              }, `Buscar «${termino}»`, el('span', { class: 'sr-only' }, ' (se abre en una pestaña nueva)'))
-            ))
-          )
-        : null
-    );
-  }
-
-  function bloqueTrampa(enigma) {
-    const t = enigma.trampa;
-    const error = estado.caidas > 0
-      ? el('div', { class: 'er-error', role: 'alert' }, t.error, ' ', el('strong', {}, 'Vuelve a mirar el mensaje antes de decidir.'))
-      : null;
-    return el('div', { class: 'er-trampa' },
-      el('p', { class: 'er-sirena', role: 'alert' }, t.aviso),
-      el('p', {}, 'Acaba de llegar este mensaje al terminal. ¿Qué haces?'),
-      error,
-      el('div', { class: 'er-acciones' },
-        el('button', { type: 'button', class: 'btn btn-accent', onclick: () => cambiar({ caidas: estado.caidas + 1 }) }, t.botonCompartir),
-        el('button', { type: 'button', class: 'btn btn-ghost', onclick: () => cambiar({ verificado: true }) }, t.botonPausar)
-      )
-    );
-  }
-
-  // Cada opción incorrecta se queda marcada con su explicación, que hace de pista para la siguiente.
-  function bloqueOpciones(enigma) {
-    const descartadas = estado.fallos[enigma.id] || [];
-    return el('div', { class: 'er-opciones-bloque' },
-      el('p', { class: 'er-pregunta', id: 'er-pregunta' }, enigma.pregunta),
-      el('ul', { class: 'er-opciones', 'aria-labelledby': 'er-pregunta' },
-        enigma.opciones.map((opcion, i) => {
-          const descartada = descartadas.includes(i);
-          return el('li', {},
+      el('p', { class: 'er-expediente' }, `${fase.momento} · ${fase.titulo}`),
+      el('h2', { tabindex: '-1', 'data-enfocar': true }, fase.pregunta),
+      el('p', { class: 'er-instruccion' }, 'Solo una de estas informaciones es verdadera. Fíjate en la fuente, en el tono y en lo que te piden hacer.'),
+      el('div', { class: 'er-noticias', role: 'radiogroup', 'aria-label': fase.pregunta },
+        orden.map((i) => {
+          const noticia = fase.noticias[i];
+          const marcada = estado.seleccion === i;
+          return el('article', {
+            class: `er-noticia er-noticia-${noticia.formato}` + (marcada ? ' marcada' : ''),
+            onclick: () => elegir(i),
+          },
+            contenidoNoticia(noticia),
             el('button', {
-              type: 'button',
-              class: 'er-opcion',
-              disabled: descartada,
-              onclick: () => opcion.correcta
-                ? cambiar({ resueltos: estado.resueltos.concat(enigma.id) })
-                : cambiar({ fallos: Object.assign({}, estado.fallos, { [enigma.id]: descartadas.concat(i) }) }),
-            },
-              el('span', { class: 'er-opcion-letra', 'aria-hidden': 'true' }, descartada ? '✕' : 'ABCD'[i]),
-              el('span', {}, opcion.texto, descartada ? el('span', { class: 'sr-only' }, ' (descartada)') : null)
-            ),
-            descartada ? el('p', { class: 'er-motivo', role: 'status' }, opcion.motivo) : null
+              type: 'button', class: 'er-elegir', role: 'radio', 'aria-checked': marcada ? 'true' : 'false',
+              onclick: (evento) => { evento.stopPropagation(); elegir(i); },
+            }, marcada ? '✓ Esta es la que creo' : 'Creo que esta es la verdadera')
           );
         })
+      ),
+      el('div', { class: 'er-acciones' },
+        el('button', { type: 'button', class: 'btn btn-accent', disabled: estado.seleccion === null, onclick: confirmar },
+          ultima ? 'Ver cómo termina la historia' : 'Siguiente fase')
       )
-    );
-  }
-
-  function bloqueResuelto(enigma) {
-    const ultimo = estado.indice === config.enigmas.length - 1;
-    return el('div', { class: 'er-resuelto' },
-      el('div', { class: 'er-ok', role: 'status' }, el('strong', {}, '¡Diagnóstico correcto! '), 'Clave de desbloqueo:', el('span', { class: 'er-clave' }, enigma.clave)),
-      el('p', {}, enigma.explicacion),
-      el('button', {
-        type: 'button',
-        class: 'btn btn-accent',
-        onclick: () => ultimo
-          ? cambiar({ pantalla: 'final', fin: estado.fin || Date.now() })
-          : cambiar({ indice: estado.indice + 1 }),
-      }, ultimo ? 'Restablecer el canal oficial' : 'Siguiente expediente')
     );
   }
 
   function pantallaFinal() {
     const f = config.final;
+    const total = config.fases.length;
+    const acertadas = aciertos();
     const minutos = estado.inicio && estado.fin ? Math.max(1, Math.round((estado.fin - estado.inicio) / 60000)) : null;
-    const totalFallos = Object.values(estado.fallos).reduce((total, lista) => total + lista.length, 0);
     const nombre = el('input', { id: 'er-nombre', type: 'text', autocomplete: 'off', maxlength: '40', placeholder: 'Opcional' });
     const vista = el('div', { class: 'er-cert-vista', 'aria-hidden': 'true' }, certificado(''));
     nombre.addEventListener('input', () => vista.replaceChildren(certificado(nombre.value)));
 
+    const valoracion = acertadas === total
+      ? 'Has reconstruido el suceso sin colar ningún bulo. Aun así, nadie es inmune: solemos pensar que solo los demás se dejan engañar (el efecto del tercer personaje).'
+      : `${total - acertadas === 1 ? 'Ha bastado un bulo' : `Han bastado ${total - acertadas} bulos`} para que tu historia sea distinta de la real. Así se construye la desinformación: pieza a pieza, cada una creíble por separado.`;
+
     return el('div', { class: 'er-pantalla er-final' },
       progreso(),
-      el('p', { class: 'er-prompt' }, '> canal oficial: SEGURO'),
+      el('p', { class: 'er-prompt' }, '> fin de la simulación'),
       el('h2', { tabindex: '-1', 'data-enfocar': true }, f.titulo),
-      el('p', { class: 'lead' }, f.mensaje),
+      el('p', { class: 'lead' }, `Has identificado ${acertadas} de ${total} informaciones verdaderas${minutos ? ` en ${minutos} min` : ''}.`),
+      el('p', { class: 'er-nota' }, valoracion),
 
-      el('dl', { class: 'er-informe', 'aria-label': 'Tu informe de auditoría' },
-        el('div', {}, el('dt', {}, 'Expedientes'), el('dd', {}, `${estado.resueltos.length} de ${config.enigmas.length}`)),
-        minutos ? el('div', {}, el('dt', {}, 'Tiempo'), el('dd', {}, `${minutos} min`)) : null,
-        el('div', {}, el('dt', {}, 'Respuestas descartadas'), el('dd', {}, totalFallos)),
-        el('div', {}, el('dt', {}, 'Veces que compartiste el desmentido falso'), el('dd', {}, estado.caidas))
+      el('div', { class: 'er-narrativas' },
+        el('section', { class: 'er-narrativa er-narrativa-tuya', 'aria-labelledby': 'er-tuya' },
+          el('h3', { id: 'er-tuya' }, 'La historia que te has creído'),
+          el('ol', {}, config.fases.map((fase) => {
+            const noticia = noticiaElegida(fase);
+            if (!noticia) return null;
+            return el('li', { class: noticia.real ? 'real' : 'bulo' },
+              el('span', { class: 'er-momento' }, fase.momento),
+              el('span', {}, noticia.narrativa),
+              el('span', { class: 'er-etiqueta' }, noticia.real ? '✓ Verdad' : '✕ Bulo')
+            );
+          }))
+        ),
+        el('section', { class: 'er-narrativa er-narrativa-real', 'aria-labelledby': 'er-real' },
+          el('h3', { id: 'er-real' }, 'Lo que pasó de verdad'),
+          el('ol', {}, config.fases.map((fase) => el('li', {},
+            el('span', { class: 'er-momento' }, fase.momento),
+            el('span', {}, noticiaReal(fase).narrativa)
+          )))
+        )
       ),
-      estado.caidas > 0
-        ? el('p', { class: 'er-nota' }, 'Caer en la trampa es lo habitual: la prisa por corregir un bulo es justo lo que aprovecha la desinformación de segunda generación. Que lo hayas vivido aquí es la mejor vacuna.')
-        : el('p', { class: 'er-nota' }, 'No caíste en el desmentido falso. Aun así, recuerda que nadie es inmune: solemos pensar que solo los demás se dejan engañar (el efecto del tercer personaje).'),
+
+      el('h3', {}, 'Fase a fase: cómo se reconocía cada bulo'),
+      el('div', { class: 'er-desglose' }, config.fases.map((fase) => {
+        const elegida = noticiaElegida(fase);
+        return el('details', { class: elegida && elegida.real ? 'acierto' : 'fallo' },
+          el('summary', {}, `${fase.momento} · ${fase.pregunta}`, el('span', {}, elegida && elegida.real ? '✓ Acertaste' : '✕ Te la colaron')),
+          el('ul', {}, fase.noticias.map((noticia) => el('li', { class: noticia.real ? 'real' : 'bulo' },
+            el('p', { class: 'er-desglose-titular' },
+              el('span', { class: 'er-etiqueta' }, noticia.real ? 'Verdadera' : 'Bulo'),
+              noticia === elegida ? el('span', { class: 'er-etiqueta er-tu-eleccion' }, 'Tu elección') : null,
+              noticia.titular
+            ),
+            el('p', {}, el('em', {}, noticia.fuente), ' — ', noticia.explicacion)
+          )))
+        );
+      })),
 
       el('h3', {}, 'Decálogo para el bienestar digital'),
       el('ol', { class: 'er-decalogo' },
@@ -313,7 +311,7 @@
           el('p', { class: 'er-cert-nombre' + (nombre.trim().length > 22 ? ' largo' : '') }, nombre.trim() || 'Auditor/a Cívico/a'),
           el('p', { class: 'er-cert-texto' }, 'por completar la misión ', el('em', {}, config.titulo),
             ' y demostrar su compromiso con la verificación de la información y el bienestar digital de la ciudadanía.'),
-          el('ul', { class: 'er-cert-competencias' }, config.enigmas.map((enigma) => el('li', {}, enigma.competencia)))
+          el('ul', { class: 'er-cert-competencias' }, config.final.competencias.map((competencia) => el('li', {}, competencia)))
         ),
         el('div', { class: 'er-cert-pie' },
           el('p', {}, el('span', {}, 'Fecha'), `Ceuta, ${fecha}`),
@@ -336,7 +334,7 @@
   }
 
   function pintar() {
-    const pantallas = { intro: pantallaIntro, enigma: pantallaEnigma, final: pantallaFinal };
+    const pantallas = { intro: pantallaIntro, fase: pantallaFase, final: pantallaFinal };
     raiz.replaceChildren(barraTerminal(), pantallas[estado.pantalla]());
     enfocarTitulo();
   }
@@ -351,10 +349,10 @@
     .then((datos) => {
       config = datos;
       estado = cargarProgreso();
-      if (estado.indice >= config.enigmas.length) estado = estadoInicial();
+      if (estado.indice >= config.fases.length) estado = estadoInicial();
       pintar();
     })
     .catch(() => {
-      raiz.replaceChildren(el('p', { class: 'er-error', role: 'alert' }, 'No se ha podido cargar el escape room. Recarga la página para intentarlo de nuevo.'));
+      raiz.replaceChildren(el('p', { class: 'er-error', role: 'alert' }, 'No se ha podido cargar el juego. Recarga la página para intentarlo de nuevo.'));
     });
 })();

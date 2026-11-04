@@ -20,23 +20,20 @@ class EscapeRoomTest extends TestCase
     {
         $config = json_decode(file_get_contents(public_path('juegos/escape-room/config.json')), true, flags: JSON_THROW_ON_ERROR);
 
-        $this->assertNotEmpty($config['enigmas']);
+        $this->assertNotEmpty($config['fases']);
         $this->assertNotEmpty($config['final']['decalogo']);
+        $this->assertNotEmpty($config['final']['competencias']);
 
-        foreach ($config['enigmas'] as $enigma) {
-            $correctas = array_filter($enigma['opciones'], fn (array $opcion): bool => $opcion['correcta'] ?? false);
-            $this->assertCount(1, $correctas, "{$enigma['id']} debe tener exactamente una opción correcta");
-            $this->assertNotEmpty($enigma['clave'], "{$enigma['id']} no tiene clave");
+        foreach ($config['fases'] as $fase) {
+            $this->assertCount(3, $fase['noticias'], "{$fase['id']} debe tener tres noticias");
 
-            foreach ($enigma['opciones'] as $opcion) {
-                if (! ($opcion['correcta'] ?? false)) {
-                    $this->assertNotEmpty($opcion['motivo'] ?? null, "{$enigma['id']}: falta el motivo de una opción incorrecta");
-                }
-            }
-            $this->assertNotEmpty($enigma['documento']['cuerpo'], "{$enigma['id']} no tiene documento");
+            $reales = array_filter($fase['noticias'], fn (array $noticia): bool => $noticia['real']);
+            $this->assertCount(1, $reales, "{$fase['id']} debe tener exactamente una noticia real");
 
-            if ($enigma['tipo'] === 'trampa') {
-                $this->assertArrayHasKey('trampa', $enigma);
+            foreach ($fase['noticias'] as $noticia) {
+                $this->assertNotEmpty($noticia['titular'], "{$fase['id']}: falta un titular");
+                $this->assertNotEmpty($noticia['narrativa'], "{$fase['id']}: falta la narrativa de «{$noticia['titular']}»");
+                $this->assertNotEmpty($noticia['explicacion'], "{$fase['id']}: falta la explicación de «{$noticia['titular']}»");
             }
         }
     }

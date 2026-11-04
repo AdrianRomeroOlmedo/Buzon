@@ -1,198 +1,191 @@
 {
-  "version": 2,
+  "version": 3,
   "titulo": "Ceuta Educadora 2030: Misión Verificación IA",
   "terminal": "Terminal Cívico de Verificación · Cátedra Ceuta-IATEB",
-  "aviso": "Simulación educativa. Todos los expedientes, organismos y personas que aparecen son ficticios.",
-  "intro": {
+  "aviso": "Simulación educativa. El suceso, los medios, las cuentas y las personas que aparecen son ficticios.",
+  "suceso": {
+    "momento": "Martes, 18:40",
+    "titulo": "El gran apagón",
     "parrafos": [
-      "Bienvenido/a a la red de auditoría cívica de Ceuta.",
-      "Con motivo del Día Internacional de la Ciudad Educadora, la Cátedra ha detectado una red automatizada de modelos de lenguaje (IA) difundiendo informaciones sintéticas con alucinaciones y datos falsos sobre la convivencia local.",
-      "Tu misión como Auditor/a Cívico/a Digital es analizar 3 expedientes, aplicar lectura lateral y obtener las claves de desbloqueo eligiendo, en cada uno, el diagnóstico correcto."
+      "Un apagón deja sin luz a buena parte de Ceuta. En pocos minutos, los móviles se llenan de noticias, audios, capturas y mensajes reenviados.",
+      "En cada fase verás tres informaciones sobre lo que está pasando: dos son bulos y solo una es verdadera. Elige la que tú creerías.",
+      "Al final verás la historia que has construido con tus elecciones… y lo que ocurrió de verdad."
     ],
-    "boton": "Iniciar auditoría cívica",
-    "duracion": "25-30 minutos · Individual o en parejas · Sin registro"
+    "boton": "Empezar",
+    "duracion": "5-10 minutos · Sin registro"
   },
-  "enigmas": [
+  "fases": [
     {
-      "id": "exp-01",
-      "codigo": "EXP-2030-01",
-      "titulo": "La noticia alucinada",
-      "minutos": 10,
-      "tipo": "codigo",
-      "documento": {
-        "formato": "noticia",
-        "cabecera": "Portal Ceuta Hoy Digital · Actualidad",
-        "titular": "El Instituto Europeo de Infraestructuras Digitales confirma la demolición del Mercado Central de Ceuta para construir un centro de datos cuántico",
-        "cuerpo": [
-          "Según el informe 849/2026 del Dr. Julian Vance (Centro de Ciber-Urbanismo de la UE), la remodelación comenzará el 15 de diciembre tras ser aprobada por el 94% de la población.",
-          "«Ceuta será el primer nodo cuántico del sur de Europa», asegura el informe, que cifra en 3.200 los nuevos empleos tecnológicos."
-        ],
-        "pie": "Publicado hace 2 horas · 14.300 veces compartido"
-      },
-      "lecturaLateral": {
-        "texto": "No te quedes dentro de la noticia. Abre una pestaña nueva y comprueba si existen los organismos, la persona y el informe que se citan.",
-        "busquedas": [
-          "Instituto Europeo de Infraestructuras Digitales",
-          "Centro de Ciber-Urbanismo de la UE",
-          "Dr. Julian Vance informe 849/2026"
-        ]
-      },
-      "pregunta": "Ninguno de los organismos, el experto ni el informe aparece en otras fuentes. ¿Qué explica esta noticia?",
-      "opciones": [
+      "id": "causa",
+      "momento": "18:40",
+      "titulo": "Se va la luz",
+      "pregunta": "¿Por qué se ha ido la luz?",
+      "noticias": [
         {
-          "texto": "Es real, pero los organismos son tan nuevos que todavía no tienen web.",
-          "motivo": "Un organismo europeo capaz de aprobar la demolición de un mercado dejaría rastro: boletines oficiales, prensa, web institucional. Si no aparece en ninguna fuente independiente, desconfía."
+          "real": true,
+          "formato": "noticia",
+          "fuente": "Diario digital local",
+          "hora": "18:52",
+          "titular": "Una avería en una subestación por el temporal de levante deja sin luz a varios barrios",
+          "texto": "La compañía eléctrica confirma que el agua y el viento han dañado una subestación. Los equipos técnicos ya trabajan en la zona.",
+          "narrativa": "El apagón lo provocó una avería en una subestación dañada por el temporal de levante.",
+          "explicacion": "Medio identificable que cita a la compañía y da una causa concreta y comprobable: ese día había temporal. No exagera ni te pide que lo compartas."
         },
         {
-          "texto": "Es una alucinación de IA: el texto se ha inventado organismos, cargos, informes y cifras con apariencia creíble.",
-          "correcta": true
+          "real": false,
+          "formato": "redes",
+          "fuente": "@AlertaCeuta24",
+          "detalle": "Cuenta anónima · 8.400 compartidos",
+          "hora": "18:47",
+          "titular": "🚨 ÚLTIMA HORA: un ciberataque extranjero tumba la red eléctrica de Ceuta",
+          "texto": "Fuentes de inteligencia confirman el ataque. Es solo el principio. ¡Difunde antes de que lo censuren!",
+          "narrativa": "El apagón fue un ciberataque extranjero, el primero de una serie.",
+          "explicacion": "Cuenta anónima, «fuentes de inteligencia» sin nombre, emojis de alarma y la petición de difundir «antes de que lo censuren»: señales clásicas de bulo."
         },
         {
-          "texto": "Es la filtración de un informe confidencial.",
-          "motivo": "Las filtraciones auténticas las publican medios que explican cómo han verificado el documento. Aquí no hay nada de eso, y el 94% no corresponde a ninguna votación."
-        },
-        {
-          "texto": "Es una errata del periódico al traducir el nombre del organismo.",
-          "motivo": "Una errata cambia una palabra; no inventa un experto, un número de informe y una votación entera."
+          "real": false,
+          "formato": "noticia",
+          "fuente": "ceuta-noticias-hoy.info",
+          "hora": "19:05",
+          "titular": "Un centro de datos de IA secreto sobrecargó la red durante una prueba",
+          "texto": "Según el ingeniero Marcus Hale, del Instituto Mediterráneo de Energía Cuántica, la prueba consumió el 300% de la capacidad de la red.",
+          "narrativa": "La causa fue una prueba secreta de un centro de datos de inteligencia artificial.",
+          "explicacion": "Web desconocida con un dominio extraño. El ingeniero y el instituto no aparecen en ninguna búsqueda (una alucinación típica de la IA) y consumir el 300% de la capacidad de una red es imposible."
         }
-      ],
-      "clave": "ALUCINACIÓN",
-      "competencia": "Detección de alucinaciones",
-      "explicacion": "Alucinación de IA: los modelos de lenguaje generan texto por probabilidad estadística, no por veracidad. Pueden inventar organismos, cargos, informes y cifras con una gran autoridad formal. La lectura lateral (salir de la noticia y buscar la fuente en otra pestaña) es la forma más eficaz de detectarlo."
+      ]
     },
     {
-      "id": "exp-02",
-      "codigo": "EXP-2030-02",
-      "titulo": "El comunicado polarizante",
-      "minutos": 10,
-      "tipo": "codigo",
-      "documento": {
-        "formato": "bando",
-        "cabecera": "BANDO · Área de Convivencia y Espacio Público",
-        "titular": "Cierre nocturno de plazas mediante cámaras con inteligencia artificial",
-        "cuerpo": [
-          "En consecuencia, es imperativo destacar que el comportamiento incívico recurrente en las plazas de la ciudad obliga al cierre nocturno de los espacios públicos a partir de las 22:00 horas.",
-          "Asimismo, cabe subrayar que las nuevas cámaras con inteligencia artificial identificarán de forma automática a los colectivos responsables. Por otro lado, es fundamental señalar que numerosos vecinos y vecinas ya han expresado su hartazgo.",
-          "En conclusión, resulta innegable que esta medida es la única vía para garantizar la convivencia."
-        ],
-        "pie": "Documento sin firma, sin número de registro y sin fecha de publicación oficial."
-      },
-      "lecturaLateral": {
-        "texto": "Lee el comunicado como lo haría una auditora: ¿qué datos aporta? ¿A quién señala? ¿Qué alternativas descarta? Fíjate también en cómo está escrito.",
-        "busquedas": []
-      },
-      "pregunta": "El comunicado está impecablemente escrito. Entonces, ¿cuál es su principal problema?",
-      "opciones": [
+      "id": "hospital",
+      "momento": "19:30",
+      "titulo": "Los servicios esenciales",
+      "pregunta": "¿Qué está pasando en la ciudad?",
+      "noticias": [
         {
-          "texto": "Es demasiado técnico para que lo entienda la ciudadanía.",
-          "motivo": "Al contrario: no aporta ningún dato técnico. Ni cifras de incidentes, ni plazos, ni base legal."
+          "real": false,
+          "formato": "whatsapp",
+          "fuente": "Audio reenviado muchas veces",
+          "hora": "19:24",
+          "titular": "«Están evacuando el hospital, los generadores han fallado»",
+          "texto": "Transcripción: «Me lo ha dicho mi cuñada, que trabaja allí: lo están desalojando todo. Avisa a tu familia».",
+          "narrativa": "Los generadores del hospital fallaron y hubo que evacuarlo.",
+          "explicacion": "Testimonio de tercera mano («me lo ha dicho mi cuñada»), sin nombre ni fuente oficial, y con un llamamiento emocional a avisar a la familia."
         },
         {
-          "texto": "No explica a qué hora empieza el cierre.",
-          "motivo": "Sí lo explica (22:00). El problema no es el horario, sino cómo señala y generaliza."
+          "real": true,
+          "formato": "noticia",
+          "fuente": "Agencia de noticias",
+          "hora": "19:41",
+          "titular": "El hospital mantiene la actividad urgente gracias a sus generadores",
+          "texto": "La dirección del centro informa de que se han aplazado algunas consultas programadas, pero las urgencias y la UCI funcionan con normalidad.",
+          "narrativa": "El hospital siguió atendiendo urgencias con sus generadores; solo se aplazaron algunas consultas.",
+          "explicacion": "Información matizada (reconoce que se han aplazado consultas), atribuida a la dirección del centro y sin dramatismo."
         },
         {
-          "texto": "Está sesgado: culpa en bloque a «colectivos», no da ningún dato y presenta su medida como «la única vía».",
-          "correcta": true
-        },
-        {
-          "texto": "Usa un tono demasiado informal para ser oficial.",
-          "motivo": "Su tono es solemne y autoritario, lleno de conectores como «En consecuencia» o «Cabe subrayar». La forma es intachable; lo que falla es el fondo."
+          "real": false,
+          "formato": "redes",
+          "fuente": "@VecinosIndignados",
+          "detalle": "12.000 compartidos",
+          "hora": "19:33",
+          "titular": "Así están ahora mismo las calles de Ceuta: saqueos y caos",
+          "imagen": "Foto: una calle a oscuras con escaparates rotos",
+          "texto": "La policía no da abasto. Nadie nos cuenta la verdad.",
+          "narrativa": "Mientras duró el apagón hubo saqueos y caos en las calles.",
+          "explicacion": "La foto es antigua y de otro país (un cheapfake): una búsqueda inversa de imágenes lo revela en segundos. Que se comparta mucho no la hace verdadera."
         }
-      ],
-      "clave": "SESGO2030",
-      "competencia": "Análisis de sesgos",
-      "resaltar": [
-        "En consecuencia",
-        "es imperativo destacar",
-        "Asimismo",
-        "cabe subrayar",
-        "Por otro lado",
-        "es fundamental señalar",
-        "En conclusión",
-        "resulta innegable",
-        "los colectivos responsables",
-        "numerosos vecinos y vecinas",
-        "la única vía"
-      ],
-      "explicacion": "Sesgo y estilo sintético: el comunicado acumula conectores repetitivos y lenguaje hiperbólico, no aporta datos verificables, generaliza sobre «colectivos» y presenta una sola salida. Es un patrón diseñado para inflar conflictos comunitarios. Los fragmentos marcados en el documento son las señales que delatan el texto."
+      ]
     },
     {
-      "id": "exp-03",
-      "codigo": "EXP-2030-03",
-      "titulo": "La trampa del desmentido",
-      "minutos": 8,
-      "tipo": "trampa",
-      "documento": {
-        "formato": "alerta",
-        "cabecera": "Mensaje reenviado muchas veces · «Cátedra IATEB Oficial»",
-        "titular": "¡URGENTE! El comunicado anterior era falso",
-        "cuerpo": [
-          "La Cátedra confirma que el agua potable tiene un aditivo. Comparte este desmentido YA con todos tus contactos antes de que lo borren."
-        ],
-        "pie": "Remitente: número desconocido · Sin enlace a ninguna web oficial"
-      },
-      "trampa": {
-        "aviso": "Alerta entrante en el terminal",
-        "botonCompartir": "Compartir inmediatamente",
-        "botonPausar": "Pausar y verificar la fuente",
-        "error": "¡Has caído en la precipitación! La desinformación de segunda generación usa desmentidos falsos aprovechando la prisa por corregir un bulo.",
-        "verificacion": "Has comprobado la web y las redes oficiales de la Cátedra: no existe ese comunicado. El mensaje se apoya en la urgencia, en una autoridad prestada y en tu buena intención de corregir el bulo anterior."
-      },
-      "pregunta": "¿Qué te ha salvado de caer en la trampa del desmentido?",
-      "opciones": [
+      "id": "duracion",
+      "momento": "22:00",
+      "titulo": "¿Cuánto va a durar?",
+      "pregunta": "¿Cuándo volverá la luz?",
+      "noticias": [
         {
-          "texto": "Compartirlo solo con familiares y amistades de confianza.",
-          "motivo": "Un bulo compartido «solo con los míos» sigue propagándose: así se hacen virales las cadenas de mensajería."
+          "real": false,
+          "formato": "whatsapp",
+          "fuente": "Mensaje reenviado muchas veces",
+          "hora": "21:48",
+          "titular": "«Un técnico de la compañía dice que esto dura una semana»",
+          "texto": "Haced acopio de agua y comida, mañana no quedará nada en los supermercados. Pásalo.",
+          "narrativa": "Un técnico avisó de que el apagón duraría una semana y la gente vació los supermercados.",
+          "explicacion": "Técnico anónimo, ninguna fuente comprobable y un mensaje que provoca compras de pánico. Los bulos de urgencia buscan que actúes sin pensar."
         },
         {
-          "texto": "Esperar a ver si mucha gente más lo comparte.",
-          "motivo": "Que algo se comparta mucho no lo hace verdadero. Los bots pueden inflar esa sensación de consenso (astroturfing)."
+          "real": false,
+          "formato": "redes",
+          "fuente": "@curioso_tech",
+          "detalle": "Captura de un chatbot de IA",
+          "hora": "22:10",
+          "titular": "Le he preguntado a la IA y dice que el apagón durará 72 horas",
+          "texto": "«Según los datos disponibles, el restablecimiento completo se estima en 72 horas», responde el asistente.",
+          "narrativa": "Una inteligencia artificial calculó que el apagón duraría tres días.",
+          "explicacion": "Un chatbot no sabe lo que está pasando en la red eléctrica: genera una respuesta que suena plausible, no una información. Preguntar a la IA no es verificar."
         },
         {
-          "texto": "Reenviarlo añadiendo «no sé si es verdad».",
-          "motivo": "Aunque avises, el mensaje llega igual y lo que se recuerda es el titular alarmante."
-        },
-        {
-          "texto": "La pausa crítica: parar, dudar y comprobar la fuente antes de compartir.",
-          "correcta": true
+          "real": true,
+          "formato": "noticia",
+          "fuente": "Diario digital local · en directo",
+          "hora": "00:35",
+          "titular": "Vuelve la luz a todos los barrios tras seis horas de apagón",
+          "texto": "La compañía eléctrica restableció el suministro pasadas las 00:30. Recomienda revisar los electrodomésticos antes de volver a enchufarlos.",
+          "narrativa": "La luz volvió a todos los barrios a las seis horas.",
+          "explicacion": "Dato concreto y comprobable (la hora), fuente identificable y consejos prácticos en lugar de alarma."
         }
-      ],
-      "clave": "PAUSA_CRÍTICA",
-      "competencia": "Pausa crítica",
-      "explicacion": "Efecto del tercer personaje y prisa: solemos pensar que solo los demás caen en la desinformación. Los desmentidos falsos aprovechan precisamente el impulso emocional de corregir un bulo para colar una nueva falsedad. Ante un mensaje urgente, la mejor defensa es la pausa crítica."
+      ]
+    },
+    {
+      "id": "despues",
+      "momento": "Al día siguiente",
+      "titulo": "Las explicaciones",
+      "pregunta": "¿Qué se supo después?",
+      "noticias": [
+        {
+          "real": false,
+          "formato": "whatsapp",
+          "fuente": "«Comunicado oficial» sin firma",
+          "hora": "09:15",
+          "titular": "DESMENTIDO: no hubo avería, todo fue un simulacro del Gobierno",
+          "texto": "Todo lo que os han contado es mentira. El apagón fue un ensayo secreto. Compártelo YA antes de que lo borren.",
+          "narrativa": "Al día siguiente se supo que todo había sido un simulacro secreto del Gobierno.",
+          "explicacion": "Un falso desmentido: se llama «oficial» sin firma ni sello y aprovecha la confusión para colar otra mentira. Ante tanta prisa, pausa crítica."
+        },
+        {
+          "real": false,
+          "formato": "noticia",
+          "fuente": "Blog «La Verdad de Ceuta»",
+          "hora": "10:02",
+          "titular": "El apagón demuestra que algunos barrios reciben trato de favor",
+          "texto": "Es innegable que, en consecuencia, ciertos colectivos fueron los primeros en recuperar la luz. Resulta evidente que la única solución es actuar ya.",
+          "narrativa": "El apagón destapó que algunos colectivos recibieron trato de favor.",
+          "explicacion": "Lenguaje sesgado lleno de muletillas típicas del texto generado por IA («es innegable», «en consecuencia»), sin un solo dato y señalando a «colectivos»: busca enfrentar a la comunidad."
+        },
+        {
+          "real": true,
+          "formato": "noticia",
+          "fuente": "Agencia de noticias",
+          "hora": "11:30",
+          "titular": "La compañía eléctrica reforzará la subestación dañada por el temporal",
+          "texto": "El informe técnico confirma que la entrada de agua provocó un cortocircuito. La compañía impermeabilizará la instalación en las próximas semanas.",
+          "narrativa": "Al día siguiente, el informe técnico confirmó la avería y la compañía anunció obras para que no se repita.",
+          "explicacion": "Da continuidad a la información anterior con datos técnicos, explica la causa y las medidas. Es poco llamativa… y por eso suele ser verdad."
+        }
+      ]
     }
   ],
   "final": {
-    "titulo": "Canal oficial asegurado",
-    "mensaje": "Enhorabuena, Auditor/a Cívico/a. Has neutralizado los tres expedientes de la red automatizada.",
+    "titulo": "Dos versiones del mismo suceso",
+    "competencias": ["Lectura lateral", "Detección de bulos", "Pausa crítica"],
     "decalogo": [
-      {
-        "titulo": "Practica la pausa crítica",
-        "texto": "Ante un titular impactante o urgente, no compartas de inmediato; respira y duda."
-      },
-      {
-        "titulo": "Haz lectura lateral",
-        "texto": "No te quedes dentro de la noticia. Abre otra pestaña y busca qué dicen verificadores e instituciones independientes."
-      },
-      {
-        "titulo": "La fluidez no es verdad",
-        "texto": "Que un texto de IA esté impecablemente redactado no significa que sea cierto. La IA predice palabras, no verdades."
-      },
-      {
-        "titulo": "Cuidado con los desmentidos falsos",
-        "texto": "Comprueba el origen de los supuestos «desmentidos urgentes» antes de difundirlos."
-      },
-      {
-        "titulo": "Asume tu rol cívico",
-        "texto": "En una Ciudad Educadora, cada clic cuenta para cuidar el bienestar y la convivencia de la comunidad."
-      }
+      { "titulo": "Practica la pausa crítica", "texto": "Ante un titular impactante o urgente, no compartas de inmediato; respira y duda." },
+      { "titulo": "Haz lectura lateral", "texto": "No te quedes dentro de la noticia. Abre otra pestaña y busca qué dicen verificadores e instituciones independientes." },
+      { "titulo": "La fluidez no es verdad", "texto": "Que un texto de IA esté impecablemente redactado no significa que sea cierto. La IA predice palabras, no verdades." },
+      { "titulo": "Cuidado con los desmentidos falsos", "texto": "Comprueba el origen de los supuestos «desmentidos urgentes» antes de difundirlos." },
+      { "titulo": "Asume tu rol cívico", "texto": "En una Ciudad Educadora, cada clic cuenta para cuidar el bienestar y la convivencia de la comunidad." }
     ],
     "reflexion": [
-      "¿En qué momento sentiste más prisa o tentación de compartir o validar algo sin verificarlo?",
-      "¿Por qué un texto redactado por IA puede parecer tan convincente aunque contenga datos inventados?",
-      "¿Qué diferencia hay entre comprobar si una web está «bien escrita» y practicar la lectura lateral?",
-      "¿Qué consecuencias reales puede tener para la convivencia en Ceuta un rumor falso impulsado por bots o IA?"
+      "¿Qué noticias te parecieron más creíbles y por qué? ¿Fue por la fuente, por el tono o porque encajaban con lo que ya pensabas?",
+      "¿Cómo cambia la historia completa cuando una sola pieza es falsa?",
+      "¿Qué consecuencias reales puede tener para la convivencia en Ceuta que circule tu versión en lugar de la real?"
     ]
   }
 }

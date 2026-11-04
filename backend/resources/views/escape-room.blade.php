@@ -1,7 +1,7 @@
 {{--
     Escape room «Ceuta Educadora 2030: Misión Verificación IA» (Día Internacional de la Ciudad Educadora, 30 de noviembre).
     La página solo pone el marco: el juego lo pinta public/juegos/escape-room/escape-room.js con los textos de
-    public/juegos/escape-room/config.json. Para cambiar retos, pistas o claves basta con editar ese JSON.
+    public/juegos/escape-room/config.json. Para cambiar el suceso, las fases o las noticias basta con editar ese JSON.
 --}}
 <x-catedra titulo="Escape room: Misión Verificación IA" descripcion="Escape room digital de la Cátedra Ceuta-IATEB para aprender a detectar la desinformación generada por inteligencia artificial. Gratuito, anónimo y sin registro.">
   @push('estilos')
@@ -36,7 +36,7 @@
     .er-acciones .btn{cursor:pointer;}
 
     /* Progreso */
-    .er-progreso{list-style:none; margin:0 0 28px; padding:0; display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;}
+    .er-progreso{list-style:none; margin:0 0 28px; padding:0; display:grid; grid-template-columns:repeat(var(--fases, 4), 1fr); gap:8px;}
     .er-progreso li{display:flex; align-items:center; gap:8px; font-size:.8rem; font-weight:600; color:var(--ink-faint);
       padding-bottom:10px; border-bottom:3px solid var(--line);}
     .er-progreso li.actual{color:var(--ink); border-color:var(--accent);}
@@ -47,71 +47,72 @@
     .er-progreso li.actual .er-progreso-num{background:var(--accent); color:#fff;}
     @media (max-width:639px){ .er-progreso-txt{display:none;} }
 
-    /* Enigma: documento + panel */
-    .er-enigma{display:grid; grid-template-columns:1fr; gap:28px;}
-    @media (min-width:900px){ .er-enigma{grid-template-columns:1.05fr 1fr; gap:40px; align-items:start;} }
+    /* Fase: tres informaciones para elegir */
     .er-expediente{font-family:ui-monospace, "Cascadia Mono", Consolas, monospace; font-size:.8rem; color:var(--accent-deep) !important; margin:0 0 6px; font-weight:700;}
-
-    .er-doc{
-      position:relative; overflow:hidden; border-radius:12px; padding:22px 22px 18px;
-      background:var(--surface-2); border:1px solid var(--line);
+    .er-instruccion{font-size:.95rem; margin:0 0 22px;}
+    .er-noticias{display:grid; grid-template-columns:1fr; gap:16px;}
+    @media (min-width:900px){ .er-noticias{grid-template-columns:repeat(3, minmax(0, 1fr));} }
+    .er-noticia{
+      display:flex; flex-direction:column; gap:10px; padding:16px; cursor:pointer;
+      background:var(--surface); border:2px solid var(--line); border-radius:14px;
+      transition:border-color .15s ease, box-shadow .15s ease;
     }
-    .er-doc p{color:var(--ink); position:relative;}
-    .er-marca{
-      position:absolute; inset:0; display:grid; place-items:center; pointer-events:none;
-      font-family:"Public Sans", sans-serif; font-weight:800; font-size:clamp(2.2rem, 7vw, 3.4rem); letter-spacing:.12em;
-      color:var(--accent); opacity:.13; transform:rotate(-18deg);
-    }
-    .er-doc-cabecera{font-size:.75rem !important; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint) !important; margin:0 0 10px;}
-    .er-doc-titular{font-size:1.25rem; line-height:1.3; margin-bottom:12px; position:relative;}
-    .er-doc-pie{font-size:.82rem !important; color:var(--ink-faint) !important; border-top:1px dashed var(--line); padding-top:10px;}
-    .er-doc-aviso{font-size:.75rem !important; font-weight:700; color:var(--accent-deep) !important; margin:8px 0 0;}
-    .er-doc mark{background:color-mix(in srgb, var(--accent) 30%, transparent); color:inherit; border-radius:3px; padding:0 2px;}
-    .er-doc-bando{border-top:6px solid var(--ink-faint);}
-    .er-doc-bando .er-doc-titular{text-transform:uppercase; font-size:1.05rem; letter-spacing:.02em;}
-    .er-doc-alerta{background:color-mix(in srgb, #D92D20 10%, var(--surface)); border-color:#D92D20;}
-    .er-doc-alerta .er-doc-titular{color:#D92D20;}
-    .er-alarma .er-doc-alerta{animation:er-latido 1.4s ease-in-out infinite;}
-    @keyframes er-latido{50%{box-shadow:0 0 0 6px color-mix(in srgb, #D92D20 25%, transparent);}}
-    @media (prefers-reduced-motion:reduce){ .er-alarma .er-doc-alerta{animation:none;} }
+    .er-noticia:hover{border-color:var(--primary);}
+    .er-noticia.marcada{border-color:var(--accent); box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent);}
+    .er-noticia p{margin:0; font-size:.93rem; line-height:1.55;}
+    .er-noticia .er-titular{font-family:"Fraunces", serif; font-weight:600; font-size:1.08rem; line-height:1.3; color:var(--ink);}
+    .er-hora{margin-left:auto; font-size:.75rem; font-weight:600; color:var(--ink-faint);}
+    .er-medio{display:flex; gap:8px; font-size:.72rem !important; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+      color:var(--ink-faint) !important; border-bottom:1px solid var(--line); padding-bottom:8px;}
+    .er-post-cabecera{display:flex; align-items:center; gap:10px; font-size:.85rem;}
+    .er-post-cabecera strong{display:block; color:var(--ink);}
+    .er-post-cabecera small{display:block; font-size:.75rem; color:var(--ink-faint);}
+    .er-avatar{flex:none; width:34px; height:34px; border-radius:50%; display:grid; place-items:center;
+      background:var(--primary); color:#fff; font-weight:800;}
+    .er-noticia-redes .er-titular, .er-noticia-whatsapp .er-titular{font-family:"Public Sans", sans-serif; font-weight:700; font-size:1rem;}
+    .er-imagen{aspect-ratio:16 / 9; border-radius:10px; display:grid; place-items:center; text-align:center; padding:12px;
+      background:repeating-linear-gradient(135deg, var(--surface-2) 0 12px, var(--line) 12px 13px);
+      font-size:.8rem; font-weight:600; color:var(--ink-faint);}
+    .er-noticia-whatsapp{background:color-mix(in srgb, #25D366 5%, var(--surface));}
+    .er-reenviado{font-size:.8rem !important; font-style:italic; color:var(--ink-faint) !important;}
+    .er-burbuja{display:flex; flex-direction:column; gap:8px; padding:12px 14px; border-radius:4px 14px 14px 14px;
+      background:color-mix(in srgb, #25D366 16%, var(--surface));}
+    .er-burbuja p{color:var(--ink);}
+    .er-burbuja .er-hora{align-self:flex-end;}
+    .er-elegir{margin-top:auto; font:inherit; font-size:.88rem; font-weight:700; cursor:pointer;
+      padding:10px 14px; border-radius:999px; border:2px solid var(--line); background:transparent; color:var(--ink);}
+    .er-elegir:focus-visible{outline:3px solid var(--focus); outline-offset:2px;}
+    .er-noticia.marcada .er-elegir{background:var(--accent); border-color:var(--accent); color:#fff;}
+    .er-acciones .btn:disabled{opacity:.45; cursor:not-allowed; transform:none;}
+    .er-error{border-radius:10px; padding:12px 16px; margin:24px; background:color-mix(in srgb, #D92D20 12%, var(--surface)); border:1px solid #D92D20; color:var(--ink);}
 
-    .er-lateral{background:var(--surface); border:1px solid var(--line); border-left:4px solid var(--primary); border-radius:10px; padding:14px 18px; margin-bottom:22px;}
-    .er-lateral .kicker{margin:0 0 4px;}
-    .er-lateral p{margin:0;}
-    .er-busquedas{list-style:none; padding:0; margin:12px 0 0; display:flex; flex-direction:column; gap:6px;}
-    .er-busquedas a{font-size:.9rem; font-weight:600; color:var(--primary);}
+    /* Final: las dos narrativas */
+    .er-narrativas{display:grid; grid-template-columns:1fr; gap:16px; margin:28px 0 8px;}
+    @media (min-width:760px){ .er-narrativas{grid-template-columns:1fr 1fr;} }
+    .er-narrativa{border:1px solid var(--line); border-radius:14px; padding:18px 20px; background:var(--surface-2);}
+    .er-narrativa-real{background:color-mix(in srgb, #12B76A 9%, var(--surface)); border-color:color-mix(in srgb, #12B76A 45%, transparent);}
+    .er-pantalla .er-narrativa h3{margin:0 0 14px; font-size:1.1rem;}
+    .er-narrativa ol{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px;}
+    .er-narrativa li{display:grid; grid-template-columns:1fr auto; gap:2px 10px; line-height:1.5; color:var(--ink);
+      padding-left:12px; border-left:3px solid #12B76A;}
+    .er-narrativa li.bulo{border-left-color:#D92D20;}
+    .er-momento{grid-column:1 / -1; font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint);}
+    .er-etiqueta{align-self:start; white-space:nowrap; font-size:.72rem; font-weight:800; border-radius:999px; padding:2px 8px; color:#fff; background:#12B76A;}
+    .bulo .er-etiqueta{background:#D92D20;}
+    .er-etiqueta.er-tu-eleccion{background:var(--primary);}
 
-    /* Pregunta con opciones */
-    .er-pregunta{font-weight:700; color:var(--ink) !important; line-height:1.5; margin:0 0 12px;}
-    .er-opciones{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px;}
-    .er-opcion{
-      width:100%; text-align:left; font:inherit; font-size:.95rem; line-height:1.5; color:var(--ink); cursor:pointer;
-      display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:start;
-      background:var(--surface); border:2px solid var(--line); border-radius:12px; padding:12px 14px;
-      transition:border-color .15s ease, background .15s ease;
-    }
-    .er-opcion:hover:not(:disabled){border-color:var(--primary);}
-    .er-opcion:focus-visible{outline:3px solid var(--focus); outline-offset:2px;}
-    .er-opcion-letra{width:26px; height:26px; border-radius:50%; display:grid; place-items:center;
-      background:var(--surface-2); font-weight:800; font-size:.8rem; color:var(--ink-soft);}
-    .er-opcion:disabled{cursor:default; opacity:.7; border-style:dashed;}
-    .er-opcion:disabled .er-opcion-letra{background:#D92D20; color:#fff;}
-    .er-motivo{margin:8px 0 0 !important; font-size:.9rem; color:var(--ink-soft) !important; padding-left:38px;}
-    .er-clave{display:inline-block; font-family:ui-monospace, "Cascadia Mono", Consolas, monospace; font-weight:700;
-      letter-spacing:.08em; background:var(--primary-deep); color:#fff; border-radius:6px; padding:2px 10px; margin-left:4px;}
+    .er-desglose{display:flex; flex-direction:column; gap:10px;}
+    .er-desglose details{border:1px solid var(--line); border-radius:12px; background:var(--surface);}
+    .er-desglose summary{cursor:pointer; padding:14px 16px; font-weight:700; color:var(--ink); line-height:1.4;}
+    .er-desglose summary span{float:right; margin-left:12px; font-size:.8rem;}
+    .er-desglose details.acierto summary span{color:#12B76A;}
+    .er-desglose details.fallo summary span{color:#D92D20;}
+    .er-desglose ul{list-style:none; margin:0; padding:0 16px 16px; display:flex; flex-direction:column; gap:14px;}
+    .er-desglose li{padding-left:12px; border-left:3px solid #12B76A;}
+    .er-desglose li.bulo{border-left-color:#D92D20;}
+    .er-desglose li p{margin:0; font-size:.92rem;}
+    .er-pantalla .er-desglose-titular{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-bottom:4px; font-weight:700; color:var(--ink);}
 
-    .er-ok, .er-error{border-radius:10px; padding:12px 16px; font-size:.95rem; line-height:1.55; margin-bottom:16px;}
-    .er-ok{background:color-mix(in srgb, #12B76A 14%, var(--surface)); border:1px solid #12B76A; color:var(--ink);}
-    .er-error{background:color-mix(in srgb, #D92D20 12%, var(--surface)); border:1px solid #D92D20; color:var(--ink);}
-    .er-sirena{display:inline-block; font-weight:800; font-size:.8rem; letter-spacing:.08em; text-transform:uppercase;
-      color:#fff !important; background:#D92D20; border-radius:999px; padding:4px 12px; margin:0 0 6px;}
-
-    /* Final */
-    .er-informe{display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; margin:24px 0 8px;}
-    @media (min-width:760px){ .er-informe{grid-template-columns:repeat(4, 1fr);} }
-    .er-informe div{background:var(--surface-2); border-radius:10px; padding:14px 16px;}
-    .er-informe dt{font-size:.78rem; color:var(--ink-faint); font-weight:600;}
-    .er-informe dd{margin:4px 0 0; font-family:"Fraunces", serif; font-size:1.6rem; font-weight:600; color:var(--ink);}
     .er-nota{font-size:.95rem;}
     .er-decalogo{margin:0; padding:0; list-style:none; counter-reset:regla; display:grid; gap:10px;}
     @media (min-width:760px){ .er-decalogo{grid-template-columns:repeat(2, 1fr);} }
@@ -178,7 +179,7 @@
       <div class="hero-inner">
         <span class="eyebrow">30 de noviembre · Día Internacional de la Ciudad Educadora</span>
         <h1>Misión Verificación IA</h1>
-        <p class="lead">Un escape room digital para aprender a detectar alucinaciones, sesgos y desmentidos falsos generados por inteligencia artificial. Gratuito, anónimo y sin registro.</p>
+        <p class="lead">Un suceso, varias fases y en cada una tres informaciones: solo una es verdadera. ¿Sabrás distinguir los bulos de lo que pasó de verdad? Gratuito, anónimo y sin registro.</p>
       </div>
     </div>
   </section>
