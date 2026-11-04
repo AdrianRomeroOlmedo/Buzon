@@ -1,0 +1,198 @@
+{
+  "version": 2,
+  "titulo": "Ceuta Educadora 2030: Misión Verificación IA",
+  "terminal": "Terminal Cívico de Verificación · Cátedra Ceuta-IATEB",
+  "aviso": "Simulación educativa. Todos los expedientes, organismos y personas que aparecen son ficticios.",
+  "intro": {
+    "parrafos": [
+      "Bienvenido/a a la red de auditoría cívica de Ceuta.",
+      "Con motivo del Día Internacional de la Ciudad Educadora, la Cátedra ha detectado una red automatizada de modelos de lenguaje (IA) difundiendo informaciones sintéticas con alucinaciones y datos falsos sobre la convivencia local.",
+      "Tu misión como Auditor/a Cívico/a Digital es analizar 3 expedientes, aplicar lectura lateral y obtener las claves de desbloqueo eligiendo, en cada uno, el diagnóstico correcto."
+    ],
+    "boton": "Iniciar auditoría cívica",
+    "duracion": "25-30 minutos · Individual o en parejas · Sin registro"
+  },
+  "enigmas": [
+    {
+      "id": "exp-01",
+      "codigo": "EXP-2030-01",
+      "titulo": "La noticia alucinada",
+      "minutos": 10,
+      "tipo": "codigo",
+      "documento": {
+        "formato": "noticia",
+        "cabecera": "Portal Ceuta Hoy Digital · Actualidad",
+        "titular": "El Instituto Europeo de Infraestructuras Digitales confirma la demolición del Mercado Central de Ceuta para construir un centro de datos cuántico",
+        "cuerpo": [
+          "Según el informe 849/2026 del Dr. Julian Vance (Centro de Ciber-Urbanismo de la UE), la remodelación comenzará el 15 de diciembre tras ser aprobada por el 94% de la población.",
+          "«Ceuta será el primer nodo cuántico del sur de Europa», asegura el informe, que cifra en 3.200 los nuevos empleos tecnológicos."
+        ],
+        "pie": "Publicado hace 2 horas · 14.300 veces compartido"
+      },
+      "lecturaLateral": {
+        "texto": "No te quedes dentro de la noticia. Abre una pestaña nueva y comprueba si existen los organismos, la persona y el informe que se citan.",
+        "busquedas": [
+          "Instituto Europeo de Infraestructuras Digitales",
+          "Centro de Ciber-Urbanismo de la UE",
+          "Dr. Julian Vance informe 849/2026"
+        ]
+      },
+      "pregunta": "Ninguno de los organismos, el experto ni el informe aparece en otras fuentes. ¿Qué explica esta noticia?",
+      "opciones": [
+        {
+          "texto": "Es real, pero los organismos son tan nuevos que todavía no tienen web.",
+          "motivo": "Un organismo europeo capaz de aprobar la demolición de un mercado dejaría rastro: boletines oficiales, prensa, web institucional. Si no aparece en ninguna fuente independiente, desconfía."
+        },
+        {
+          "texto": "Es una alucinación de IA: el texto se ha inventado organismos, cargos, informes y cifras con apariencia creíble.",
+          "correcta": true
+        },
+        {
+          "texto": "Es la filtración de un informe confidencial.",
+          "motivo": "Las filtraciones auténticas las publican medios que explican cómo han verificado el documento. Aquí no hay nada de eso, y el 94% no corresponde a ninguna votación."
+        },
+        {
+          "texto": "Es una errata del periódico al traducir el nombre del organismo.",
+          "motivo": "Una errata cambia una palabra; no inventa un experto, un número de informe y una votación entera."
+        }
+      ],
+      "clave": "ALUCINACIÓN",
+      "competencia": "Detección de alucinaciones",
+      "explicacion": "Alucinación de IA: los modelos de lenguaje generan texto por probabilidad estadística, no por veracidad. Pueden inventar organismos, cargos, informes y cifras con una gran autoridad formal. La lectura lateral (salir de la noticia y buscar la fuente en otra pestaña) es la forma más eficaz de detectarlo."
+    },
+    {
+      "id": "exp-02",
+      "codigo": "EXP-2030-02",
+      "titulo": "El comunicado polarizante",
+      "minutos": 10,
+      "tipo": "codigo",
+      "documento": {
+        "formato": "bando",
+        "cabecera": "BANDO · Área de Convivencia y Espacio Público",
+        "titular": "Cierre nocturno de plazas mediante cámaras con inteligencia artificial",
+        "cuerpo": [
+          "En consecuencia, es imperativo destacar que el comportamiento incívico recurrente en las plazas de la ciudad obliga al cierre nocturno de los espacios públicos a partir de las 22:00 horas.",
+          "Asimismo, cabe subrayar que las nuevas cámaras con inteligencia artificial identificarán de forma automática a los colectivos responsables. Por otro lado, es fundamental señalar que numerosos vecinos y vecinas ya han expresado su hartazgo.",
+          "En conclusión, resulta innegable que esta medida es la única vía para garantizar la convivencia."
+        ],
+        "pie": "Documento sin firma, sin número de registro y sin fecha de publicación oficial."
+      },
+      "lecturaLateral": {
+        "texto": "Lee el comunicado como lo haría una auditora: ¿qué datos aporta? ¿A quién señala? ¿Qué alternativas descarta? Fíjate también en cómo está escrito.",
+        "busquedas": []
+      },
+      "pregunta": "El comunicado está impecablemente escrito. Entonces, ¿cuál es su principal problema?",
+      "opciones": [
+        {
+          "texto": "Es demasiado técnico para que lo entienda la ciudadanía.",
+          "motivo": "Al contrario: no aporta ningún dato técnico. Ni cifras de incidentes, ni plazos, ni base legal."
+        },
+        {
+          "texto": "No explica a qué hora empieza el cierre.",
+          "motivo": "Sí lo explica (22:00). El problema no es el horario, sino cómo señala y generaliza."
+        },
+        {
+          "texto": "Está sesgado: culpa en bloque a «colectivos», no da ningún dato y presenta su medida como «la única vía».",
+          "correcta": true
+        },
+        {
+          "texto": "Usa un tono demasiado informal para ser oficial.",
+          "motivo": "Su tono es solemne y autoritario, lleno de conectores como «En consecuencia» o «Cabe subrayar». La forma es intachable; lo que falla es el fondo."
+        }
+      ],
+      "clave": "SESGO2030",
+      "competencia": "Análisis de sesgos",
+      "resaltar": [
+        "En consecuencia",
+        "es imperativo destacar",
+        "Asimismo",
+        "cabe subrayar",
+        "Por otro lado",
+        "es fundamental señalar",
+        "En conclusión",
+        "resulta innegable",
+        "los colectivos responsables",
+        "numerosos vecinos y vecinas",
+        "la única vía"
+      ],
+      "explicacion": "Sesgo y estilo sintético: el comunicado acumula conectores repetitivos y lenguaje hiperbólico, no aporta datos verificables, generaliza sobre «colectivos» y presenta una sola salida. Es un patrón diseñado para inflar conflictos comunitarios. Los fragmentos marcados en el documento son las señales que delatan el texto."
+    },
+    {
+      "id": "exp-03",
+      "codigo": "EXP-2030-03",
+      "titulo": "La trampa del desmentido",
+      "minutos": 8,
+      "tipo": "trampa",
+      "documento": {
+        "formato": "alerta",
+        "cabecera": "Mensaje reenviado muchas veces · «Cátedra IATEB Oficial»",
+        "titular": "¡URGENTE! El comunicado anterior era falso",
+        "cuerpo": [
+          "La Cátedra confirma que el agua potable tiene un aditivo. Comparte este desmentido YA con todos tus contactos antes de que lo borren."
+        ],
+        "pie": "Remitente: número desconocido · Sin enlace a ninguna web oficial"
+      },
+      "trampa": {
+        "aviso": "Alerta entrante en el terminal",
+        "botonCompartir": "Compartir inmediatamente",
+        "botonPausar": "Pausar y verificar la fuente",
+        "error": "¡Has caído en la precipitación! La desinformación de segunda generación usa desmentidos falsos aprovechando la prisa por corregir un bulo.",
+        "verificacion": "Has comprobado la web y las redes oficiales de la Cátedra: no existe ese comunicado. El mensaje se apoya en la urgencia, en una autoridad prestada y en tu buena intención de corregir el bulo anterior."
+      },
+      "pregunta": "¿Qué te ha salvado de caer en la trampa del desmentido?",
+      "opciones": [
+        {
+          "texto": "Compartirlo solo con familiares y amistades de confianza.",
+          "motivo": "Un bulo compartido «solo con los míos» sigue propagándose: así se hacen virales las cadenas de mensajería."
+        },
+        {
+          "texto": "Esperar a ver si mucha gente más lo comparte.",
+          "motivo": "Que algo se comparta mucho no lo hace verdadero. Los bots pueden inflar esa sensación de consenso (astroturfing)."
+        },
+        {
+          "texto": "Reenviarlo añadiendo «no sé si es verdad».",
+          "motivo": "Aunque avises, el mensaje llega igual y lo que se recuerda es el titular alarmante."
+        },
+        {
+          "texto": "La pausa crítica: parar, dudar y comprobar la fuente antes de compartir.",
+          "correcta": true
+        }
+      ],
+      "clave": "PAUSA_CRÍTICA",
+      "competencia": "Pausa crítica",
+      "explicacion": "Efecto del tercer personaje y prisa: solemos pensar que solo los demás caen en la desinformación. Los desmentidos falsos aprovechan precisamente el impulso emocional de corregir un bulo para colar una nueva falsedad. Ante un mensaje urgente, la mejor defensa es la pausa crítica."
+    }
+  ],
+  "final": {
+    "titulo": "Canal oficial asegurado",
+    "mensaje": "Enhorabuena, Auditor/a Cívico/a. Has neutralizado los tres expedientes de la red automatizada.",
+    "decalogo": [
+      {
+        "titulo": "Practica la pausa crítica",
+        "texto": "Ante un titular impactante o urgente, no compartas de inmediato; respira y duda."
+      },
+      {
+        "titulo": "Haz lectura lateral",
+        "texto": "No te quedes dentro de la noticia. Abre otra pestaña y busca qué dicen verificadores e instituciones independientes."
+      },
+      {
+        "titulo": "La fluidez no es verdad",
+        "texto": "Que un texto de IA esté impecablemente redactado no significa que sea cierto. La IA predice palabras, no verdades."
+      },
+      {
+        "titulo": "Cuidado con los desmentidos falsos",
+        "texto": "Comprueba el origen de los supuestos «desmentidos urgentes» antes de difundirlos."
+      },
+      {
+        "titulo": "Asume tu rol cívico",
+        "texto": "En una Ciudad Educadora, cada clic cuenta para cuidar el bienestar y la convivencia de la comunidad."
+      }
+    ],
+    "reflexion": [
+      "¿En qué momento sentiste más prisa o tentación de compartir o validar algo sin verificarlo?",
+      "¿Por qué un texto redactado por IA puede parecer tan convincente aunque contenga datos inventados?",
+      "¿Qué diferencia hay entre comprobar si una web está «bien escrita» y practicar la lectura lateral?",
+      "¿Qué consecuencias reales puede tener para la convivencia en Ceuta un rumor falso impulsado por bots o IA?"
+    ]
+  }
+}

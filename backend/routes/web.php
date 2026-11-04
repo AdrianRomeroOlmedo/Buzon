@@ -1,14 +1,13 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Admin\SugerenciaAdminController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\RecursoController;
 use App\Http\Controllers\SugerenciaController;
-use App\Http\Controllers\Admin\SugerenciaAdminController;
 use App\Models\Proyecto;
 use App\Support\InstagramUltimoPost;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
 Route::get('/', fn () => view('inicio', [
@@ -31,9 +30,9 @@ Route::post('/sugerencias', [SugerenciaController::class, 'store'])
     ->middleware('throttle:buzon')
     ->name('sugerencias.store');
 
-
-
 Route::view('/privacidad', 'privacidad')->name('privacidad');
+// Escape room del 30 de noviembre: el juego es estático (public/juegos/escape-room/).
+Route::view('/escape-room', 'escape-room')->name('escape-room');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -54,4 +53,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
