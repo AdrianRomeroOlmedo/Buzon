@@ -1,6 +1,7 @@
 /* ============================================================================
    CONTENIDO DEL ESCAPE ROOM «MISIÓN COMBUSTIBLE DE VERDAD»
    Cátedra Ceuta-IATEB · Universidad de Granada y Ciudad Autónoma de Ceuta
+   Público: alumnado de Bachillerato (unos 16 años).
    ----------------------------------------------------------------------------
    Este es el ÚNICO archivo que hay que tocar para cambiar textos, noticias,
    respuestas, explicaciones, pistas o preguntas. No hace falta saber programar:
@@ -14,6 +15,10 @@
    · Para comprobar que no has roto nada, abre index.html en el navegador: si
      algo falla, la página mostrará un aviso en lugar del juego.
 
+   La escena es la cabina de la nave en primera persona. Lo que dice Vero, el
+   extraterrestre, aparece en el «canal de comunicación»; las pruebas, en la
+   pantalla principal.
+
    TODO el contenido de ejemplo es PROVISIONAL. Las cuentas, nombres y medios
    son inventados. Cada noticia lleva un campo «fuente» vacío: rellénalo con la
    URL del desmentido (Maldita.es, Newtral, EFE Verifica…) o de la noticia
@@ -22,65 +27,78 @@
 
 window.CONTENIDO = {
 
-  version: 1,
+  version: 2,
 
   // ---------------------------------------------------------------------------
   // AJUSTES GENERALES
   // ---------------------------------------------------------------------------
   ajustes: {
-    // Temporizador opcional. Pon «activo: true» para mostrar una cuenta atrás.
-    // Al llegar a cero no se pierde la partida: solo aparece un aviso.
+    // Temporizador opcional. Pon «activo: true» para mostrar una cuenta atrás
+    // en los instrumentos. Al llegar a cero no se pierde la partida: solo
+    // aparece un aviso.
     temporizador: { activo: false, minutos: 20 },
   },
 
   // ---------------------------------------------------------------------------
-  // EL PERSONAJE
+  // EL PERSONAJE (habla por el canal de comunicación)
   // ---------------------------------------------------------------------------
   alien: {
     nombre: "Vero",
-    planeta: "Lux",
+    // Lo primero que dice, en la pantalla de arranque.
+    saludo: "¿Me recibes? Estoy en órbita sobre tu planeta y la nave está a punto de apagarse. Necesito ayuda.",
     // Frases con las que reacciona. Si hay varias, se elige una al azar.
     alAcertar: [
-      "¡Eso es! El motor ronronea de gusto.",
-      "¡Verdad de la buena! Noto cómo sube la presión del depósito.",
-      "¡Bien visto! En mi planeta te harían una estatua.",
+      "Dato limpio. El motor lo acepta sin problemas.",
+      "Correcto. La presión del depósito sube.",
+      "Bien visto. Eso es justo lo que la nave necesita.",
     ],
     alFallar: [
-      "¡Uy! Eso huele a bulo… Lee la explicación y vuelve a intentarlo.",
-      "¡Cof, cof! El motor ha tosido. No pasa nada: prueba otra vez.",
-      "Casi. Los bulos están hechos para parecer verdad. ¡Inténtalo de nuevo!",
+      "Ese dato venía adulterado y el motor lo ha rechazado. Revisa el análisis y prueba otra vez.",
+      "Mal combustible. Los bulos están diseñados para parecer verdad: lee la explicación y repite.",
+      "El sistema ha detectado una incoherencia. No pasa nada, vuelve a intentarlo.",
     ],
-    alSuperarPrueba: "¡Prueba superada! Un 25 % más de combustible y un trozo del código de despegue.",
-    alPedirPista: "Te doy una pista, pero no se lo digas a nadie de mi planeta…",
+    alSuperarPrueba: "Módulo superado. Un 25 % más de combustible y un fragmento del código de despegue.",
+    alPedirPista: "Te paso los datos que tengo del análisis. El resto es cosa tuya.",
   },
 
   // ---------------------------------------------------------------------------
-  // PORTADA
+  // PANTALLA DE ARRANQUE (diagnóstico de la nave averiada)
   // ---------------------------------------------------------------------------
   portada: {
     antetitulo: "30 de noviembre · Día Internacional de la Ciudad Educadora",
     titulo: "Misión Combustible de Verdad",
-    subtitulo: "Un escape room para aprender a distinguir las noticias verdaderas de los bulos.",
-    boton: "Empezar misión",
+    subtitulo: "Estás a bordo de una nave alienígena sin combustible. Funciona con información verdadera, y tú eres quien tiene que distinguirla de los bulos.",
+    // Líneas del diagnóstico. «correcto: true» se muestra en verde; si no, en rojo.
+    diagnostico: [
+      { sistema: "Combustible (verdad)", estado: "3 % · crítico", correcto: false },
+      { sistema: "Motor principal", estado: "detenido", correcto: false },
+      { sistema: "Filtro de bulos", estado: "sin calibrar", correcto: false },
+      { sistema: "Canal de comunicación", estado: "operativo", correcto: true },
+    ],
+    boton: "Iniciar misión",
     nota: "Unos 15 minutos · Individual o en grupo · Sin registro",
   },
 
   // ---------------------------------------------------------------------------
-  // INTRODUCCIÓN: lo que cuenta el alien, un globo de diálogo por línea.
+  // INTRODUCCIÓN: la transmisión de Vero, una línea por mensaje.
   // ---------------------------------------------------------------------------
   introduccion: {
+    titulo: "Transmisión de Vero",
+    estadoCanal: "Transmitiendo…",
     dialogos: [
-      "¡Hola, terrícola! Soy Vero, del planeta Lux. Mi nave se ha quedado casi sin combustible justo encima de tu planeta.",
-      "Mi nave no funciona con gasolina: funciona con VERDAD. Si le meto un bulo, el motor se atasca y empieza a echar humo.",
-      "¿Me ayudas a distinguir lo cierto de lo falso? Son 4 pruebas: cada una llena un 25 % del depósito y me da un trozo del código de despegue.",
+      "Soy Vero. Esta nave no funciona con gasolina: funciona con VERDAD. Cada dato verdadero que entra al depósito la impulsa; cada bulo atasca el motor.",
+      "Me quedé sin reservas al cruzar vuestra órbita. Aquí abajo circula muchísima información, pero buena parte está adulterada, y mis sensores no saben distinguirla.",
+      "Te propongo un trato: tú analizas, yo piloto. Son cuatro módulos. Cada uno llena un 25 % del depósito y desbloquea un fragmento del código de despegue.",
     ],
-    boton: "¡Te ayudo!",
+    boton: "Aceptar la misión",
   },
 
   // ---------------------------------------------------------------------------
-  // LAS CUATRO PRUEBAS
-  // Cada prueba tiene un «fragmento»: el trozo del código de despegue que
-  // entrega al superarla. Los cuatro fragmentos juntos forman el código final.
+  // LOS CUATRO MÓDULOS (PRUEBAS)
+  // · «mensaje»: lo que dice Vero por el canal mientras se juega el módulo.
+  // · «instrucciones»: lo que se lee en la pantalla principal.
+  // · «fragmento»: el trozo del código de despegue que entrega al superarlo.
+  //   Los cuatro fragmentos juntos forman el código final.
   // ---------------------------------------------------------------------------
   pruebas: {
 
@@ -89,14 +107,15 @@ window.CONTENIDO = {
     // Tipos de tarjeta: "tuit", "whatsapp", "titular" o "sms".
     // «verdadera: true» marca la tarjeta correcta.
     cualEsVerdad: {
-      titulo: "Prueba 1 · ¿Cuál es verdad?",
-      instrucciones: "Te enseño dos mensajes. Solo uno es verdad. Pulsa el que darías por bueno.",
+      titulo: "¿Cuál es verdad?",
+      instrucciones: "Hemos interceptado dos señales. Solo una es verdadera. Selecciona la que usarías como combustible.",
+      mensaje: "Mis sensores captan dos señales sobre el mismo tema. Una me llevaría a casa; la otra me dejaría tirado. ¿Cuál cargo?",
       fragmento: "VER",
       rondas: [
         {
           // TODO: sustituir por caso real verificado
           tema: "Salud",
-          pista: "Desconfía de los remedios milagrosos que «lo curan todo» en poco tiempo y te piden reenviarlos.",
+          pista: "Desconfía de los remedios que «lo curan todo» en poco tiempo y que, además, te piden reenviarlos.",
           tarjetas: [
             {
               verdadera: false,
@@ -114,12 +133,12 @@ window.CONTENIDO = {
               fuente: "",
             },
           ],
-          explicacion: "El mensaje de WhatsApp promete una cura milagrosa, cita a «un médico» sin nombre y pide reenviarlo a todo el mundo. La enfermera explica algo prudente y comprobable en cualquier fuente sanitaria oficial.",
+          explicacion: "El mensaje de WhatsApp promete una cura milagrosa, se apoya en «un médico» sin nombre y pide reenviarlo a todo el mundo. La otra publicación dice algo prudente que puedes comprobar en cualquier fuente sanitaria oficial.",
         },
         {
           // TODO: sustituir por caso real verificado
           tema: "Tecnología e IA",
-          pista: "¿Qué mensaje te pide comprobar las cosas y cuál busca sorprenderte?",
+          pista: "Una señal te invita a comprobar las cosas; la otra solo busca impresionarte.",
           tarjetas: [
             {
               verdadera: true,
@@ -137,7 +156,7 @@ window.CONTENIDO = {
               fuente: "",
             },
           ],
-          explicacion: "Las alucinaciones de la IA son un fenómeno conocido y documentado. El titular, en cambio, habla de «científicos» sin nombre ni estudio y busca impresionar con una afirmación extraordinaria sin ninguna prueba.",
+          explicacion: "Las alucinaciones de la IA son un fenómeno conocido y documentado. El titular, en cambio, habla de «científicos» sin nombre ni estudio y hace una afirmación extraordinaria sin ninguna prueba.",
         },
         {
           // TODO: sustituir por caso real verificado
@@ -160,7 +179,7 @@ window.CONTENIDO = {
               fuente: "",
             },
           ],
-          explicacion: "El SMS es una estafa típica (smishing): urgencia, una cantidad pequeña para que no lo pienses y un enlace con un dominio raro. El consejo de seguridad es correcto: los bancos no piden claves por SMS.",
+          explicacion: "El SMS es una estafa típica (smishing): urgencia, una cantidad pequeña para que no te lo pienses y un enlace con un dominio raro. El consejo de seguridad es correcto: los bancos no piden claves por SMS.",
         },
       ],
     },
@@ -168,8 +187,9 @@ window.CONTENIDO = {
     // ---------------- PRUEBA 2: ¿VERDAD O BULO? ------------------------------
     // Cada ronda es una afirmación. «esVerdad: true» si es cierta.
     verdadOBulo: {
-      titulo: "Prueba 2 · ¿Verdad o bulo?",
-      instrucciones: "Lee cada información y decide: ¿es verdad o es un bulo?",
+      titulo: "¿Verdad o bulo?",
+      instrucciones: "Analiza cada señal y emite un veredicto: ¿es verdad o es un bulo?",
+      mensaje: "Ahora las señales llegan de una en una. Necesito un veredicto rápido, pero fiable.",
       fragmento: "IFI",
       rondas: [
         {
@@ -180,7 +200,7 @@ window.CONTENIDO = {
           texto: "La Gran Muralla China es la única construcción humana que se ve a simple vista desde la Luna.",
           esVerdad: false,
           pista: "Piensa en la distancia: la Luna está a unos 384.000 km. ¿Cómo de ancha es una muralla?",
-          explicacion: "Es un mito muy repetido. La muralla es muy larga pero estrecha, y desde la Luna no se ve a simple vista. Que algo se repita mucho no lo convierte en verdad.",
+          explicacion: "Es un mito muy repetido. La muralla es muy larga pero estrecha, y desde la Luna no se distingue a simple vista. Que algo se repita mucho no lo convierte en verdad.",
           fuente: "",
         },
         {
@@ -191,7 +211,7 @@ window.CONTENIDO = {
           texto: "«Esta noche van a cortar el agua en toda Ceuta durante tres días. Llenad las bañeras y avisad a todo el mundo». (Sin ninguna fuente oficial ni horario).",
           esVerdad: false,
           pista: "¿Quién lo dice? ¿Hay algún aviso oficial con fecha y hora?",
-          explicacion: "No dice quién lo anuncia ni da un horario concreto, y busca que actúes con prisa. Los cortes de agua reales se anuncian por los canales oficiales con zonas y horas. Antes de llenar la bañera, compruébalo.",
+          explicacion: "No dice quién lo anuncia ni da un horario concreto, y busca que actúes con prisa. Los cortes de agua reales se anuncian por los canales oficiales, con zonas y horas. Antes de llenar la bañera, compruébalo.",
           fuente: "",
         },
         {
@@ -213,10 +233,11 @@ window.CONTENIDO = {
     // ---------------- PRUEBA 3: EMPAREJAR ------------------------------------
     // Cada noticia indica en «tecnica» el «id» de la técnica que le corresponde.
     emparejar: {
-      titulo: "Prueba 3 · Emparejar",
-      instrucciones: "Une cada noticia con la técnica de desinformación que usa. En el ordenador puedes arrastrar la noticia hasta la técnica; en el móvil, toca una noticia y después su técnica.",
+      titulo: "Emparejar",
+      instrucciones: "Une cada noticia con la técnica de desinformación que usa. En ordenador puedes arrastrar la noticia hasta la técnica; en el móvil, toca una noticia y después su técnica.",
+      mensaje: "Para calibrar el filtro de bulos necesito saber cómo engañan, no solo si engañan. Clasifica estas cinco noticias.",
       fragmento: "CA",
-      pista: "Busca la palabra clave de cada noticia: mayúsculas y exclamaciones, «cuenta creada hace dos días», «comunicado oficial» sin firma, una foto de otro lugar o un «compártelo ya».",
+      pista: "Busca la señal de cada noticia: mayúsculas y exclamaciones, una cuenta creada hace dos días, un «comunicado oficial» sin firma, una foto de otro lugar o un «compártelo ya».",
       tecnicas: [
         { id: "alarmista", nombre: "Lenguaje sesgado o alarmista" },
         { id: "anonima", nombre: "Cuenta anónima o recién creada" },
@@ -227,16 +248,16 @@ window.CONTENIDO = {
       noticias: [
         {
           // TODO: sustituir por caso real verificado
-          texto: "¡¡ESCÁNDALO!! Lo que te OCULTAN sobre el wifi de los colegios te pondrá los pelos de punta.",
+          texto: "¡¡ESCÁNDALO!! Lo que te OCULTAN sobre el wifi de los institutos te pondrá los pelos de punta.",
           tecnica: "alarmista",
-          explicacion: "Mayúsculas, exclamaciones y palabras como «escándalo» u «ocultan»: busca asustar en lugar de informar.",
+          explicacion: "Mayúsculas, exclamaciones y palabras como «escándalo» u «ocultan»: busca asustar, no informar.",
           fuente: "",
         },
         {
           // TODO: sustituir por caso real verificado
           texto: "@noticias_ya_2026x (cuenta creada hace 2 días, 3 seguidores): «Exclusiva: mañana cierran todos los institutos».",
           tecnica: "anonima",
-          explicacion: "Una cuenta sin historial ni nombre real no tiene ninguna credibilidad que perder. Las «exclusivas» de cuentas recién creadas suelen ser bulos.",
+          explicacion: "Una cuenta sin historial ni nombre real no tiene credibilidad que perder. Las «exclusivas» de cuentas recién creadas suelen ser bulos.",
           fuente: "",
         },
         {
@@ -257,7 +278,7 @@ window.CONTENIDO = {
           // TODO: sustituir por caso real verificado
           texto: "¡Compártelo YA antes de que lo borren! Esta noche congelan todas las cuentas bancarias.",
           tecnica: "urgencia",
-          explicacion: "La prisa es el mejor aliado del bulo: si te piden compartir «ya», es justo el momento de pararte a comprobar.",
+          explicacion: "La prisa es la mejor aliada del bulo: si te piden compartir «ya», es justo el momento de pararte a comprobar.",
           fuente: "",
         },
       ],
@@ -266,10 +287,12 @@ window.CONTENIDO = {
 
     // ---------------- PRUEBA 4: INFOGRAFÍA Y TEST ----------------------------
     // La imagen «assets/infografia.png» se muestra si existe. Si no, se usan
-    // los «pasos» de abajo para dibujar una infografía en la propia página.
+    // los «pasos» de abajo para dibujar una infografía en la propia pantalla.
     infografia: {
-      titulo: "Prueba 4 · Cómo verificar",
-      instrucciones: "Lee con atención esta infografía. Después, responde al test: todas las respuestas están en ella.",
+      titulo: "Protocolo de verificación",
+      instrucciones: "Lee con atención esta infografía. Después responde al test: todas las respuestas están en ella.",
+      mensaje: "Último módulo. Instala este protocolo en tu cabeza: te servirá aquí y, sobre todo, ahí abajo.",
+      mensajeTest: "Si lo necesitas, puedes volver a abrir la infografía. Consultar las fuentes no es hacer trampa.",
       fragmento: "DOR",
       imagen: "assets/infografia.png",
       textoAlternativo: "Infografía con cinco pasos para verificar una información: comprobar la fuente, el autor y la fecha, consultar a los verificadores y hacer una búsqueda inversa de imágenes.",
@@ -277,7 +300,7 @@ window.CONTENIDO = {
       pasos: [
         { titulo: "Fuente", texto: "¿Quién lo publica? Busca un medio o una institución que puedas identificar." },
         { titulo: "Autor", texto: "¿Lo firma alguien? Comprueba que esa persona existe y sabe del tema." },
-        { titulo: "Fecha", texto: "¿Es de hoy? Muchas noticias antiguas vuelven a circular como si fueran nuevas." },
+        { titulo: "Fecha", texto: "¿Es actual? Muchas noticias antiguas vuelven a circular como si fueran nuevas." },
         { titulo: "Verificadores", texto: "Mira si Maldita.es, Newtral o EFE Verifica ya lo han comprobado." },
         { titulo: "Búsqueda inversa de imágenes", texto: "Sube la foto a un buscador de imágenes para ver dónde y cuándo apareció por primera vez." },
       ],
@@ -320,19 +343,22 @@ window.CONTENIDO = {
   // ---------------------------------------------------------------------------
   despegue: {
     titulo: "Código de despegue",
-    texto: "¡Depósito lleno! Escribe el código completo uniendo los cuatro fragmentos que has conseguido.",
-    boton: "Despegar",
-    error: "Ese no es el código. Une los fragmentos en orden: prueba 1, 2, 3 y 4.",
+    texto: "Depósito lleno. Introduce el código completo uniendo los cuatro fragmentos recuperados.",
+    mensaje: "Depósito al 100 %. Solo falta el código y nos vamos.",
+    boton: "Iniciar despegue",
+    error: "Código incorrecto. Une los fragmentos en orden: módulo 1, 2, 3 y 4.",
   },
 
   final: {
-    titulo: "¡Despegue completado!",
-    mensaje: "Gracias, terrícola. Con tu ayuda, mi nave vuela con verdad. Llévate estas ideas para tu día a día:",
+    titulo: "Despegue completado",
+    mensaje: "La nave vuela con información verdadera. Estas son las claves que te llevas para tu día a día:",
+    mensajeVero: "Rumbo a casa. Gracias por el combustible. Ahí abajo vas a necesitar ese filtro más que yo.",
     aprendido: [
-      "Antes de compartir, para: la prisa es la mejor amiga de los bulos.",
+      "Antes de compartir, para: la prisa es la mejor aliada de los bulos.",
       "Mira quién lo publica y quién lo firma. Una cuenta anónima o un «comunicado oficial» sin firma no son fuentes.",
       "Comprueba la fecha y el origen de las fotos con una búsqueda inversa de imágenes.",
       "Desconfía del lenguaje alarmista y de las promesas milagrosas.",
+      "Que un texto esté bien escrito (o lo haya escrito una IA) no significa que sea cierto.",
       "Si dudas, consulta a los verificadores.",
     ],
     aviso: "Aviso: todas las cuentas, perfiles, medios y mensajes que aparecen en este juego son simulados y se han creado con fines educativos.",
@@ -342,6 +368,6 @@ window.CONTENIDO = {
       { nombre: "EFE Verifica", url: "https://verifica.efe.com" },
     ],
     creditos: "Una actividad de la Cátedra en Inteligencia Artificial y Tecnologías Emergentes para el Bienestar (Cátedra Ceuta-IATEB), de la Universidad de Granada y la Ciudad Autónoma de Ceuta, con motivo del Día Internacional de la Ciudad Educadora.",
-    botonReiniciar: "Jugar otra vez",
+    botonReiniciar: "Nueva misión",
   },
 };

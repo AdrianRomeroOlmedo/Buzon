@@ -9,41 +9,63 @@
   <!-- Única dependencia externa: la tipografía. Si no carga, se usa la del sistema. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <a class="saltar" href="#juego">Saltar al juego</a>
+<body data-estado="critico">
+  <a class="saltar" href="#juego">Saltar a la pantalla principal</a>
 
-  <header class="hud">
-    <div class="hud-dentro">
-      <p class="hud-marca">Misión Combustible de Verdad</p>
+  <!-- Vista desde la cabina: el parabrisas de la nave (decorativo) -->
+  <div class="parabrisas" aria-hidden="true">
+    <div class="estrellas"></div>
+    <div class="estrellas estrellas-cerca"></div>
+    <div class="tierra"></div>
+    <div class="reflejo"></div>
+  </div>
 
-      <div class="hud-deposito">
-        <span class="hud-etiqueta" id="deposito-etiqueta">Combustible de verdad</span>
+  <!-- El salpicadero: instrumentos, pantalla principal y comunicaciones -->
+  <div class="consola">
+
+    <aside class="instrumentos" aria-label="Instrumentos de la nave">
+      <div class="instrumento instrumento-combustible">
+        <p class="rotulo" id="deposito-etiqueta">Combustible · Verdad</p>
         <div class="deposito" id="deposito" role="progressbar" aria-labelledby="deposito-etiqueta" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-          <div class="deposito-relleno" id="deposito-relleno"></div>
+          <div class="deposito-relleno"></div>
+          <span class="deposito-marcas"><i></i><i></i><i></i></span>
         </div>
-        <span class="hud-porcentaje" id="deposito-porcentaje">0 %</span>
+        <p class="lectura" id="deposito-porcentaje">0 %</p>
       </div>
 
-      <p class="hud-codigo">
-        <span class="hud-etiqueta">Código</span>
-        <span id="codigo-fragmentos" class="codigo-fragmentos"></span>
-      </p>
-
-      <p class="hud-tiempo" id="temporizador" hidden></p>
-
-      <div class="hud-botones">
-        <button type="button" class="boton-hud" id="boton-texto" aria-pressed="false" title="Texto más grande, para proyectar">A+</button>
-        <button type="button" class="boton-hud" id="boton-reiniciar">Reiniciar</button>
+      <div class="instrumento instrumento-codigo">
+        <p class="rotulo">Código<span class="rotulo-largo"> de despegue</span></p>
+        <p id="codigo-fragmentos" class="codigo-fragmentos"></p>
       </div>
-    </div>
-  </header>
 
-  <main id="juego" class="juego" tabindex="-1">
-    <noscript><p class="aviso-carga">Para jugar necesitas activar JavaScript en tu navegador.</p></noscript>
-  </main>
+      <div class="instrumento instrumento-estado">
+        <p class="rotulo">Estado</p>
+        <p class="lectura-estado"><span class="piloto" aria-hidden="true"></span><span id="estado-nave">Crítico</span></p>
+        <p class="lectura" id="temporizador" hidden></p>
+      </div>
+
+      <div class="instrumento-botones">
+        <button type="button" class="boton-mando" id="boton-texto" aria-pressed="false" title="Texto más grande, para proyectar">A+</button>
+        <button type="button" class="boton-mando" id="boton-reiniciar">Reiniciar</button>
+      </div>
+    </aside>
+
+    <section class="comunicaciones" aria-label="Comunicaciones">
+      <p class="rotulo">Canal de comunicación</p>
+      <div class="comunicaciones-pantalla">
+        <div id="holograma" class="holograma"></div>
+        <p id="mensaje" class="mensaje" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <main id="juego" class="pantalla-principal" tabindex="-1">
+      <noscript><p class="aviso-carga">Para jugar necesitas activar JavaScript en tu navegador.</p></noscript>
+    </main>
+
+  </div>
 
   <!-- Avisos para lectores de pantalla -->
   <div id="anuncio" class="solo-lector" aria-live="polite"></div>

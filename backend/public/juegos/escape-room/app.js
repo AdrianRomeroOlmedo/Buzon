@@ -2,6 +2,11 @@
    LÓGICA DEL JUEGO · Misión Combustible de Verdad
    No hace falta tocar este archivo para cambiar textos: todo el contenido está
    en content.js. Aquí solo está el funcionamiento de las pantallas y pruebas.
+
+   La escena es la cabina de la nave vista en primera persona:
+   · #juego (pantalla principal): donde se juega cada prueba.
+   · #holograma y #mensaje (canal de comunicación): Vero, el extraterrestre.
+   · Instrumentos: depósito de combustible, código de despegue y estado.
    ========================================================================== */
 (function () {
   'use strict';
@@ -9,6 +14,8 @@
   const C = window.CONTENIDO;
   const juego = document.getElementById('juego');
   const anuncio = document.getElementById('anuncio');
+  const holograma = document.getElementById('holograma');
+  const mensaje = document.getElementById('mensaje');
 
   if (!C) {
     juego.innerHTML = '<p class="aviso-carga">No se ha podido leer <strong>content.js</strong>. ' +
@@ -45,6 +52,7 @@
 
   let estado = cargar();
   let temporal = temporalInicial();
+  let canal = { expresion: 'neutral', texto: '' }; // lo que dice Vero en la pantalla actual
   let ultimaVista = null;
   let combustibleMostrado = null;
   let infografiaDisponible = null; // null: aún no se sabe si existe assets/infografia.png
@@ -106,106 +114,64 @@
     return String(texto).normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/[^A-Z0-9]/g, '');
   }
 
-  // ---------------------------------------------------------------------------
-  // Dibujos en SVG: el alien (con sus expresiones) y la nave
-  // ---------------------------------------------------------------------------
-  const EXPRESIONES = { neutral: 'tranquilo', contento: 'contento', preocupado: 'preocupado', sorprendido: 'sorprendido' };
-
-  function alienSVG(expresion, grande) {
-    const tinta = '#1b1530';
-    const ojoAbierto = (x, pupila) =>
-      `<ellipse cx="${x}" cy="92" rx="13" ry="15" fill="#fff"/>` +
-      `<circle cx="${x + 2}" cy="${95 + pupila}" r="7" fill="${tinta}"/>` +
-      `<circle cx="${x + 4}" cy="${92 + pupila}" r="2.5" fill="#fff"/>`;
-    const partes = {
-      neutral: {
-        ojos: ojoAbierto(60, 0) + ojoAbierto(100, 0),
-        boca: `<path d="M68 121 Q80 129 92 121" stroke="${tinta}" stroke-width="4" fill="none" stroke-linecap="round"/>`,
-        brazos: 'abajo',
-      },
-      contento: {
-        ojos: `<path d="M48 95 Q60 80 72 95" stroke="${tinta}" stroke-width="5" fill="none" stroke-linecap="round"/>` +
-              `<path d="M88 95 Q100 80 112 95" stroke="${tinta}" stroke-width="5" fill="none" stroke-linecap="round"/>`,
-        boca: `<path d="M62 115 Q80 142 98 115 Z" fill="${tinta}"/><path d="M71 127 Q80 134 89 127 Q80 124 71 127Z" fill="#ff7aa8"/>`,
-        brazos: 'arriba',
-      },
-      preocupado: {
-        ojos: ojoAbierto(60, 3) + ojoAbierto(100, 3) +
-              `<path d="M46 80 L70 71" stroke="${tinta}" stroke-width="4" stroke-linecap="round"/>` +
-              `<path d="M90 71 L114 80" stroke="${tinta}" stroke-width="4" stroke-linecap="round"/>`,
-        boca: `<path d="M66 128 Q73 120 80 126 Q87 132 94 124" stroke="${tinta}" stroke-width="4" fill="none" stroke-linecap="round"/>`,
-        brazos: 'abajo',
-      },
-      sorprendido: {
-        ojos: `<ellipse cx="60" cy="90" rx="15" ry="18" fill="#fff"/><circle cx="60" cy="91" r="5" fill="${tinta}"/>` +
-              `<ellipse cx="100" cy="90" rx="15" ry="18" fill="#fff"/><circle cx="100" cy="91" r="5" fill="${tinta}"/>` +
-              `<path d="M47 66 Q60 58 73 66" stroke="${tinta}" stroke-width="4" fill="none" stroke-linecap="round"/>` +
-              `<path d="M87 66 Q100 58 113 66" stroke="${tinta}" stroke-width="4" fill="none" stroke-linecap="round"/>`,
-        boca: `<ellipse cx="80" cy="127" rx="7" ry="9" fill="${tinta}"/>`,
-        brazos: 'arriba',
-      },
-    };
-    const p = partes[expresion] || partes.neutral;
-    const brazos = p.brazos === 'arriba'
-      ? '<ellipse cx="18" cy="86" rx="10" ry="18" fill="#9d6cf0" transform="rotate(-30 18 86)"/>' +
-        '<ellipse cx="142" cy="86" rx="10" ry="18" fill="#9d6cf0" transform="rotate(30 142 86)"/>'
-      : '<ellipse cx="20" cy="122" rx="10" ry="18" fill="#9d6cf0" transform="rotate(25 20 122)"/>' +
-        '<ellipse cx="140" cy="122" rx="10" ry="18" fill="#9d6cf0" transform="rotate(-25 140 122)"/>';
-    const etiqueta = `${escapar(C.alien.nombre)}, el extraterrestre, está ${EXPRESIONES[expresion] || EXPRESIONES.neutral}`;
-    return `<svg class="alien${grande ? ' grande' : ''}" viewBox="0 0 160 180" role="img" aria-label="${etiqueta}">` +
-      '<g class="alien-cuerpo">' +
-      '<path d="M80 42 C77 30 87 22 84 12" stroke="var(--alien)" stroke-width="5" fill="none" stroke-linecap="round"/>' +
-      '<path d="M84 1 L87.5 8 L95 9 L89.5 14 L91 21.5 L84 17.7 L77 21.5 L78.5 14 L73 9 L80.5 8 Z" fill="#ffcf3f"/>' +
-      brazos +
-      '<ellipse cx="58" cy="168" rx="16" ry="9" fill="#9d6cf0"/><ellipse cx="102" cy="168" rx="16" ry="9" fill="#9d6cf0"/>' +
-      '<path d="M80 38 C130 38 146 80 146 112 C146 150 118 166 80 166 C42 166 14 150 14 112 C14 80 30 38 80 38Z" fill="var(--alien)"/>' +
-      '<ellipse cx="80" cy="140" rx="36" ry="20" fill="#d9c4ff"/>' +
-      '<circle cx="40" cy="74" r="5" fill="#9d6cf0"/><circle cx="121" cy="66" r="4" fill="#9d6cf0"/><circle cx="130" cy="86" r="3" fill="#9d6cf0"/>' +
-      '<ellipse cx="42" cy="112" rx="8" ry="5" fill="#ff9ec4" opacity=".85"/><ellipse cx="118" cy="112" rx="8" ry="5" fill="#ff9ec4" opacity=".85"/>' +
-      p.ojos + p.boca +
-      '</g></svg>';
+  function dosCifras(n) {
+    return String(n).padStart(2, '0');
   }
 
-  function naveSVG(modo) {
-    const averiada = modo === 'averiada';
-    const despegando = modo === 'despegando';
-    const luz = (x, encendida) => `<circle cx="${x}" cy="130" r="6" fill="${encendida ? '#ffcf3f' : '#6d7393'}"/>`;
-    const etiqueta = averiada ? 'La nave averiada, echando humo' : despegando ? 'La nave despegando' : 'La nave';
-    return `<svg class="nave" viewBox="0 0 220 220" role="img" aria-label="${etiqueta}">` +
-      (despegando ? '<g class="llama"><path d="M84 150 Q110 225 136 150Z" fill="#ffcf3f"/><path d="M95 150 Q110 200 125 150Z" fill="#ff7a59"/></g>' : '') +
-      (averiada ? '<g class="humo"><circle cx="160" cy="100" r="10" fill="#9aa0bf"/><circle cx="168" cy="96" r="12" fill="#b4b9d4"/><circle cx="156" cy="92" r="9" fill="#9aa0bf"/></g>' : '') +
-      (despegando ? '' : '<path d="M62 140 L44 186 M158 140 L176 186" stroke="#8a93c9" stroke-width="7" stroke-linecap="round"/>') +
-      '<path d="M66 116 C66 58 154 58 154 116Z" fill="#9fe3ff" opacity=".9"/>' +
-      // Pequeño piloto dentro de la cúpula
-      '<circle cx="110" cy="100" r="17" fill="var(--alien)"/><circle cx="104" cy="98" r="4" fill="#1b1530"/><circle cx="116" cy="98" r="4" fill="#1b1530"/>' +
-      '<path d="M66 116 C66 58 154 58 154 116Z" fill="none" stroke="#fff" stroke-width="3" opacity=".6"/>' +
-      '<ellipse cx="110" cy="134" rx="98" ry="27" fill="#aab1d6"/><ellipse cx="110" cy="124" rx="98" ry="22" fill="#e6e9f8"/>' +
-      luz(40, !averiada) + luz(75, true) + luz(110, !averiada) + luz(145, true) + luz(180, !averiada) +
-      (averiada ? '<path d="M150 110 l9 7 -7 5 9 7" stroke="#4b4f6b" stroke-width="3" fill="none" stroke-linecap="round"/>' : '') +
+  // ---------------------------------------------------------------------------
+  // Vero en el canal de comunicación: un holograma de líneas con cuatro
+  // expresiones (neutral, contento, preocupado, sorprendido).
+  // ---------------------------------------------------------------------------
+  const EXPRESIONES = { neutral: 'atento', contento: 'satisfecho', preocupado: 'preocupado', sorprendido: 'sorprendido' };
+
+  function hologramaSVG(expresion) {
+    const trazo = 'stroke="var(--holo)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+    const lleno = 'fill="var(--holo)"';
+    const ojoAlmendra = (x) => `<path d="M${x - 12} 58 Q${x} 47 ${x + 12} 58 Q${x} 66 ${x - 12} 58Z" ${lleno} opacity=".85"/>` +
+      `<circle cx="${x + 1}" cy="58" r="3" fill="#08111f"/>`;
+    const partes = {
+      neutral: ojoAlmendra(42) + ojoAlmendra(78) + `<path d="M51 89 L69 89" ${trazo}/>`,
+      contento: `<path d="M30 61 Q42 49 54 61" ${trazo}/><path d="M66 61 Q78 49 90 61" ${trazo}/>` +
+        `<path d="M47 85 Q60 96 73 85" ${trazo}/>`,
+      preocupado: ojoAlmendra(42) + ojoAlmendra(78) +
+        `<path d="M30 46 L52 40" ${trazo}/><path d="M68 40 L90 46" ${trazo}/>` +
+        `<path d="M48 92 Q60 84 72 92" ${trazo}/>`,
+      sorprendido: `<circle cx="42" cy="57" r="9" ${lleno} opacity=".85"/><circle cx="78" cy="57" r="9" ${lleno} opacity=".85"/>` +
+        `<circle cx="42" cy="57" r="2.5" fill="#08111f"/><circle cx="78" cy="57" r="2.5" fill="#08111f"/>` +
+        `<path d="M30 40 Q42 34 54 40" ${trazo}/><path d="M66 40 Q78 34 90 40" ${trazo}/>` +
+        `<ellipse cx="60" cy="90" rx="5" ry="7" ${trazo}/>`,
+    };
+    const etiqueta = `${escapar(C.alien.nombre)}, en el canal de comunicación, parece ${EXPRESIONES[expresion] || EXPRESIONES.neutral}`;
+    return `<svg viewBox="0 0 120 142" role="img" aria-label="${etiqueta}">` +
+      `<path d="M60 9 L60 1 M45 13 L40 5 M75 13 L80 5" ${trazo}/>` +
+      `<path d="M60 9 C88 9 104 31 104 57 C104 84 85 103 60 112 C35 103 16 84 16 57 C16 31 32 9 60 9Z" ${trazo} fill="rgba(79,216,255,.1)"/>` +
+      `<path d="M48 110 L48 120 M72 110 L72 120" ${trazo}/>` +
+      `<path d="M12 141 C16 126 34 120 60 120 C86 120 104 126 108 141" ${trazo}/>` +
+      (partes[expresion] || partes.neutral) +
       '</svg>';
   }
 
-  function svg(html) {
-    const caja = el('span', { style: 'display:contents' });
-    caja.innerHTML = html;
-    return caja;
+  // Cada pantalla dice qué cuenta Vero. Si hay una reacción pendiente
+  // (acierto, fallo, pista), se muestra esa en su lugar.
+  function comunicar(expresion, texto) {
+    canal = { expresion, texto };
   }
 
-  // El alien con su bocadillo. Si hay una reacción pendiente (acierto, fallo,
-  // pista), se muestra esa; si no, el texto por defecto de la pantalla.
-  function escena(expresion, texto) {
-    const r = temporal.reaccion;
-    return el('div', { class: 'escena' },
-      svg(alienSVG(r ? r.expresion : expresion)),
-      el('p', { class: 'bocadillo' }, r ? r.texto : texto)
-    );
+  let canalPintado = null;
+  function pintarCanal() {
+    const r = temporal.reaccion || canal;
+    const clave = r.expresion + '|' + r.texto;
+    if (clave === canalPintado) return; // no repetir el aviso al lector de pantalla
+    canalPintado = clave;
+    holograma.innerHTML = hologramaSVG(r.expresion);
+    mensaje.replaceChildren(el('span', { class: 'mensaje-autor' }, C.alien.nombre), r.texto);
   }
 
   // ---------------------------------------------------------------------------
   // Piezas comunes
   // ---------------------------------------------------------------------------
 
-  // Tarjeta que imita un tuit, un WhatsApp, un SMS o un titular de prensa.
+  // Mensaje interceptado: imita un tuit, un WhatsApp, un SMS o un titular de prensa.
   function tarjeta(t) {
     const tipo = t.tipo || 'titular';
     let partes;
@@ -232,8 +198,12 @@
     return el('span', { class: `tarjeta tarjeta-${tipo}` }, el('span', { class: 'solo-lector' }, nombreTipo + '. '), partes);
   }
 
-  function contador(texto) {
-    return el('p', { class: 'contador-ronda' }, texto);
+  // Rótulo superior de la pantalla principal: «MÓDULO 01 · …» y la ronda.
+  function cabecera(izquierda, derecha) {
+    return el('div', { class: 'modulo' },
+      el('p', { class: 'rotulo' }, izquierda),
+      derecha ? el('p', { class: 'rotulo' }, derecha) : null
+    );
   }
 
   function titulo(texto) {
@@ -251,16 +221,16 @@
           estado.pistas++;
           guardar();
           pintar();
-          enfocar('[data-foco="pista-texto"]') || anunciar('Pista: ' + texto);
+          enfocar('[data-foco="pista-texto"]');
         },
-      }, '💡 Pedir una pista'),
+      }, 'Solicitar pista'),
     ];
   }
 
   // Bloque de explicación tras responder: siempre explica, se acierte o no.
   function bloqueRespuesta(acierto, explicacion, textoSiguiente, alSiguiente) {
-    return el('div', { class: 'respuesta ' + (acierto ? 'acierto' : 'fallo'), tabindex: '-1', 'data-respuesta': '' },
-      el('p', { class: 'respuesta-titulo' }, acierto ? '✓ ¡Correcto!' : '✕ No es correcto'),
+    return el('div', { class: 'respuesta ' + (acierto ? 'acierto' : 'fallo'), tabindex: '-1' },
+      el('p', { class: 'respuesta-titulo' }, acierto ? '✓ Correcto' : '✕ Incorrecto'),
       el('p', {}, explicacion),
       el('div', { class: 'acciones' },
         acierto
@@ -278,7 +248,6 @@
     if (!acierto) estado.fallos++;
     guardar();
     pintar();
-    anunciar(acierto ? 'Correcto.' : 'No es correcto.');
     enfocar('[data-foco="seguir"], [data-foco="reintentar"]');
   }
 
@@ -309,7 +278,7 @@
     temporal = temporalInicial();
     guardar();
     pintar();
-    anunciar(`Prueba superada. Depósito al ${estado.superadas.length * 25} por ciento.`);
+    anunciar(`Módulo superado. Depósito al ${estado.superadas.length * 25} por ciento.`);
   }
 
   function ir(pantalla) {
@@ -322,19 +291,28 @@
   }
 
   function textoSiguiente(paso, total) {
-    return paso + 1 < total ? 'Siguiente →' : 'Completar la prueba →';
+    return paso + 1 < total ? 'Siguiente →' : 'Completar módulo →';
+  }
+
+  function moduloDe(indice) {
+    return `Módulo ${dosCifras(indice + 1)}`;
   }
 
   // ---------------------------------------------------------------------------
   // Pantallas
   // ---------------------------------------------------------------------------
+
+  // Arranque: diagnóstico de la nave averiada.
   function pantallaPortada() {
     const p = C.portada;
-    return el('section', { class: 'pantalla portada' },
-      el('p', { class: 'antetitulo' }, p.antetitulo),
+    comunicar('preocupado', C.alien.saludo);
+    return el('section', { class: 'pantalla arranque' },
+      cabecera('Diagnóstico del sistema', p.antetitulo),
       el('h1', { tabindex: '-1', 'data-enfocar': '' }, p.titulo),
       el('p', { class: 'subtitulo' }, p.subtitulo),
-      el('div', { class: 'portada-escena' }, svg(alienSVG('preocupado', true)), svg(naveSVG('averiada'))),
+      el('ul', { class: 'diagnostico', 'aria-label': 'Diagnóstico de la nave' },
+        p.diagnostico.map((d) => el('li', {}, el('span', {}, d.sistema), el('span', { class: d.correcto ? 'bien' : 'mal' }, d.estado)))
+      ),
       el('div', { class: 'acciones' },
         el('button', {
           type: 'button', class: 'boton', 'data-foco': 'empezar',
@@ -350,21 +328,22 @@
     );
   }
 
+  // Introducción: la transmisión de Vero, línea a línea.
   function pantallaIntro() {
-    const dialogos = C.introduccion.dialogos;
-    const visibles = Math.min(estado.paso + 1, dialogos.length);
-    const ultimo = visibles === dialogos.length;
+    const intro = C.introduccion;
+    const visibles = Math.min(estado.paso + 1, intro.dialogos.length);
+    const ultimo = visibles === intro.dialogos.length;
+    comunicar(ultimo ? 'neutral' : 'preocupado', intro.estadoCanal);
     return el('section', { class: 'pantalla' },
-      titulo(`${C.alien.nombre} necesita tu ayuda`),
-      el('div', { class: 'dialogos' },
-        dialogos.slice(0, visibles).map((texto, i) => el('div', { class: 'escena' },
-          svg(alienSVG(i === 0 ? 'sorprendido' : i === dialogos.length - 1 ? 'contento' : 'preocupado')),
-          el('p', { class: 'bocadillo', 'data-foco': `dialogo-${i}`, tabindex: '-1' }, texto)
-        ))
+      cabecera('Transmisión entrante', `${visibles} / ${intro.dialogos.length}`),
+      titulo(intro.titulo),
+      el('ol', { class: 'registro' },
+        intro.dialogos.slice(0, visibles).map((texto, i) => el('li', { tabindex: '-1', 'data-foco': `dialogo-${i}` },
+          el('span', { class: 'hora' }, `${C.alien.nombre} · T+00:${dosCifras(i * 7)}`), texto))
       ),
       el('div', { class: 'acciones' },
         ultimo
-          ? el('button', { type: 'button', class: 'boton', 'data-foco': 'ayudar', onclick: () => ir('p1') }, C.introduccion.boton)
+          ? el('button', { type: 'button', class: 'boton', 'data-foco': 'ayudar', onclick: () => ir('p1') }, intro.boton)
           : el('button', {
             type: 'button', class: 'boton', 'data-foco': 'continuar',
             onclick: () => { estado.paso++; guardar(); pintar(); enfocar('[data-foco="continuar"], [data-foco="ayudar"]'); },
@@ -373,26 +352,30 @@
     );
   }
 
-  // Prueba 1: dos tarjetas, una verdadera.
+  // Prueba 1: dos mensajes, uno verdadero.
   function pantallaCualEsVerdad() {
     const prueba = C.pruebas.cualEsVerdad;
     const ronda = prueba.rondas[estado.paso];
     const r = temporal.respuesta;
+    comunicar('neutral', prueba.mensaje);
     return el('section', { class: 'pantalla' },
-      contador(`Ronda ${estado.paso + 1} de ${prueba.rondas.length}${ronda.tema ? ' · ' + ronda.tema : ''}`),
+      cabecera(`${moduloDe(0)} · ${ronda.tema || ''}`, `Ronda ${estado.paso + 1} / ${prueba.rondas.length}`),
       titulo(prueba.titulo),
-      escena('neutral', prueba.instrucciones),
+      el('p', { class: 'instrucciones' }, prueba.instrucciones),
       el('div', { class: 'parejas-tarjetas' },
         ronda.tarjetas.map((t, i) => {
           const elegida = r && r.indice === i;
-          return el('button', {
-            type: 'button', class: 'tarjeta-boton' + (elegida ? (r.acierto ? ' acierto' : ' fallo') : ''),
-            disabled: !!r, 'data-foco': `tarjeta-${i}`,
-            'aria-label': `Opción ${i + 1}: ${t.texto}`,
-            onclick: () => responder(!!t.verdadera, { indice: i }),
-          },
-          tarjeta(t),
-          elegida ? el('span', { class: 'sello ' + (t.verdadera ? 'sello-verdad' : 'sello-bulo') }, t.verdadera ? '✓ Verdad' : '✕ Bulo') : null
+          return el('div', {},
+            el('p', { class: 'interceptado', 'aria-hidden': 'true' }, `Señal ${String.fromCharCode(65 + i)}`),
+            el('button', {
+              type: 'button', class: 'tarjeta-boton' + (elegida ? (r.acierto ? ' acierto' : ' fallo') : ''),
+              disabled: !!r, 'data-foco': `tarjeta-${i}`,
+              'aria-label': `Señal ${String.fromCharCode(65 + i)}: ${t.texto}`,
+              onclick: () => responder(!!t.verdadera, { indice: i }),
+            },
+            tarjeta(t),
+            elegida ? el('span', { class: 'sello ' + (t.verdadera ? 'sello-verdad' : 'sello-bulo') }, t.verdadera ? '✓ Verdad' : '✕ Bulo') : null
+            )
           );
         })
       ),
@@ -406,6 +389,7 @@
     const prueba = C.pruebas.verdadOBulo;
     const ronda = prueba.rondas[estado.paso];
     const r = temporal.respuesta;
+    comunicar('neutral', prueba.mensaje);
     const boton = (esVerdad) => el('button', {
       type: 'button',
       class: `boton boton-veredicto ${esVerdad ? 'boton-verdad' : 'boton-bulo'}` + (r && r.dijoVerdad === esVerdad ? ' elegido' : ''),
@@ -414,10 +398,10 @@
     }, esVerdad ? '✓ ' + prueba.botonVerdad : '✕ ' + prueba.botonBulo);
 
     return el('section', { class: 'pantalla' },
-      contador(`Ronda ${estado.paso + 1} de ${prueba.rondas.length}${ronda.tema ? ' · ' + ronda.tema : ''}`),
+      cabecera(`${moduloDe(1)} · ${ronda.tema || ''}`, `Ronda ${estado.paso + 1} / ${prueba.rondas.length}`),
       titulo(prueba.titulo),
-      escena('neutral', prueba.instrucciones),
-      tarjeta(ronda),
+      el('p', { class: 'instrucciones' }, prueba.instrucciones),
+      el('div', {}, el('p', { class: 'interceptado' }, 'Señal interceptada'), tarjeta(ronda)),
       r ? el('p', {}, el('span', { class: 'sello ' + (ronda.esVerdad ? 'sello-verdad' : 'sello-bulo') },
         ronda.esVerdad ? '✓ Es verdad' : '✕ Es un bulo')) : null,
       el('div', { class: 'botones-veredicto' }, boton(true), boton(false)),
@@ -429,6 +413,7 @@
   // Prueba 3: emparejar noticias con técnicas de desinformación.
   function pantallaEmparejar() {
     const prueba = C.pruebas.emparejar;
+    comunicar('neutral', prueba.mensaje);
     if (!estado.ordenNoticias || estado.ordenNoticias.length !== prueba.noticias.length) {
       estado.ordenNoticias = barajar(prueba.noticias.length);
       guardar();
@@ -440,6 +425,39 @@
       return clave === undefined ? null : Number(clave);
     };
     const completas = prueba.noticias.every((_, i) => estado.parejas[i] !== undefined);
+
+    function asignar(indice, idTecnica) {
+      const ocupada = noticiaEn(idTecnica);
+      if (ocupada !== null && estado.correctas.includes(ocupada)) return;
+      if (ocupada !== null) delete estado.parejas[ocupada];
+      estado.parejas[indice] = idTecnica;
+      temporal.seleccion = null;
+      temporal.aviso = null;
+      temporal.fallidas = temporal.fallidas.filter((f) => f !== indice);
+      guardar();
+      pintar();
+      anunciar(`Noticia ${numero(indice)} emparejada con «${nombreTecnica(idTecnica)}».`);
+    }
+
+    function comprobar() {
+      const fallidas = [];
+      prueba.noticias.forEach((n, i) => {
+        if (estado.correctas.includes(i)) return;
+        if (estado.parejas[i] === n.tecnica) estado.correctas.push(i);
+        else { delete estado.parejas[i]; fallidas.push(i); }
+      });
+      if (fallidas.length === 0) {
+        superarPrueba(2);
+        return;
+      }
+      estado.fallos++;
+      temporal.fallidas = fallidas;
+      temporal.reaccion = { expresion: 'preocupado', texto: azar(C.alien.alFallar) };
+      temporal.aviso = `${estado.correctas.length} de ${prueba.noticias.length} correctas. Las que no encajaban se han soltado (marcadas con ✕): vuelve a emparejarlas.`;
+      guardar();
+      pintar();
+      anunciar(temporal.aviso);
+    }
 
     const noticias = estado.ordenNoticias.map((i) => {
       const n = prueba.noticias[i];
@@ -471,7 +489,7 @@
           },
           ondragstart: (evento) => { evento.dataTransfer.setData('text/plain', String(i)); evento.dataTransfer.effectAllowed = 'move'; },
         },
-        el('span', { class: 'item-num', 'aria-hidden': 'true' }, numero(i)),
+        el('span', { class: 'item-num', 'aria-hidden': 'true' }, dosCifras(numero(i))),
         el('span', {}, el('span', { class: 'solo-lector' }, `Noticia ${numero(i)}: `), n.texto),
         el('span', { class: 'item-estado' }, situacion),
         correcta ? el('span', { class: 'item-explicacion' }, n.explicacion) : null
@@ -489,7 +507,7 @@
           disabled: bloqueada, 'data-foco': `tecnica-${t.id}`,
           onclick: () => {
             if (temporal.seleccion === null) {
-              temporal.aviso = 'Primero toca una noticia y después su técnica.';
+              temporal.aviso = 'Primero elige una noticia y después su técnica.';
               pintar();
               anunciar(temporal.aviso);
               return;
@@ -506,50 +524,18 @@
           },
         },
         el('span', {}, t.nombre),
-        el('span', { class: 'item-estado' }, indice === null ? 'Libre' : `${bloqueada ? '✓ ' : ''}Noticia ${numero(indice)}`)
+        el('span', { class: 'item-estado' }, indice === null ? 'Libre' : `${bloqueada ? '✓ ' : ''}Noticia ${dosCifras(numero(indice))}`)
         )
       );
     });
 
-    function asignar(indice, idTecnica) {
-      const ocupada = noticiaEn(idTecnica);
-      if (ocupada !== null && estado.correctas.includes(ocupada)) return;
-      if (ocupada !== null) delete estado.parejas[ocupada];
-      estado.parejas[indice] = idTecnica;
-      temporal.seleccion = null;
-      temporal.aviso = null;
-      temporal.fallidas = temporal.fallidas.filter((f) => f !== indice);
-      guardar();
-      pintar();
-      anunciar(`Noticia ${numero(indice)} emparejada con «${nombreTecnica(idTecnica)}».`);
-    }
-
-    function comprobar() {
-      const fallidas = [];
-      prueba.noticias.forEach((n, i) => {
-        if (estado.correctas.includes(i)) return;
-        if (estado.parejas[i] === n.tecnica) estado.correctas.push(i);
-        else { delete estado.parejas[i]; fallidas.push(i); }
-      });
-      if (fallidas.length === 0) {
-        superarPrueba(2);
-        return;
-      }
-      estado.fallos++;
-      temporal.fallidas = fallidas;
-      temporal.reaccion = { expresion: 'preocupado', texto: azar(C.alien.alFallar) };
-      temporal.aviso = `Tienes ${estado.correctas.length} de ${prueba.noticias.length} bien. Las que no encajaban se han soltado (marcadas con ✕): vuelve a emparejarlas.`;
-      guardar();
-      pintar();
-      anunciar(temporal.aviso);
-    }
-
     return el('section', { class: 'pantalla' },
+      cabecera(`${moduloDe(2)} · Análisis de técnicas`, `${estado.correctas.length} / ${prueba.noticias.length} verificadas`),
       titulo(prueba.titulo),
-      escena('neutral', prueba.instrucciones),
+      el('p', { class: 'instrucciones' }, prueba.instrucciones),
       el('div', { class: 'emparejar' },
-        el('div', { class: 'columna' }, el('h3', {}, 'Noticias'), el('ul', { class: 'lista-emparejar' }, noticias)),
-        el('div', { class: 'columna columna-tecnicas' }, el('h3', {}, 'Técnicas de desinformación'), el('ul', { class: 'lista-emparejar' }, tecnicas))
+        el('div', { class: 'columna' }, el('h3', { class: 'rotulo' }, 'Noticias interceptadas'), el('ul', { class: 'lista-emparejar' }, noticias)),
+        el('div', { class: 'columna columna-tecnicas' }, el('h3', { class: 'rotulo' }, 'Técnicas de desinformación'), el('ul', { class: 'lista-emparejar' }, tecnicas))
       ),
       temporal.aviso ? el('p', { class: 'pista-caja', role: 'status' }, temporal.aviso) : null,
       el('div', { class: 'acciones' },
@@ -584,9 +570,11 @@
   function pantallaInfografia() {
     const prueba = C.pruebas.infografia;
     if (!estado.test) {
+      comunicar('neutral', prueba.mensaje);
       return el('section', { class: 'pantalla' },
+        cabecera(`${moduloDe(3)} · Protocolo de verificación`, 'Lectura'),
         titulo(prueba.titulo),
-        escena('neutral', prueba.instrucciones),
+        el('p', { class: 'instrucciones' }, prueba.instrucciones),
         infografia(prueba),
         el('div', { class: 'acciones' },
           el('button', {
@@ -598,10 +586,10 @@
     }
     const pregunta = prueba.preguntas[estado.paso];
     const r = temporal.respuesta;
+    comunicar('neutral', prueba.mensajeTest);
     return el('section', { class: 'pantalla' },
-      contador(`Pregunta ${estado.paso + 1} de ${prueba.preguntas.length}`),
+      cabecera(`${moduloDe(3)} · Protocolo de verificación`, `Pregunta ${estado.paso + 1} / ${prueba.preguntas.length}`),
       titulo(prueba.titulo),
-      escena('neutral', 'Si lo necesitas, puedes volver a mirar la infografía.'),
       el('details', { class: 'ver-infografia' }, el('summary', {}, 'Ver la infografía'), infografia(prueba)),
       el('p', { class: 'pregunta', id: 'pregunta-actual' }, pregunta.texto),
       el('ul', { class: 'opciones', 'aria-labelledby': 'pregunta-actual' },
@@ -626,30 +614,33 @@
   function pantallaLogro() {
     const indice = estado.logro;
     const ultima = indice === PRUEBAS.length - 1;
+    comunicar('contento', C.alien.alSuperarPrueba);
     return el('section', { class: 'pantalla logro' },
-      titulo(`¡Depósito al ${estado.superadas.length * 25} %!`),
-      el('div', { class: 'escena' }, svg(alienSVG('contento', true)), el('p', { class: 'bocadillo' }, C.alien.alSuperarPrueba)),
-      el('p', {}, 'Fragmento del código de despegue:'),
+      cabecera(`${moduloDe(indice)} · Completado`, `Depósito ${estado.superadas.length * 25} %`),
+      titulo(`Combustible al ${estado.superadas.length * 25} %`),
+      el('p', { class: 'instrucciones' }, 'Fragmento del código de despegue recuperado:'),
       el('p', {}, el('span', { class: 'fragmento conseguido' }, PRUEBAS[indice].datos.fragmento)),
       el('div', { class: 'acciones' },
         el('button', {
           type: 'button', class: 'boton', 'data-foco': 'siguiente-prueba',
           onclick: () => ir(ultima ? 'despegue' : PRUEBAS[indice + 1].pantalla),
-        }, ultima ? 'Ir al código de despegue →' : 'Siguiente prueba →')
+        }, ultima ? 'Ir al código de despegue →' : `${moduloDe(indice + 1)} →`)
       )
     );
   }
 
   function pantallaDespegue() {
     const d = C.despegue;
+    comunicar('contento', d.mensaje);
     const entrada = el('input', {
       id: 'codigo', type: 'text', autocomplete: 'off', autocapitalize: 'characters', spellcheck: 'false',
       'aria-describedby': temporal.errorCodigo ? 'codigo-error' : null,
     });
     return el('section', { class: 'pantalla' },
+      cabecera('Secuencia de despegue', 'Depósito 100 %'),
       titulo(d.titulo),
-      escena('contento', d.texto),
-      el('p', {}, 'Tus fragmentos, en orden: ',
+      el('p', { class: 'instrucciones' }, d.texto),
+      el('p', {}, 'Fragmentos, en orden: ',
         PRUEBAS.map((p, i) => [i ? ' + ' : '', el('span', { class: 'fragmento conseguido' }, p.datos.fragmento)])),
       el('form', {
         class: 'campo-codigo',
@@ -672,25 +663,29 @@
       },
       el('label', { for: 'codigo' }, 'Código completo'),
       entrada,
-      el('button', { type: 'submit', class: 'boton' }, '🚀 ' + d.boton)
+      el('button', { type: 'submit', class: 'boton' }, d.boton)
       ),
       temporal.errorCodigo ? el('p', { class: 'error', id: 'codigo-error' }, '✕ ' + d.error) : null
     );
   }
 
+  // Final: el despegue se ve por el parabrisas (la Tierra se aleja y las
+  // estrellas se estiran) y después aparece el resumen en la pantalla.
   function pantallaFinal() {
     const f = C.final;
+    comunicar('contento', f.mensajeVero);
     const minutos = estado.inicio && estado.fin ? Math.max(1, Math.round((estado.fin - estado.inicio) / 60000)) : null;
     return el('section', { class: 'pantalla' },
-      el('div', { class: 'despegue', 'aria-hidden': 'true' }, svg(naveSVG('despegando'))),
+      cabecera('Despegue', 'En vuelo'),
+      el('p', { class: 'cuenta-atras', 'aria-hidden': 'true' }, '3 · 2 · 1 · Ignición'),
       el('div', { class: 'final-contenido' },
         titulo(f.titulo),
         el('p', { class: 'instrucciones' }, f.mensaje),
         el('ul', { class: 'lista-aprendido' }, f.aprendido.map((t) => el('li', {}, t))),
         el('dl', { class: 'estadisticas' },
           el('div', {}, el('dt', {}, 'Tiempo'), el('dd', {}, minutos ? `${minutos} min` : '—')),
-          el('div', {}, el('dt', {}, 'Intentos fallidos'), el('dd', {}, estado.fallos)),
-          el('div', {}, el('dt', {}, 'Pistas usadas'), el('dd', {}, estado.pistas))
+          el('div', {}, el('dt', {}, 'Errores'), el('dd', {}, estado.fallos)),
+          el('div', {}, el('dt', {}, 'Pistas'), el('dd', {}, estado.pistas))
         ),
         el('p', { class: 'aviso-simulado' }, f.aviso),
         el('h3', {}, 'Si dudas de una información, consulta a los verificadores'),
@@ -706,12 +701,12 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Cabecera: depósito, código y temporizador
+  // Instrumentos: depósito, código, estado y temporizador
   // ---------------------------------------------------------------------------
-  function actualizarCabecera() {
+  function actualizarInstrumentos() {
     const porcentaje = estado.superadas.length * 25;
     const deposito = document.getElementById('deposito');
-    document.getElementById('deposito-relleno').style.width = porcentaje + '%';
+    deposito.style.setProperty('--nivel', porcentaje + '%');
     document.getElementById('deposito-porcentaje').textContent = porcentaje + ' %';
     deposito.setAttribute('aria-valuenow', porcentaje);
     deposito.setAttribute('aria-valuetext', `${porcentaje} % del depósito lleno`);
@@ -726,9 +721,20 @@
       const conseguido = estado.superadas.includes(i);
       return el('span', {
         class: 'fragmento' + (conseguido ? ' conseguido' : ''),
-        'aria-label': conseguido ? `Fragmento ${i + 1}: ${p.datos.fragmento}` : `Fragmento ${i + 1}: sin conseguir`,
+        'aria-label': conseguido ? `Fragmento ${i + 1}: ${p.datos.fragmento}` : `Fragmento ${i + 1}: sin recuperar`,
       }, conseguido ? p.datos.fragmento : '•'.repeat(p.datos.fragmento.length));
     }));
+
+    // Estado de la nave: piloto rojo, ámbar o verde y su texto.
+    const enVuelo = estado.pantalla === 'final';
+    const situacion = enVuelo ? ['listo', 'En vuelo']
+      : porcentaje === 100 ? ['listo', 'Listo para despegar']
+        : porcentaje > 0 ? ['estable', 'Estable']
+          : ['critico', 'Crítico'];
+    document.body.dataset.estado = situacion[0];
+    document.getElementById('estado-nave').textContent = situacion[1];
+    document.body.classList.toggle('despegando', enVuelo);
+
     actualizarTemporizador();
   }
 
@@ -742,7 +748,7 @@
     const restante = Math.max(0, estado.finTiempo - (estado.fin || Date.now()));
     const min = Math.floor(restante / 60000);
     const seg = Math.floor((restante % 60000) / 1000);
-    caja.textContent = restante > 0 ? `⏱ ${min}:${String(seg).padStart(2, '0')}` : '⏱ ¡Tiempo!';
+    caja.textContent = restante > 0 ? `T-${min}:${dosCifras(seg)}` : 'Tiempo agotado';
     if (restante === 0 && !avisoTiempoDado && !estado.fin) {
       avisoTiempoDado = true;
       anunciar('Se ha acabado el tiempo. Puedes seguir jugando hasta despegar.');
@@ -776,16 +782,17 @@
         '(¿falta algún campo en la prueba actual?). Pulsa «Reiniciar» o revisa el último cambio.</p>';
       console.error(error);
     }
-    actualizarCabecera();
+    pintarCanal();
+    actualizarInstrumentos();
 
     const vista = `${estado.pantalla}:${estado.paso}:${estado.test}`;
     if (vista !== ultimaVista) {
       const primeraVez = ultimaVista === null;
       ultimaVista = vista;
       if (!primeraVez) {
-        const cabecera = juego.querySelector('[data-enfocar]');
-        if (cabecera) cabecera.focus({ preventScroll: true });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const cabeceraPantalla = juego.querySelector('[data-enfocar]');
+        if (cabeceraPantalla) cabeceraPantalla.focus({ preventScroll: true });
+        juego.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     } else if (conFoco) {
       const copia = juego.querySelector(`[data-foco="${conFoco}"]`);
@@ -800,10 +807,11 @@
     avisoTiempoDado = false;
     guardar();
     pintar();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // ---------------------------------------------------------------------------
-  // Botones de la cabecera y arranque
+  // Mandos de la cabina y arranque
   // ---------------------------------------------------------------------------
   const botonTexto = document.getElementById('boton-texto');
   function aplicarTextoGrande(activo) {
