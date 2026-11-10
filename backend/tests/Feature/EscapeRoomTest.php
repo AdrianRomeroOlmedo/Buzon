@@ -6,35 +6,25 @@ use Tests\TestCase;
 
 class EscapeRoomTest extends TestCase
 {
-    public function test_page_loads_the_game_and_its_config(): void
+    public function test_route_redirects_to_the_static_game(): void
     {
-        $response = $this->get(route('escape-room'));
-
-        $response->assertOk();
-        $response->assertSee('id="escape-room"', false);
-        $response->assertSee('juegos/escape-room/config.json');
-        $response->assertSee('juegos/escape-room/escape-room.js');
+        $this->get(route('escape-room'))->assertRedirect('/juegos/escape-room/index.html');
     }
 
-    public function test_config_has_every_field_the_game_needs(): void
+    public function test_static_game_loads_its_content_and_logic(): void
     {
-        $config = json_decode(file_get_contents(public_path('juegos/escape-room/config.json')), true, flags: JSON_THROW_ON_ERROR);
+        $carpeta = public_path('juegos/escape-room');
+        $indice = file_get_contents("{$carpeta}/index.html");
 
-        $this->assertNotEmpty($config['fases']);
-        $this->assertNotEmpty($config['final']['decalogo']);
-        $this->assertNotEmpty($config['final']['competencias']);
-
-        foreach ($config['fases'] as $fase) {
-            $this->assertCount(3, $fase['noticias'], "{$fase['id']} debe tener tres noticias");
-
-            $reales = array_filter($fase['noticias'], fn (array $noticia): bool => $noticia['real']);
-            $this->assertCount(1, $reales, "{$fase['id']} debe tener exactamente una noticia real");
-
-            foreach ($fase['noticias'] as $noticia) {
-                $this->assertNotEmpty($noticia['titular'], "{$fase['id']}: falta un titular");
-                $this->assertNotEmpty($noticia['narrativa'], "{$fase['id']}: falta la narrativa de «{$noticia['titular']}»");
-                $this->assertNotEmpty($noticia['explicacion'], "{$fase['id']}: falta la explicación de «{$noticia['titular']}»");
-            }
+        foreach (['content.js', 'app.js', 'styles.css'] as $archivo) {
+            $this->assertFileExists("{$carpeta}/{$archivo}");
+            $this->assertStringContainsString("\"{$archivo}\"", $indice, "index.html no carga {$archivo}");
         }
+
+        $this->assertLessThan(
+            strpos($indice, '"app.js"'),
+            strpos($indice, '"content.js"'),
+            'content.js tiene que cargarse antes que app.js'
+        );
     }
 }

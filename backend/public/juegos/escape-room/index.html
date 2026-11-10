@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Misión Combustible de Verdad · Cátedra Ceuta-IATEB</title>
+  <meta name="description" content="Escape room educativo de la Cátedra Ceuta-IATEB para aprender a distinguir las noticias verdaderas de los bulos.">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <!-- Única dependencia externa: la tipografía. Si no carga, se usa la del sistema. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="saltar" href="#juego">Saltar al juego</a>
+
+  <header class="hud">
+    <div class="hud-dentro">
+      <p class="hud-marca">Misión Combustible de Verdad</p>
+
+      <div class="hud-deposito">
+        <span class="hud-etiqueta" id="deposito-etiqueta">Combustible de verdad</span>
+        <div class="deposito" id="deposito" role="progressbar" aria-labelledby="deposito-etiqueta" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="deposito-relleno" id="deposito-relleno"></div>
+        </div>
+        <span class="hud-porcentaje" id="deposito-porcentaje">0 %</span>
+      </div>
+
+      <p class="hud-codigo">
+        <span class="hud-etiqueta">Código</span>
+        <span id="codigo-fragmentos" class="codigo-fragmentos"></span>
+      </p>
+
+      <p class="hud-tiempo" id="temporizador" hidden></p>
+
+      <div class="hud-botones">
+        <button type="button" class="boton-hud" id="boton-texto" aria-pressed="false" title="Texto más grande, para proyectar">A+</button>
+        <button type="button" class="boton-hud" id="boton-reiniciar">Reiniciar</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="juego" class="juego" tabindex="-1">
+    <noscript><p class="aviso-carga">Para jugar necesitas activar JavaScript en tu navegador.</p></noscript>
+  </main>
+
+  <!-- Avisos para lectores de pantalla -->
+  <div id="anuncio" class="solo-lector" aria-live="polite"></div>
+
+  <footer class="pie">
+    <p>Cátedra Ceuta-IATEB · Universidad de Granada y Ciudad Autónoma de Ceuta</p>
+  </footer>
+
+  <script src="content.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
