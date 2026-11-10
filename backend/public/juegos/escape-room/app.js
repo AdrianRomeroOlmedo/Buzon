@@ -5,7 +5,8 @@
 
    La escena es la cabina de la nave vista en primera persona:
    · #juego (pantalla principal): donde se juega cada prueba.
-   · #holograma y #mensaje (canal de comunicación): Vero, el extraterrestre.
+   · #holograma y #mensaje (canal de comunicación): Vero, el extraterrestre,
+     en videollamada (dibujado en SVG por alienSVG).
    · Instrumentos: depósito de combustible, código de despegue y estado.
    ========================================================================== */
 (function () {
@@ -119,34 +120,60 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Vero en el canal de comunicación: un holograma de líneas con cuatro
-  // expresiones (neutral, contento, preocupado, sorprendido).
+  // Vero en el canal de comunicación: un alienígena de cráneo alargado, ojos
+  // negros rasgados y manchas bioluminiscentes, con cuatro expresiones
+  // (neutral, contento, preocupado, sorprendido).
   // ---------------------------------------------------------------------------
   const EXPRESIONES = { neutral: 'atento', contento: 'satisfecho', preocupado: 'preocupado', sorprendido: 'sorprendido' };
 
-  function hologramaSVG(expresion) {
-    const trazo = 'stroke="var(--holo)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"';
-    const lleno = 'fill="var(--holo)"';
-    const ojoAlmendra = (x) => `<path d="M${x - 12} 58 Q${x} 47 ${x + 12} 58 Q${x} 66 ${x - 12} 58Z" ${lleno} opacity=".85"/>` +
-      `<circle cx="${x + 1}" cy="58" r="3" fill="#08111f"/>`;
-    const partes = {
-      neutral: ojoAlmendra(42) + ojoAlmendra(78) + `<path d="M51 89 L69 89" ${trazo}/>`,
-      contento: `<path d="M30 61 Q42 49 54 61" ${trazo}/><path d="M66 61 Q78 49 90 61" ${trazo}/>` +
-        `<path d="M47 85 Q60 96 73 85" ${trazo}/>`,
-      preocupado: ojoAlmendra(42) + ojoAlmendra(78) +
-        `<path d="M30 46 L52 40" ${trazo}/><path d="M68 40 L90 46" ${trazo}/>` +
-        `<path d="M48 92 Q60 84 72 92" ${trazo}/>`,
-      sorprendido: `<circle cx="42" cy="57" r="9" ${lleno} opacity=".85"/><circle cx="78" cy="57" r="9" ${lleno} opacity=".85"/>` +
-        `<circle cx="42" cy="57" r="2.5" fill="#08111f"/><circle cx="78" cy="57" r="2.5" fill="#08111f"/>` +
-        `<path d="M30 40 Q42 34 54 40" ${trazo}/><path d="M66 40 Q78 34 90 40" ${trazo}/>` +
-        `<ellipse cx="60" cy="90" rx="5" ry="7" ${trazo}/>`,
+  function alienSVG(expresion) {
+    const sombra = '#3d6e5a';
+    const linea = (d, ancho) => `<path d="${d}" stroke="${sombra}" stroke-width="${ancho || 2.5}" fill="none" stroke-linecap="round"/>`;
+    // Ojo izquierdo; el derecho es su reflejo respecto al centro (x = 80).
+    const ojo = (escala) => {
+      const t = escala ? `transform="translate(51 78) scale(${escala}) translate(-51 -78)"` : '';
+      return `<g ${t}>` +
+        '<path d="M30 80 C34 60 58 52 72 70 C74 86 58 100 42 96 C34 94 29 88 30 80Z" fill="#05080c"/>' +
+        '<ellipse cx="51" cy="80" rx="13" ry="9" fill="url(#iris-vero)" transform="rotate(-24 51 80)"/>' +
+        '<ellipse cx="44" cy="71" rx="4.5" ry="2.6" fill="#fff" opacity=".85" transform="rotate(-24 44 71)"/>' +
+        '<circle cx="59" cy="86" r="1.6" fill="#fff" opacity=".6"/></g>';
     };
-    const etiqueta = `${escapar(C.alien.nombre)}, en el canal de comunicación, parece ${EXPRESIONES[expresion] || EXPRESIONES.neutral}`;
-    return `<svg viewBox="0 0 120 142" role="img" aria-label="${etiqueta}">` +
-      `<path d="M60 9 L60 1 M45 13 L40 5 M75 13 L80 5" ${trazo}/>` +
-      `<path d="M60 9 C88 9 104 31 104 57 C104 84 85 103 60 112 C35 103 16 84 16 57 C16 31 32 9 60 9Z" ${trazo} fill="rgba(79,216,255,.1)"/>` +
-      `<path d="M48 110 L48 120 M72 110 L72 120" ${trazo}/>` +
-      `<path d="M12 141 C16 126 34 120 60 120 C86 120 104 126 108 141" ${trazo}/>` +
+    const ojos = (escala) => ojo(escala) + `<g transform="translate(160 0) scale(-1 1)">${ojo(escala)}</g>`;
+    const espejo = (contenido) => contenido + `<g transform="translate(160 0) scale(-1 1)">${contenido}</g>`;
+    const partes = {
+      neutral: ojos() + linea('M68 127 Q80 130 92 127'),
+      contento: ojos() +
+        espejo('<path d="M27 93 Q50 74 75 87 L75 106 L27 106Z" fill="url(#piel-vero)"/>') +
+        linea('M64 124 Q80 136 96 124', 3),
+      preocupado: ojos() +
+        espejo('<path d="M24 56 L62 56 Q42 68 24 82Z" fill="url(#piel-vero)"/>') +
+        espejo(linea('M28 62 Q46 52 70 48', 4)) +
+        linea('M66 131 Q80 122 94 131', 3),
+      sorprendido: ojos(1.12) +
+        espejo(linea('M30 54 Q50 38 72 50', 4)) +
+        `<ellipse cx="80" cy="128" rx="5" ry="7" fill="#20352c"/>`,
+    };
+    const etiqueta = `${escapar(C.alien.nombre)}, el extraterrestre, en el canal de comunicación; parece ${EXPRESIONES[expresion] || EXPRESIONES.neutral}`;
+    return `<svg viewBox="0 0 160 190" role="img" aria-label="${etiqueta}">` +
+      '<defs>' +
+      '<radialGradient id="piel-vero" cx="45%" cy="32%" r="75%"><stop offset="0" stop-color="#bfe8cd"/><stop offset=".55" stop-color="#78b394"/><stop offset="1" stop-color="#3f705c"/></radialGradient>' +
+      '<radialGradient id="iris-vero" cx="40%" cy="40%" r="60%"><stop offset="0" stop-color="#1c8f84"/><stop offset="1" stop-color="#05080c" stop-opacity="0"/></radialGradient>' +
+      '</defs>' +
+      // Traje y cuello
+      '<path d="M18 190 C24 172 48 165 80 165 C112 165 136 172 142 190Z" fill="#1c2638" stroke="#4fd8ff" stroke-width="1.5"/>' +
+      '<path d="M54 168 Q80 181 106 168" stroke="#4fd8ff" stroke-width="3" fill="none"/>' +
+      '<circle cx="80" cy="182" r="4" fill="#ffb547"/>' +
+      '<path d="M64 138 C64 154 62 164 58 172 L102 172 C98 164 96 154 96 138Z" fill="#5f957a"/>' +
+      linea('M67 154 L74 157 M67 161 L75 164 M93 154 L86 157 M93 161 L85 164', 2) +
+      // Cabeza: cráneo alto y barbilla estrecha
+      '<path d="M80 4 C124 4 146 38 144 74 C142 106 120 128 100 140 C92 145 86 150 80 150 C74 150 68 145 60 140 C40 128 18 106 16 74 C14 38 36 4 80 4Z" fill="url(#piel-vero)"/>' +
+      `<g opacity=".6">${linea('M52 18 Q80 6 108 18')}${linea('M46 30 Q80 16 114 30')}${linea('M80 8 V44', 2)}</g>` +
+      // Manchas bioluminiscentes
+      '<g fill="#7ff7dc" class="manchas-vero">' +
+      '<circle cx="80" cy="52" r="3"/><circle cx="26" cy="62" r="2.6"/><circle cx="22" cy="74" r="2"/><circle cx="25" cy="86" r="1.6"/>' +
+      '<circle cx="134" cy="62" r="2.6"/><circle cx="138" cy="74" r="2"/><circle cx="135" cy="86" r="1.6"/></g>' +
+      // Nariz: dos rendijas
+      linea('M76 107 Q74.5 112 77 116 M84 107 Q85.5 112 83 116', 2) +
       (partes[expresion] || partes.neutral) +
       '</svg>';
   }
@@ -163,7 +190,7 @@
     const clave = r.expresion + '|' + r.texto;
     if (clave === canalPintado) return; // no repetir el aviso al lector de pantalla
     canalPintado = clave;
-    holograma.innerHTML = hologramaSVG(r.expresion);
+    holograma.innerHTML = alienSVG(r.expresion);
     mensaje.replaceChildren(el('span', { class: 'mensaje-autor' }, C.alien.nombre), r.texto);
   }
 
@@ -792,7 +819,9 @@
       if (!primeraVez) {
         const cabeceraPantalla = juego.querySelector('[data-enfocar]');
         if (cabeceraPantalla) cabeceraPantalla.focus({ preventScroll: true });
-        juego.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // En pantalla grande el juego se desplaza dentro del monitor; en móvil, la página entera.
+        juego.scrollTop = 0;
+        if (getComputedStyle(document.body).overflow !== 'hidden') juego.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     } else if (conFoco) {
       const copia = juego.querySelector(`[data-foco="${conFoco}"]`);

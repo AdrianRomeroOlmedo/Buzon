@@ -2,7 +2,15 @@
 
 Escape room web sobre desinformación y bulos de la **Cátedra Ceuta-IATEB** (Universidad de Granada y Ciudad Autónoma de Ceuta), creado para el 30 de noviembre, Día Internacional de la Ciudad Educadora.
 
-Está pensado para alumnado de Bachillerato (unos 16 años). Se juega en primera persona desde la cabina de una nave alienígena: arriba se ve el parabrisas, con la Tierra, y abajo el salpicadero, con los instrumentos (depósito, código de despegue y estado de la nave), la pantalla principal, donde se juegan las pruebas, y el canal de comunicación, donde Vero, el extraterrestre, aparece como holograma.
+Está pensado para alumnado de Bachillerato (unos 16 años). Se juega en primera persona desde la cabina de una nave alienígena:
+
+- Arriba está el parabrisas, con la Tierra, el HUD de vuelo y el marco de la cúpula.
+- Abajo está el panel de control, con tres monitores y una fila de mandos:
+  - **instrumentos**: depósito, código de despegue y estado de la nave;
+  - **pantalla principal**, donde se juegan las pruebas;
+  - **canal de comunicación**, donde Vero, el extraterrestre, aparece en videollamada.
+
+En pantallas grandes, la cabina ocupa toda la ventana y el juego se desplaza dentro del monitor central.
 
 La nave funciona con **verdad** y se ha quedado sin combustible en órbita. Quien juega supera 4 módulos. Cada uno llena un 25 % del depósito y entrega un fragmento del código de despegue:
 
@@ -60,10 +68,11 @@ El contenido actual es **provisional**. Todas las cuentas, nombres y medios son 
 ## Cómo cambiar las imágenes y los colores
 
 - **Infografía:** guarda tu imagen como `assets/infografia.png`. Si el archivo existe, el juego la muestra. Si no existe, dibuja una versión con los 5 pasos de `content.js`. Si cambias la imagen, actualiza también `textoAlternativo` en `content.js` (es lo que lee un lector de pantalla) y revisa que las preguntas del test se puedan responder con ella.
+- **La Tierra del parabrisas:** es `assets/tierra.jpg`, la fotografía «The Blue Marble» de la misión Apollo 17 de la NASA. Es de **dominio público**, y los créditos del juego lo indican. Para cambiarla, sustituye el archivo por otra imagen cuadrada con la Tierra centrada sobre fondo negro. Si falta, se dibuja una Tierra azul con CSS.
 - **Icono de la pestaña:** sustituye `assets/favicon.svg`.
-- **Colores:** están al principio de `styles.css`, en el bloque `:root`. Por ejemplo, `--ambar` es el color de los botones y del combustible, y `--holo` el cian del holograma y de los rótulos. Comprueba que el texto se sigue leyendo bien sobre los colores nuevos.
-- **Vero** es un holograma dibujado en SVG dentro de `app.js` (función `hologramaSVG`), con cuatro expresiones. Su color sale de `--holo`.
-- **El parabrisas** (estrellas, la Tierra y el salto al despegar) está hecho solo con CSS, en la sección «Parabrisas» de `styles.css`.
+- **Colores:** están al principio de `styles.css`, en el bloque `:root`. Por ejemplo, `--ambar` es el color de los botones y del combustible, y `--holo` el cian del HUD y de los rótulos. Comprueba que el texto se sigue leyendo bien sobre los colores nuevos.
+- **Vero** está dibujado en SVG dentro de `app.js` (función `alienSVG`), con cuatro expresiones.
+- **El parabrisas, el panel de control y los mandos** están hechos con HTML, SVG y CSS: el marco, el HUD y los mandos en `index.html`, y su aspecto en las secciones «Parabrisas» y «Panel de control» de `styles.css`.
 - **Lo que dice Vero** en cada módulo está en el campo `mensaje` de cada prueba en `content.js`. Las instrucciones que se leen en la pantalla principal están en `instrucciones`.
 
 ## Publicarlo en GitHub Pages, paso a paso

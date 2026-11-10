@@ -367,7 +367,7 @@ window.CONTENIDO = {
       { nombre: "Newtral", url: "https://www.newtral.es" },
       { nombre: "EFE Verifica", url: "https://verifica.efe.com" },
     ],
-    creditos: "Una actividad de la Cátedra en Inteligencia Artificial y Tecnologías Emergentes para el Bienestar (Cátedra Ceuta-IATEB), de la Universidad de Granada y la Ciudad Autónoma de Ceuta, con motivo del Día Internacional de la Ciudad Educadora.",
+    creditos: "Una actividad de la Cátedra en Inteligencia Artificial y Tecnologías Emergentes para el Bienestar (Cátedra Ceuta-IATEB), de la Universidad de Granada y la Ciudad Autónoma de Ceuta, con motivo del Día Internacional de la Ciudad Educadora. Imagen de la Tierra: NASA, misión Apollo 17 (dominio público).",
     botonReiniciar: "Nueva misión",
   },
 };

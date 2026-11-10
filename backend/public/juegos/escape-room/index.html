@@ -15,55 +15,155 @@
 <body data-estado="critico">
   <a class="saltar" href="#juego">Saltar a la pantalla principal</a>
 
-  <!-- Vista desde la cabina: el parabrisas de la nave (decorativo) -->
-  <div class="parabrisas" aria-hidden="true">
-    <div class="estrellas"></div>
-    <div class="estrellas estrellas-cerca"></div>
-    <div class="tierra"></div>
-    <div class="reflejo"></div>
-  </div>
+  <div class="cabina">
 
-  <!-- El salpicadero: instrumentos, pantalla principal y comunicaciones -->
-  <div class="consola">
+    <!-- ===================== PARABRISAS (decorativo) ===================== -->
+    <div class="vista" aria-hidden="true">
+      <div class="estrellas"></div>
+      <div class="estrellas estrellas-cerca"></div>
+      <div class="tierra"></div>
+      <div class="salto"></div>
 
-    <aside class="instrumentos" aria-label="Instrumentos de la nave">
-      <div class="instrumento instrumento-combustible">
-        <p class="rotulo" id="deposito-etiqueta">Combustible · Verdad</p>
-        <div class="deposito" id="deposito" role="progressbar" aria-labelledby="deposito-etiqueta" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-          <div class="deposito-relleno"></div>
-          <span class="deposito-marcas"><i></i><i></i><i></i></span>
+      <!-- HUD proyectado en el cristal -->
+      <svg class="hud" viewBox="0 0 1000 300" preserveAspectRatio="xMidYMid meet">
+        <g fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="500" cy="130" r="26"/>
+          <path d="M500 92 V112 M500 148 V168 M462 130 H482 M518 130 H538"/>
+          <path d="M380 95 H430 M570 95 H620 M395 130 H440 M560 130 H605 M380 165 H430 M570 165 H620"/>
+          <path d="M60 30 H100 M60 30 V60 M940 30 H900 M940 30 V60 M60 270 H100 M60 270 V240 M940 270 H900 M940 270 V240"/>
+          <path d="M150 230 H330" stroke-dasharray="4 6"/>
+          <path d="M670 230 H850" stroke-dasharray="4 6"/>
+        </g>
+        <g fill="currentColor" font-family="ui-monospace, Consolas, monospace" font-size="15" letter-spacing="2">
+          <text x="80" y="95">ALT 408 KM</text>
+          <text x="80" y="118">VEL 7,66 KM/S</text>
+          <text x="920" y="95" text-anchor="end">RUMBO 090°</text>
+          <text x="920" y="118" text-anchor="end" class="hud-aviso">MOTOR · SIN COMBUSTIBLE</text>
+          <text x="500" y="215" text-anchor="middle" font-size="13">ÓRBITA TERRESTRE BAJA</text>
+        </g>
+      </svg>
+
+      <!-- Marco metálico de la cúpula: travesaño superior y montantes laterales -->
+      <svg class="marco" viewBox="0 0 1600 400" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="metal-marco" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#2a3346"/>
+            <stop offset="1" stop-color="#0f141f"/>
+          </linearGradient>
+        </defs>
+        <path d="M0 0 H1600 V46 C1200 30 400 30 0 46 Z" fill="url(#metal-marco)"/>
+        <path d="M0 0 H150 L30 400 H0 Z" fill="url(#metal-marco)"/>
+        <path d="M1600 0 H1450 L1570 400 H1600 Z" fill="url(#metal-marco)"/>
+        <path d="M150 0 L30 400" stroke="#3d4963" stroke-width="3"/>
+        <path d="M1450 0 L1570 400" stroke="#3d4963" stroke-width="3"/>
+        <path d="M0 46 C400 30 1200 30 1600 46" fill="none" stroke="#3d4963" stroke-width="3"/>
+        <g class="luces-techo">
+          <circle cx="760" cy="20" r="5"/><circle cx="800" cy="20" r="5"/><circle cx="840" cy="20" r="5"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- ===================== PANEL DE CONTROL ===================== -->
+    <div class="salpicadero">
+      <div class="consola">
+
+        <aside class="bisel instrumentos" aria-label="Instrumentos de la nave">
+          <p class="placa" aria-hidden="true">SYS-01 · Instrumentos</p>
+
+          <div class="instrumento instrumento-combustible">
+            <p class="rotulo" id="deposito-etiqueta">Combustible · Verdad</p>
+            <div class="deposito" id="deposito" role="progressbar" aria-labelledby="deposito-etiqueta" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div class="deposito-relleno"></div>
+              <span class="deposito-marcas"><i></i><i></i><i></i></span>
+            </div>
+            <p class="lectura" id="deposito-porcentaje">0 %</p>
+          </div>
+
+          <div class="instrumento instrumento-codigo">
+            <p class="rotulo">Código<span class="rotulo-largo"> de despegue</span></p>
+            <p id="codigo-fragmentos" class="codigo-fragmentos"></p>
+          </div>
+
+          <div class="instrumento instrumento-estado">
+            <p class="rotulo">Estado</p>
+            <p class="lectura-estado"><span class="piloto" aria-hidden="true"></span><span id="estado-nave">Crítico</span></p>
+            <p class="lectura" id="temporizador" hidden></p>
+          </div>
+
+          <div class="instrumento-botones">
+            <button type="button" class="boton-mando" id="boton-texto" aria-pressed="false" title="Texto más grande, para proyectar">A+</button>
+            <button type="button" class="boton-mando" id="boton-reiniciar">Reiniciar</button>
+          </div>
+        </aside>
+
+        <div class="bisel bisel-principal">
+          <p class="placa" aria-hidden="true">NAV-02 · Pantalla principal</p>
+          <main id="juego" class="pantalla-principal" tabindex="-1">
+            <noscript><p class="aviso-carga">Para jugar necesitas activar JavaScript en tu navegador.</p></noscript>
+          </main>
         </div>
-        <p class="lectura" id="deposito-porcentaje">0 %</p>
+
+        <section class="bisel comunicaciones" aria-label="Canal de comunicación">
+          <p class="placa" aria-hidden="true">COM-03 · Canal de comunicación</p>
+          <div class="comunicaciones-pantalla">
+            <div id="holograma" class="holograma"></div>
+            <p id="mensaje" class="mensaje" aria-live="polite"></p>
+          </div>
+        </section>
+
       </div>
 
-      <div class="instrumento instrumento-codigo">
-        <p class="rotulo">Código<span class="rotulo-largo"> de despegue</span></p>
-        <p id="codigo-fragmentos" class="codigo-fragmentos"></p>
-      </div>
-
-      <div class="instrumento instrumento-estado">
-        <p class="rotulo">Estado</p>
-        <p class="lectura-estado"><span class="piloto" aria-hidden="true"></span><span id="estado-nave">Crítico</span></p>
-        <p class="lectura" id="temporizador" hidden></p>
-      </div>
-
-      <div class="instrumento-botones">
-        <button type="button" class="boton-mando" id="boton-texto" aria-pressed="false" title="Texto más grande, para proyectar">A+</button>
-        <button type="button" class="boton-mando" id="boton-reiniciar">Reiniciar</button>
-      </div>
-    </aside>
-
-    <section class="comunicaciones" aria-label="Comunicaciones">
-      <p class="rotulo">Canal de comunicación</p>
-      <div class="comunicaciones-pantalla">
-        <div id="holograma" class="holograma"></div>
-        <p id="mensaje" class="mensaje" aria-live="polite"></p>
-      </div>
-    </section>
-
-    <main id="juego" class="pantalla-principal" tabindex="-1">
-      <noscript><p class="aviso-carga">Para jugar necesitas activar JavaScript en tu navegador.</p></noscript>
-    </main>
+      <!-- Mandos decorativos del salpicadero -->
+      <svg class="mandos" viewBox="0 0 1600 90" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <rect width="1600" height="90" fill="#121826"/>
+        <g class="interruptores">
+          <rect x="60" y="22" width="22" height="46" rx="4"/><rect x="96" y="22" width="22" height="46" rx="4"/>
+          <rect x="132" y="22" width="22" height="46" rx="4"/><rect x="168" y="22" width="22" height="46" rx="4"/>
+          <rect x="204" y="22" width="22" height="46" rx="4"/><rect x="240" y="22" width="22" height="46" rx="4"/>
+        </g>
+        <g class="palancas">
+          <rect x="65" y="26" width="12" height="18" rx="3"/><rect x="101" y="46" width="12" height="18" rx="3"/>
+          <rect x="137" y="26" width="12" height="18" rx="3"/><rect x="173" y="26" width="12" height="18" rx="3"/>
+          <rect x="209" y="46" width="12" height="18" rx="3"/><rect x="245" y="26" width="12" height="18" rx="3"/>
+        </g>
+        <g class="leds">
+          <circle cx="320" cy="30" r="6" class="led led-rojo"/><circle cx="345" cy="30" r="6" class="led led-ambar"/>
+          <circle cx="370" cy="30" r="6" class="led led-verde"/><circle cx="395" cy="30" r="6" class="led led-cian"/>
+          <circle cx="320" cy="60" r="6" class="led led-verde"/><circle cx="345" cy="60" r="6" class="led led-rojo"/>
+          <circle cx="370" cy="60" r="6" class="led led-cian"/><circle cx="395" cy="60" r="6" class="led led-ambar"/>
+        </g>
+        <g class="diales">
+          <circle cx="480" cy="45" r="26"/><path d="M480 45 L496 28"/>
+          <circle cx="560" cy="45" r="26"/><path d="M560 45 L548 22"/>
+        </g>
+        <g class="empuje">
+          <rect x="650" y="40" width="300" height="10" rx="5"/>
+          <rect x="690" y="26" width="26" height="38" rx="5" class="empuje-mando"/>
+          <text x="800" y="80" text-anchor="middle">EMPUJE</text>
+        </g>
+        <g class="diales">
+          <circle cx="1040" cy="45" r="26"/><path d="M1040 45 L1060 54"/>
+        </g>
+        <g class="teclado">
+          <rect x="1110" y="16" width="28" height="18" rx="3"/><rect x="1146" y="16" width="28" height="18" rx="3"/><rect x="1182" y="16" width="28" height="18" rx="3"/>
+          <rect x="1110" y="40" width="28" height="18" rx="3"/><rect x="1146" y="40" width="28" height="18" rx="3"/><rect x="1182" y="40" width="28" height="18" rx="3"/>
+          <rect x="1110" y="64" width="28" height="18" rx="3"/><rect x="1146" y="64" width="28" height="18" rx="3"/><rect x="1182" y="64" width="28" height="18" rx="3"/>
+        </g>
+        <g class="leds">
+          <circle cx="1270" cy="30" r="6" class="led led-cian"/><circle cx="1295" cy="30" r="6" class="led led-verde"/>
+          <circle cx="1320" cy="30" r="6" class="led led-ambar"/><circle cx="1270" cy="60" r="6" class="led led-ambar"/>
+          <circle cx="1295" cy="60" r="6" class="led led-rojo"/><circle cx="1320" cy="60" r="6" class="led led-verde"/>
+        </g>
+        <g class="interruptores">
+          <rect x="1380" y="22" width="22" height="46" rx="4"/><rect x="1416" y="22" width="22" height="46" rx="4"/>
+          <rect x="1452" y="22" width="22" height="46" rx="4"/><rect x="1488" y="22" width="22" height="46" rx="4"/>
+        </g>
+        <g class="palancas">
+          <rect x="1385" y="46" width="12" height="18" rx="3"/><rect x="1421" y="26" width="12" height="18" rx="3"/>
+          <rect x="1457" y="46" width="12" height="18" rx="3"/><rect x="1493" y="26" width="12" height="18" rx="3"/>
+        </g>
+      </svg>
+    </div>
 
   </div>
 
@@ -71,7 +171,7 @@
   <div id="anuncio" class="solo-lector" aria-live="polite"></div>
 
   <footer class="pie">
-    <p>Cátedra Ceuta-IATEB · Universidad de Granada y Ciudad Autónoma de Ceuta</p>
+    <p>Cátedra Ceuta-IATEB · Universidad de Granada y Ciudad Autónoma de Ceuta · Imagen de la Tierra: NASA (Apollo 17)</p>
   </footer>
 
   <script src="content.js"></script>
