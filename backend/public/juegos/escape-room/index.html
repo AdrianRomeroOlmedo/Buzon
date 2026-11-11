@@ -3,176 +3,137 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Misión Combustible de Verdad · Cátedra Ceuta-IATEB</title>
-  <meta name="description" content="Escape room educativo de la Cátedra Ceuta-IATEB para aprender a distinguir las noticias verdaderas de los bulos.">
+  <title>Operación Verdad · Cátedra Ceuta-IATEB</title>
+  <meta name="description" content="Escape room educativo de la Cátedra Ceuta-IATEB para aprender a detectar y verificar la desinformación.">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-  <!-- Única dependencia externa: la tipografía. Si no carga, se usa la del sistema. -->
+  <!-- Única dependencia externa: la tipografía (Barlow y Barlow Condensed). Si no carga, se usa la del sistema. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body data-estado="critico">
+<body data-energia="0">
   <a class="saltar" href="#juego">Saltar a la pantalla principal</a>
 
   <div class="cabina">
 
-    <!-- ===================== PARABRISAS (decorativo) ===================== -->
-    <div class="vista" aria-hidden="true">
-      <div class="estrellas"></div>
-      <div class="estrellas estrellas-cerca"></div>
+    <!-- ============ VISTA EXTERIOR A TRAVÉS DEL PARABRISAS (decorativa) ============ -->
+    <div class="exterior" aria-hidden="true">
+      <div class="espacio"></div>
       <div class="tierra"></div>
-      <div class="salto"></div>
-
+      <div class="estelas"></div>
+      <div class="reflejos"></div>
+      <!-- Grieta del parabrisas: desaparece cuando la nave recupera energía -->
+      <svg class="grieta" viewBox="0 0 400 260" preserveAspectRatio="xMinYMin meet">
+        <g fill="none" stroke="rgba(220,235,255,.55)" stroke-width="1.2" stroke-linecap="round">
+          <path d="M120 90 L60 40 L20 30 M120 90 L40 110 L0 118 M120 90 L150 30 L170 0 M120 90 L210 120 L300 128 M120 90 L130 170 L110 240"/>
+          <path d="M60 40 L48 70 M40 110 L62 140 M150 30 L190 46 M210 120 L222 92 M130 170 L160 196" stroke-width=".8"/>
+          <circle cx="120" cy="90" r="6" stroke-width="1.6"/>
+        </g>
+      </svg>
       <!-- HUD proyectado en el cristal -->
       <svg class="hud" viewBox="0 0 1000 300" preserveAspectRatio="xMidYMid meet">
-        <g fill="none" stroke="currentColor" stroke-width="1.5">
-          <circle cx="500" cy="130" r="26"/>
-          <path d="M500 92 V112 M500 148 V168 M462 130 H482 M518 130 H538"/>
-          <path d="M380 95 H430 M570 95 H620 M395 130 H440 M560 130 H605 M380 165 H430 M570 165 H620"/>
-          <path d="M60 30 H100 M60 30 V60 M940 30 H900 M940 30 V60 M60 270 H100 M60 270 V240 M940 270 H900 M940 270 V240"/>
-          <path d="M150 230 H330" stroke-dasharray="4 6"/>
-          <path d="M670 230 H850" stroke-dasharray="4 6"/>
+        <g fill="none" stroke="currentColor" stroke-width="1.2">
+          <path d="M470 130 H488 M512 130 H530 M500 100 V118 M500 142 V160"/>
+          <circle cx="500" cy="130" r="5"/>
+          <path d="M380 92 H420 M580 92 H620 M380 168 H420 M580 168 H620"/>
         </g>
-        <g fill="currentColor" font-family="ui-monospace, Consolas, monospace" font-size="15" letter-spacing="2">
-          <text x="80" y="95">ALT 408 KM</text>
-          <text x="80" y="118">VEL 7,66 KM/S</text>
-          <text x="920" y="95" text-anchor="end">RUMBO 090°</text>
-          <text x="920" y="118" text-anchor="end" class="hud-aviso">MOTOR · SIN COMBUSTIBLE</text>
-          <text x="500" y="215" text-anchor="middle" font-size="13">ÓRBITA TERRESTRE BAJA</text>
-        </g>
-      </svg>
-
-      <!-- Marco metálico de la cúpula: travesaño superior y montantes laterales -->
-      <svg class="marco" viewBox="0 0 1600 400" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="metal-marco" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#2a3346"/>
-            <stop offset="1" stop-color="#0f141f"/>
-          </linearGradient>
-        </defs>
-        <path d="M0 0 H1600 V46 C1200 30 400 30 0 46 Z" fill="url(#metal-marco)"/>
-        <path d="M0 0 H150 L30 400 H0 Z" fill="url(#metal-marco)"/>
-        <path d="M1600 0 H1450 L1570 400 H1600 Z" fill="url(#metal-marco)"/>
-        <path d="M150 0 L30 400" stroke="#3d4963" stroke-width="3"/>
-        <path d="M1450 0 L1570 400" stroke="#3d4963" stroke-width="3"/>
-        <path d="M0 46 C400 30 1200 30 1600 46" fill="none" stroke="#3d4963" stroke-width="3"/>
-        <g class="luces-techo">
-          <circle cx="760" cy="20" r="5"/><circle cx="800" cy="20" r="5"/><circle cx="840" cy="20" r="5"/>
+        <g fill="currentColor" font-family="Barlow Condensed, sans-serif" font-size="15" letter-spacing="1.5">
+          <text x="380" y="80">ALT 412 KM</text>
+          <text x="620" y="80" text-anchor="end" id="hud-estado">REACTOR · 3 %</text>
         </g>
       </svg>
     </div>
 
-    <!-- ===================== PANEL DE CONTROL ===================== -->
-    <div class="salpicadero">
-      <div class="consola">
+    <!-- Estructura de la cúpula: travesaño superior, montantes y marco -->
+    <svg class="cupula" viewBox="0 0 1600 600" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="cupula-metal" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1b2230"/>
+          <stop offset="1" stop-color="#070a10"/>
+        </linearGradient>
+        <linearGradient id="cupula-montante" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#05070b"/>
+          <stop offset=".6" stop-color="#1a2130"/>
+          <stop offset="1" stop-color="#0b0f17"/>
+        </linearGradient>
+      </defs>
+      <path d="M0 0 H1600 V64 C1180 40 420 40 0 64 Z" fill="url(#cupula-metal)"/>
+      <path d="M0 0 H190 L64 600 H0 Z" fill="url(#cupula-montante)"/>
+      <path d="M1600 0 H1410 L1536 600 H1600 Z" fill="url(#cupula-montante)"/>
+      <path d="M190 0 L64 600 M1410 0 L1536 600" stroke="#2c3546" stroke-width="2.5"/>
+      <path d="M0 64 C420 40 1180 40 1600 64" fill="none" stroke="#2c3546" stroke-width="2.5"/>
+      <g class="pilotos-techo"><rect x="740" y="16" width="26" height="8" rx="2"/><rect x="787" y="16" width="26" height="8" rx="2"/><rect x="834" y="16" width="26" height="8" rx="2"/></g>
+    </svg>
 
-        <aside class="bisel instrumentos" aria-label="Instrumentos de la nave">
-          <p class="placa" aria-hidden="true">SYS-01 · Instrumentos</p>
+    <!-- Luz ambiental de la cabina: roja en emergencia, azul al recuperar energía -->
+    <div class="luz-ambiente" aria-hidden="true"></div>
 
-          <div class="instrumento instrumento-combustible">
-            <p class="rotulo" id="deposito-etiqueta">Combustible · Verdad</p>
-            <div class="deposito" id="deposito" role="progressbar" aria-labelledby="deposito-etiqueta" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-              <div class="deposito-relleno"></div>
-              <span class="deposito-marcas"><i></i><i></i><i></i></span>
+    <!-- ============================ CONSOLA ============================ -->
+    <div class="consola">
+
+      <aside class="monitor monitor-sistemas" aria-label="Panel de sistemas">
+        <p class="placa" aria-hidden="true">SYS · Estado de la nave</p>
+        <div class="vidrio vidrio-sistemas">
+          <h2 class="sistemas-titulo">Módulos</h2>
+          <ol class="modulos" id="modulos"></ol>
+
+          <div class="reactor-bloque">
+            <p class="sistemas-etiqueta" id="reactor-etiqueta">Reactor de verdad</p>
+            <div class="reactor" id="reactor" role="progressbar" aria-labelledby="reactor-etiqueta" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <span class="reactor-celda"></span><span class="reactor-celda"></span><span class="reactor-celda"></span><span class="reactor-celda"></span>
             </div>
-            <p class="lectura" id="deposito-porcentaje">0 %</p>
+            <p class="reactor-lectura" id="reactor-lectura">0 %</p>
           </div>
 
-          <div class="instrumento instrumento-codigo">
-            <p class="rotulo">Código<span class="rotulo-largo"> de despegue</span></p>
-            <p id="codigo-fragmentos" class="codigo-fragmentos"></p>
+          <div class="codigo-bloque">
+            <p class="sistemas-etiqueta">Código de activación</p>
+            <p class="codigo" id="codigo"></p>
           </div>
 
-          <div class="instrumento instrumento-estado">
-            <p class="rotulo">Estado</p>
-            <p class="lectura-estado"><span class="piloto" aria-hidden="true"></span><span id="estado-nave">Crítico</span></p>
-            <p class="lectura" id="temporizador" hidden></p>
-          </div>
-
-          <div class="instrumento-botones">
-            <button type="button" class="boton-mando" id="boton-texto" aria-pressed="false" title="Texto más grande, para proyectar">A+</button>
-            <button type="button" class="boton-mando" id="boton-reiniciar">Reiniciar</button>
-          </div>
-        </aside>
-
-        <div class="bisel bisel-principal">
-          <p class="placa" aria-hidden="true">NAV-02 · Pantalla principal</p>
-          <main id="juego" class="pantalla-principal" tabindex="-1">
-            <noscript><p class="aviso-carga">Para jugar necesitas activar JavaScript en tu navegador.</p></noscript>
-          </main>
+          <p class="temporizador" id="temporizador" hidden></p>
         </div>
+      </aside>
 
-        <section class="bisel comunicaciones" aria-label="Canal de comunicación">
-          <p class="placa" aria-hidden="true">COM-03 · Canal de comunicación</p>
-          <div class="comunicaciones-pantalla">
-            <div id="holograma" class="holograma"></div>
-            <p id="mensaje" class="mensaje" aria-live="polite"></p>
+      <section class="monitor monitor-principal" aria-label="Pantalla principal">
+        <p class="placa" aria-hidden="true">NAV · Pantalla principal</p>
+        <main id="juego" class="vidrio vidrio-principal" tabindex="-1">
+          <noscript><p class="aviso-carga">Para jugar necesitas activar JavaScript en tu navegador.</p></noscript>
+        </main>
+      </section>
+
+      <section class="monitor monitor-com" aria-label="Canal de comunicación">
+        <p class="placa" aria-hidden="true">COM · Canal de comunicación</p>
+        <div class="vidrio vidrio-com">
+          <div id="holograma" class="holograma"></div>
+          <p id="mensaje" class="mensaje" aria-live="polite"></p>
+          <!-- Ajustes: sonido, volumen, tamaño del texto y reinicio -->
+          <div class="mandos" role="group" aria-label="Ajustes">
+            <button type="button" class="mando" id="boton-sonido" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path class="icono-altavoz" d="M4 9h4l5-4v14l-5-4H4z"/><path class="icono-ondas" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="icono-silencio" d="M16 9l5 6M21 9l-5 6"/></svg>
+              <span id="boton-sonido-texto">Activar sonido</span>
+            </button>
+            <label class="volumen" for="volumen">
+              <span>Volumen</span>
+              <input type="range" id="volumen" min="0" max="100" step="5" value="50">
+            </label>
+            <button type="button" class="mando" id="boton-texto" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18 8 6l5 12M5 14h6M15 18l3.5-8 3.5 8M16.2 15.5h4.6"/></svg>
+              <span>Ampliar texto</span>
+            </button>
+            <button type="button" class="mando" id="boton-reiniciar">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5"/></svg>
+              <span>Reiniciar</span>
+            </button>
           </div>
-        </section>
+        </div>
+      </section>
 
-      </div>
-
-      <!-- Mandos decorativos del salpicadero -->
-      <svg class="mandos" viewBox="0 0 1600 90" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-        <rect width="1600" height="90" fill="#121826"/>
-        <g class="interruptores">
-          <rect x="60" y="22" width="22" height="46" rx="4"/><rect x="96" y="22" width="22" height="46" rx="4"/>
-          <rect x="132" y="22" width="22" height="46" rx="4"/><rect x="168" y="22" width="22" height="46" rx="4"/>
-          <rect x="204" y="22" width="22" height="46" rx="4"/><rect x="240" y="22" width="22" height="46" rx="4"/>
-        </g>
-        <g class="palancas">
-          <rect x="65" y="26" width="12" height="18" rx="3"/><rect x="101" y="46" width="12" height="18" rx="3"/>
-          <rect x="137" y="26" width="12" height="18" rx="3"/><rect x="173" y="26" width="12" height="18" rx="3"/>
-          <rect x="209" y="46" width="12" height="18" rx="3"/><rect x="245" y="26" width="12" height="18" rx="3"/>
-        </g>
-        <g class="leds">
-          <circle cx="320" cy="30" r="6" class="led led-rojo"/><circle cx="345" cy="30" r="6" class="led led-ambar"/>
-          <circle cx="370" cy="30" r="6" class="led led-verde"/><circle cx="395" cy="30" r="6" class="led led-cian"/>
-          <circle cx="320" cy="60" r="6" class="led led-verde"/><circle cx="345" cy="60" r="6" class="led led-rojo"/>
-          <circle cx="370" cy="60" r="6" class="led led-cian"/><circle cx="395" cy="60" r="6" class="led led-ambar"/>
-        </g>
-        <g class="diales">
-          <circle cx="480" cy="45" r="26"/><path d="M480 45 L496 28"/>
-          <circle cx="560" cy="45" r="26"/><path d="M560 45 L548 22"/>
-        </g>
-        <g class="empuje">
-          <rect x="650" y="40" width="300" height="10" rx="5"/>
-          <rect x="690" y="26" width="26" height="38" rx="5" class="empuje-mando"/>
-          <text x="800" y="80" text-anchor="middle">EMPUJE</text>
-        </g>
-        <g class="diales">
-          <circle cx="1040" cy="45" r="26"/><path d="M1040 45 L1060 54"/>
-        </g>
-        <g class="teclado">
-          <rect x="1110" y="16" width="28" height="18" rx="3"/><rect x="1146" y="16" width="28" height="18" rx="3"/><rect x="1182" y="16" width="28" height="18" rx="3"/>
-          <rect x="1110" y="40" width="28" height="18" rx="3"/><rect x="1146" y="40" width="28" height="18" rx="3"/><rect x="1182" y="40" width="28" height="18" rx="3"/>
-          <rect x="1110" y="64" width="28" height="18" rx="3"/><rect x="1146" y="64" width="28" height="18" rx="3"/><rect x="1182" y="64" width="28" height="18" rx="3"/>
-        </g>
-        <g class="leds">
-          <circle cx="1270" cy="30" r="6" class="led led-cian"/><circle cx="1295" cy="30" r="6" class="led led-verde"/>
-          <circle cx="1320" cy="30" r="6" class="led led-ambar"/><circle cx="1270" cy="60" r="6" class="led led-ambar"/>
-          <circle cx="1295" cy="60" r="6" class="led led-rojo"/><circle cx="1320" cy="60" r="6" class="led led-verde"/>
-        </g>
-        <g class="interruptores">
-          <rect x="1380" y="22" width="22" height="46" rx="4"/><rect x="1416" y="22" width="22" height="46" rx="4"/>
-          <rect x="1452" y="22" width="22" height="46" rx="4"/><rect x="1488" y="22" width="22" height="46" rx="4"/>
-        </g>
-        <g class="palancas">
-          <rect x="1385" y="46" width="12" height="18" rx="3"/><rect x="1421" y="26" width="12" height="18" rx="3"/>
-          <rect x="1457" y="46" width="12" height="18" rx="3"/><rect x="1493" y="26" width="12" height="18" rx="3"/>
-        </g>
-      </svg>
     </div>
-
   </div>
 
   <!-- Avisos para lectores de pantalla -->
   <div id="anuncio" class="solo-lector" aria-live="polite"></div>
-
-  <footer class="pie">
-    <p>Cátedra Ceuta-IATEB · Universidad de Granada y Ciudad Autónoma de Ceuta · Imagen de la Tierra: NASA (Apollo 17)</p>
-  </footer>
 
   <script src="content.js"></script>
   <script src="app.js"></script>

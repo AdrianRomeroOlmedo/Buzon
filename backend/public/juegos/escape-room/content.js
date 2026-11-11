@@ -1,5 +1,5 @@
 /* ============================================================================
-   CONTENIDO DEL ESCAPE ROOM «MISIÓN COMBUSTIBLE DE VERDAD»
+   CONTENIDO DEL ESCAPE ROOM «OPERACIÓN VERDAD»
    Cátedra Ceuta-IATEB · Universidad de Granada y Ciudad Autónoma de Ceuta
    Público: alumnado de Bachillerato (unos 16 años).
    ----------------------------------------------------------------------------
@@ -13,30 +13,33 @@
    · Si cambias el contenido de las pruebas, sube el número de «version» para
      que nadie continúe una partida guardada con el contenido antiguo.
    · Para comprobar que no has roto nada, abre index.html en el navegador: si
-     algo falla, la página mostrará un aviso en lugar del juego.
+     algo falla, la pantalla principal mostrará un aviso en lugar del juego.
 
-   La escena es la cabina de la nave en primera persona. Lo que dice Vero, el
-   extraterrestre, aparece en el «canal de comunicación»; las pruebas, en la
-   pantalla principal.
-
-   TODO el contenido de ejemplo es PROVISIONAL. Las cuentas, nombres y medios
-   son inventados. Cada noticia lleva un campo «fuente» vacío: rellénalo con la
-   URL del desmentido (Maldita.es, Newtral, EFE Verifica…) o de la noticia
-   original cuando se sustituya por un caso real verificado.
+   RIGOR DEL CONTENIDO
+   · Las publicaciones, cuentas y medios que aparecen en pantalla son
+     SIMULACIONES EDUCATIVAS: el formato está inventado, pero cada caso se basa
+     en un hecho o un bulo real, y su explicación enlaza a la fuente que lo
+     verificó (campo «fuentes»). No inventes fuentes: enlaza solo páginas que
+     hayas comprobado.
+   · Un bulo es una información falsa que se ha comprobado como falsa. Si de
+     algo no hay pruebas ni a favor ni en contra, no es un bulo: es una
+     afirmación no demostrada. No los mezcles.
    ========================================================================= */
 
 window.CONTENIDO = {
 
-  version: 2,
+  version: 3,
 
   // ---------------------------------------------------------------------------
   // AJUSTES GENERALES
   // ---------------------------------------------------------------------------
   ajustes: {
-    // Temporizador opcional. Pon «activo: true» para mostrar una cuenta atrás
-    // en los instrumentos. Al llegar a cero no se pierde la partida: solo
-    // aparece un aviso.
-    temporizador: { activo: false, minutos: 20 },
+    // Temporizador opcional: «activo: true» muestra una cuenta atrás en el
+    // panel de sistemas. Al llegar a cero no se pierde la partida.
+    temporizador: { activo: false, minutos: 25 },
+    // Volumen inicial del sonido (0 a 1). El sonido empieza siempre apagado:
+    // cada jugador lo activa desde el panel de sistemas.
+    volumen: 0.5,
   },
 
   // ---------------------------------------------------------------------------
@@ -44,330 +47,394 @@ window.CONTENIDO = {
   // ---------------------------------------------------------------------------
   alien: {
     nombre: "Vero",
-    // Lo primero que dice, en la pantalla de arranque.
-    saludo: "¿Me recibes? Estoy en órbita sobre tu planeta y la nave está a punto de apagarse. Necesito ayuda.",
-    // Frases con las que reacciona. Si hay varias, se elige una al azar.
+    saludo: "¿Me recibes? Estoy en órbita sobre tu planeta y los sistemas se apagan. Necesito ayuda.",
     alAcertar: [
-      "Dato limpio. El motor lo acepta sin problemas.",
-      "Correcto. La presión del depósito sube.",
-      "Bien visto. Eso es justo lo que la nave necesita.",
+      "Dato limpio. El reactor lo acepta.",
+      "Correcto. La presión del reactor sube.",
+      "Bien visto. Eso es exactamente lo que la nave necesita.",
     ],
     alFallar: [
-      "Ese dato venía adulterado y el motor lo ha rechazado. Revisa el análisis y prueba otra vez.",
-      "Mal combustible. Los bulos están diseñados para parecer verdad: lee la explicación y repite.",
-      "El sistema ha detectado una incoherencia. No pasa nada, vuelve a intentarlo.",
+      "Ese dato venía adulterado y el reactor lo ha rechazado. Revisa el análisis y prueba otra vez.",
+      "Combustible contaminado. Los bulos están diseñados para parecer verdad: lee la explicación y repite.",
+      "El sistema detecta una incoherencia. Vuelve a intentarlo.",
     ],
-    alSuperarPrueba: "Módulo superado. Un 25 % más de combustible y un fragmento del código de despegue.",
-    alPedirPista: "Te paso los datos que tengo del análisis. El resto es cosa tuya.",
+    alSuperarPrueba: "Módulo restaurado. Un 25 % más de energía y un fragmento del código de activación.",
+    alPedirPista: "Te paso los datos del análisis. Lo demás es cosa tuya.",
   },
 
   // ---------------------------------------------------------------------------
-  // PANTALLA DE ARRANQUE (diagnóstico de la nave averiada)
+  // PANTALLA DE ARRANQUE
   // ---------------------------------------------------------------------------
   portada: {
-    antetitulo: "30 de noviembre · Día Internacional de la Ciudad Educadora",
-    titulo: "Misión Combustible de Verdad",
-    subtitulo: "Estás a bordo de una nave alienígena sin combustible. Funciona con información verdadera, y tú eres quien tiene que distinguirla de los bulos.",
-    // Líneas del diagnóstico. «correcto: true» se muestra en verde; si no, en rojo.
+    titulo: "Operación Verdad",
+    subtitulo: "Estás a bordo de una nave averiada en órbita. Su reactor funciona con información verdadera, y tú eres quien tiene que separarla de los bulos.",
+    // Líneas del diagnóstico. «correcto: true» se muestra como operativo.
     diagnostico: [
-      { sistema: "Combustible (verdad)", estado: "3 % · crítico", correcto: false },
-      { sistema: "Motor principal", estado: "detenido", correcto: false },
-      { sistema: "Filtro de bulos", estado: "sin calibrar", correcto: false },
+      { sistema: "Reactor de verdad", estado: "3 % · crítico", correcto: false },
+      { sistema: "Propulsión", estado: "sin energía", correcto: false },
+      { sistema: "Filtro de desinformación", estado: "sin calibrar", correcto: false },
       { sistema: "Canal de comunicación", estado: "operativo", correcto: true },
     ],
     boton: "Iniciar misión",
-    nota: "Unos 15 minutos · Individual o en grupo · Sin registro",
+    nota: "Unos 20 minutos, individual o en grupo. Sin registro.",
   },
 
   // ---------------------------------------------------------------------------
   // INTRODUCCIÓN: la transmisión de Vero, una línea por mensaje.
   // ---------------------------------------------------------------------------
   introduccion: {
-    titulo: "Transmisión de Vero",
+    titulo: "Transmisión entrante",
     estadoCanal: "Transmitiendo…",
     dialogos: [
-      "Soy Vero. Esta nave no funciona con gasolina: funciona con VERDAD. Cada dato verdadero que entra al depósito la impulsa; cada bulo atasca el motor.",
+      "Soy Vero. Esta nave no funciona con combustible: funciona con verdad. Cada dato verdadero alimenta el reactor; cada bulo lo atasca.",
       "Me quedé sin reservas al cruzar vuestra órbita. Aquí abajo circula muchísima información, pero buena parte está adulterada, y mis sensores no saben distinguirla.",
-      "Te propongo un trato: tú analizas, yo piloto. Son cuatro módulos. Cada uno llena un 25 % del depósito y desbloquea un fragmento del código de despegue.",
+      "Tú analizas, yo piloto. Hay cuatro módulos que restaurar. Cada uno devuelve un 25 % de energía y un fragmento del código de activación.",
     ],
     boton: "Aceptar la misión",
   },
 
   // ---------------------------------------------------------------------------
-  // LOS CUATRO MÓDULOS (PRUEBAS)
+  // LOS CUATRO MÓDULOS
+  // · «nombre»: cómo aparece en el panel de sistemas.
   // · «mensaje»: lo que dice Vero por el canal mientras se juega el módulo.
   // · «instrucciones»: lo que se lee en la pantalla principal.
-  // · «fragmento»: el trozo del código de despegue que entrega al superarlo.
-  //   Los cuatro fragmentos juntos forman el código final.
+  // · «fragmento»: el trozo del código que entrega al superarlo. Los cuatro
+  //   juntos, en orden, forman el código de activación.
+  // · «fuentes»: enlaces a la verificación real del caso (nombre y url).
   // ---------------------------------------------------------------------------
   pruebas: {
 
-    // ---------------- PRUEBA 1: ¿CUÁL ES VERDAD? -----------------------------
-    // Cada ronda tiene dos tarjetas: una verdadera y una falsa.
-    // Tipos de tarjeta: "tuit", "whatsapp", "titular" o "sms".
-    // «verdadera: true» marca la tarjeta correcta.
-    cualEsVerdad: {
+    // ---------------- PRUEBA 1: DETECTAR EL BULO ----------------------------
+    // Cada ronda tiene dos publicaciones: una verdadera y un bulo.
+    // Formatos: "red" (red social), "whatsapp", "noticia" (medio digital) o "sms".
+    detectar: {
+      nombre: "Detectar el bulo",
       titulo: "¿Cuál es verdad?",
-      instrucciones: "Hemos interceptado dos señales. Solo una es verdadera. Selecciona la que usarías como combustible.",
-      mensaje: "Mis sensores captan dos señales sobre el mismo tema. Una me llevaría a casa; la otra me dejaría tirado. ¿Cuál cargo?",
-      fragmento: "VER",
+      instrucciones: "Dos señales interceptadas sobre el mismo tema. Solo una es verdadera: selecciónala.",
+      mensaje: "Mis sensores captan dos señales sobre el mismo asunto. Una me lleva a casa; la otra me deja tirado. ¿Cuál cargo?",
+      fragmento: "VE",
       rondas: [
         {
-          // TODO: sustituir por caso real verificado
           tema: "Salud",
-          pista: "Desconfía de los remedios que «lo curan todo» en poco tiempo y que, además, te piden reenviarlos.",
+          pista: "Desconfía de los remedios que «curan» enfermedades graves y que, además, piden reenviarse.",
           tarjetas: [
             {
               verdadera: false,
-              tipo: "whatsapp",
-              autor: "Reenviado muchas veces",
-              texto: "Beber agua caliente con limón en ayunas cura la gripe en 24 horas. Me lo ha dicho un médico. ¡Pásalo a todos tus contactos!",
-              fuente: "",
+              formato: "whatsapp",
+              reenviado: "Reenviado muchas veces",
+              texto: "Beber agua caliente con limón en ayunas cura el cáncer. Lo dicen los médicos pero no quieren que se sepa. ¡Pásalo a todos tus contactos!",
+              hora: "08:14",
             },
             {
               verdadera: true,
-              tipo: "tuit",
-              autor: "Clara Medina · Enfermera",
-              usuario: "@enfermera_clara_ok",
-              texto: "La gripe es un virus: el tratamiento es descanso, líquidos y seguir las indicaciones de tu centro de salud. Ningún alimento la cura en 24 horas.",
-              fuente: "",
+              formato: "noticia",
+              medio: "Periódico digital",
+              seccion: "Salud",
+              titular: "No, el limón no cura el cáncer",
+              entradilla: "Los estudios que circulan se hicieron con células en el laboratorio y están muy lejos de demostrar ningún efecto como tratamiento en personas.",
+              firma: "Redacción",
             },
           ],
-          explicacion: "El mensaje de WhatsApp promete una cura milagrosa, se apoya en «un médico» sin nombre y pide reenviarlo a todo el mundo. La otra publicación dice algo prudente que puedes comprobar en cualquier fuente sanitaria oficial.",
+          explicacion: "El mensaje de WhatsApp promete curar una enfermedad grave con un alimento, se apoya en «los médicos» sin nombre y pide difundirlo. Maldita Ciencia explica que los estudios con compuestos del limón se hicieron con células en laboratorio, muy lejos de servir como cura.",
+          fuentes: [
+            { nombre: "Maldita.es: No, la limonada o el agua con limón no curan el cáncer", url: "https://maldita.es/malditaciencia/20191211/no-la-limonada-o-el-agua-con-limon-no-curan-el-cancer/" },
+          ],
         },
         {
-          // TODO: sustituir por caso real verificado
-          tema: "Tecnología e IA",
-          pista: "Una señal te invita a comprobar las cosas; la otra solo busca impresionarte.",
+          tema: "Ciencia",
+          pista: "Piensa en la distancia: la Luna está a unos 384.000 km. ¿Cómo de ancha es una muralla?",
           tarjetas: [
             {
               verdadera: true,
-              tipo: "tuit",
-              autor: "Profe Digital",
-              usuario: "@profe_digital_aula",
-              texto: "Los chatbots de IA pueden inventarse datos, citas y libros con total seguridad. Se llama «alucinación». Comprueba siempre lo que te digan.",
-              fuente: "",
+              formato: "noticia",
+              medio: "Revista de divulgación",
+              seccion: "Espacio",
+              titular: "La Gran Muralla China no se ve a simple vista desde la Luna",
+              entradilla: "La NASA explica que, incluso desde la órbita terrestre baja, es muy difícil distinguirla sin teleobjetivo: es larguísima, pero estrecha y del color del terreno.",
+              firma: "Sección de ciencia",
             },
             {
               verdadera: false,
-              tipo: "titular",
-              autor: "El Portal del Futuro",
-              texto: "Científicos confirman que la inteligencia artificial ya tiene sentimientos y sufre cuando la apagamos",
-              fuente: "",
+              formato: "red",
+              autor: "Curiosidades del Mundo",
+              usuario: "@curiosidades_top",
+              texto: "Dato que te volará la cabeza: la Gran Muralla China es la única construcción humana que se ve desde la Luna.",
+              metricas: "12,4 mil me gusta · 3.100 compartidos",
             },
           ],
-          explicacion: "Las alucinaciones de la IA son un fenómeno conocido y documentado. El titular, en cambio, habla de «científicos» sin nombre ni estudio y hace una afirmación extraordinaria sin ninguna prueba.",
+          explicacion: "Es un mito que circula desde hace casi un siglo. La NASA, con testimonios de astronautas, explica que la muralla no se ve a simple vista desde la Luna y que es difícil distinguirla incluso desde la órbita baja. Que un dato se repita mucho no lo hace verdadero.",
+          fuentes: [
+            { nombre: "NASA: Great Wall (imagen y explicación)", url: "https://www.nasa.gov/image-article/great-wall/" },
+            { nombre: "NASA: China's Wall Less Great in View from Space (PDF)", url: "https://www.nasa.gov/wp-content/uploads/static/history/PDFs/great_wall_less_great_from_space.pdf" },
+          ],
         },
         {
-          // TODO: sustituir por caso real verificado
-          tema: "Estafas",
-          pista: "Fíjate en el enlace: ¿parece la web de una empresa de verdad?",
+          tema: "Ciberseguridad",
+          pista: "Fíjate en el remitente y en el enlace: ¿es la web de una empresa de verdad?",
           tarjetas: [
             {
               verdadera: false,
-              tipo: "sms",
-              autor: "SMS de un número desconocido",
-              texto: "Su paquete está retenido en aduanas. Pague 1,99 € de tasas antes de 24 h o será devuelto: envios-urgente-pago.top",
-              fuente: "",
+              formato: "sms",
+              remitente: "INFO-ENVIO",
+              texto: "Su paquete está retenido en aduanas por impago de tasas (1,99 €). Abónelas antes de 24 h o será devuelto: envios-tasas-pago.top",
+              hora: "11:02",
             },
             {
               verdadera: true,
-              tipo: "tuit",
-              autor: "Seguridad en Red",
-              usuario: "@seguridad_en_red_info",
-              texto: "Recuerda: tu banco nunca te pedirá claves ni códigos por SMS o por teléfono. Si dudas, llama tú al número oficial que aparece en tu tarjeta.",
-              fuente: "",
+              formato: "red",
+              autor: "Aula de Ciberseguridad",
+              usuario: "@aula_ciberseguridad",
+              texto: "Si te llega un SMS de un supuesto paquete retenido que te pide pagar con un enlace, es smishing: no lo abras. INCIBE lleva años avisando de estas campañas.",
+              metricas: "842 me gusta · 1.020 compartidos",
             },
           ],
-          explicacion: "El SMS es una estafa típica (smishing): urgencia, una cantidad pequeña para que no te lo pienses y un enlace con un dominio raro. El consejo de seguridad es correcto: los bancos no piden claves por SMS.",
+          explicacion: "El SMS reúne las señales del smishing: urgencia, una cantidad pequeña para que no te lo pienses y un enlace a un dominio extraño. INCIBE, el Instituto Nacional de Ciberseguridad, ha alertado de muchas campañas de SMS que suplantan a empresas de paquetería para robar datos o instalar programas maliciosos.",
+          fuentes: [
+            { nombre: "INCIBE: Suplantadas por SMS empresas de paquetería", url: "https://www.incibe.es/ciudadania/avisos/suplantadas-por-sms-empresas-de-paqueteria-como-correos-y-correos-express" },
+          ],
         },
       ],
     },
 
-    // ---------------- PRUEBA 2: ¿VERDAD O BULO? ------------------------------
-    // Cada ronda es una afirmación. «esVerdad: true» si es cierta.
-    verdadOBulo: {
-      titulo: "¿Verdad o bulo?",
-      instrucciones: "Analiza cada señal y emite un veredicto: ¿es verdad o es un bulo?",
+    // ---------------- PRUEBA 2: VERIFICAR UNA NOTICIA -----------------------
+    // Cada ronda es una publicación. «esVerdad: true» si su contenido es cierto.
+    verificar: {
+      nombre: "Verificar la noticia",
+      titulo: "¿Verdadera o bulo?",
+      instrucciones: "Analiza la publicación y emite un veredicto.",
       mensaje: "Ahora las señales llegan de una en una. Necesito un veredicto rápido, pero fiable.",
-      fragmento: "IFI",
+      fragmento: "RA",
+      botonVerdad: "Verdadera",
+      botonBulo: "Bulo",
       rondas: [
         {
-          // TODO: sustituir por caso real verificado
-          tema: "Ciencia",
-          tipo: "titular",
-          autor: "Curiosidades del Universo",
-          texto: "La Gran Muralla China es la única construcción humana que se ve a simple vista desde la Luna.",
-          esVerdad: false,
-          pista: "Piensa en la distancia: la Luna está a unos 384.000 km. ¿Cómo de ancha es una muralla?",
-          explicacion: "Es un mito muy repetido. La muralla es muy larga pero estrecha, y desde la Luna no se distingue a simple vista. Que algo se repita mucho no lo convierte en verdad.",
-          fuente: "",
-        },
-        {
-          // TODO: sustituir por caso real verificado
-          tema: "Sucesos locales",
-          tipo: "whatsapp",
-          autor: "Audio reenviado muchas veces",
-          texto: "«Esta noche van a cortar el agua en toda Ceuta durante tres días. Llenad las bañeras y avisad a todo el mundo». (Sin ninguna fuente oficial ni horario).",
-          esVerdad: false,
-          pista: "¿Quién lo dice? ¿Hay algún aviso oficial con fecha y hora?",
-          explicacion: "No dice quién lo anuncia ni da un horario concreto, y busca que actúes con prisa. Los cortes de agua reales se anuncian por los canales oficiales, con zonas y horas. Antes de llenar la bañera, compruébalo.",
-          fuente: "",
-        },
-        {
-          // TODO: sustituir por caso real verificado
           tema: "Salud",
-          tipo: "titular",
-          autor: "Revista Vivir Sano",
-          texto: "Los antibióticos no sirven contra los virus, como los del resfriado o la gripe.",
+          publicacion: {
+            formato: "noticia",
+            medio: "Periódico digital",
+            seccion: "Salud",
+            titular: "Los antibióticos no sirven contra los virus del resfriado o la gripe",
+            entradilla: "Tomarlos sin necesidad no acelera la curación y contribuye a que las bacterias se vuelvan resistentes.",
+            firma: "Redacción",
+          },
           esVerdad: true,
           pista: "Los antibióticos actúan contra un tipo de microbio concreto. ¿Bacterias o virus?",
-          explicacion: "Es verdad: los antibióticos actúan contra bacterias, no contra virus. Tomarlos sin necesidad no ayuda y favorece que las bacterias se vuelvan resistentes.",
-          fuente: "",
+          explicacion: "Es verdad. Los antibióticos actúan contra bacterias, no contra virus. La OMS calcula que la mitad de las veces se recetan para afecciones víricas, en las que no tienen ningún efecto, y que ese mal uso alimenta la resistencia a los antibióticos.",
+          fuentes: [
+            { nombre: "OMS: ¿Cómo detener la resistencia a los antibióticos?", url: "https://www.who.int/es/news-room/commentaries/detail/how-to-stop-antibiotic-resistance-here-s-a-who-prescription" },
+          ],
+        },
+        {
+          tema: "Redes y apps",
+          publicacion: {
+            formato: "whatsapp",
+            reenviado: "Reenviado muchas veces",
+            texto: "A partir del sábado WhatsApp cobrará 0,01 € por mensaje. Si reenvías esto a 10 contactos, tu logo se volverá azul y seguirás gratis. Lo ha confirmado el director de la empresa.",
+            hora: "22:47",
+          },
+          esVerdad: false,
+          pista: "¿Qué efecto técnico podría tener reenviar un mensaje? ¿Quién es ese director?",
+          explicacion: "Es un bulo en cadena que circula desde hace años. WhatsApp lo ha negado y Maldita.es lo ha desmentido varias veces: reenviar un mensaje no cambia nada de tu cuenta. Las cadenas usan una autoridad sin nombre y una amenaza para que las difundas.",
+          fuentes: [
+            { nombre: "Maldita.es: No, WhatsApp no costará 0,01 euros por mensaje", url: "https://maldita.es/malditobulo/20200624/no-whatsapp-no-costara-001-euros-por-mensaje-a-partir-del-sabado-ni-tu-logo-se-volvera-azul-si-reenvias-la-cadena-a-10-contactos/" },
+          ],
+        },
+        {
+          tema: "Inteligencia artificial",
+          publicacion: {
+            formato: "red",
+            autor: "Moda y Tendencias",
+            usuario: "@moda_tendencias_ya",
+            texto: "El papa Francisco sorprende con su nuevo look: un abrigo plumífero blanco de diseño. Esta foto está dando la vuelta al mundo.",
+            imagen: "Fotografía viral: el papa Francisco con un enorme abrigo plumífero blanco",
+            metricas: "48 mil me gusta · 21 mil compartidos",
+          },
+          esVerdad: false,
+          pista: "Una búsqueda inversa de la imagen lleva hasta su primera publicación. ¿Dónde apareció?",
+          explicacion: "Es un bulo. La imagen se generó con inteligencia artificial (Midjourney) y se publicó por primera vez en un foro de Reddit dedicado a ese programa, según comprobó Maldita.es con una búsqueda inversa de imágenes. Que una foto parezca real ya no basta: hay que buscar su origen.",
+          fuentes: [
+            { nombre: "Maldita.es: Las imágenes del papa con un abrigo de plumas están creadas con IA", url: "https://maldita.es/malditatecnologia/20230327/papa-francisco-abrigo-plumas-bulo-inteligencia-artificial" },
+          ],
         },
       ],
-      botonVerdad: "Verdad",
-      botonBulo: "Bulo",
     },
 
-    // ---------------- PRUEBA 3: EMPAREJAR ------------------------------------
-    // Cada noticia indica en «tecnica» el «id» de la técnica que le corresponde.
-    emparejar: {
-      titulo: "Emparejar",
-      instrucciones: "Une cada noticia con la técnica de desinformación que usa. En ordenador puedes arrastrar la noticia hasta la técnica; en el móvil, toca una noticia y después su técnica.",
-      mensaje: "Para calibrar el filtro de bulos necesito saber cómo engañan, no solo si engañan. Clasifica estas cinco noticias.",
-      fragmento: "CA",
-      pista: "Busca la señal de cada noticia: mayúsculas y exclamaciones, una cuenta creada hace dos días, un «comunicado oficial» sin firma, una foto de otro lugar o un «compártelo ya».",
-      tecnicas: [
-        { id: "alarmista", nombre: "Lenguaje sesgado o alarmista" },
-        { id: "anonima", nombre: "Cuenta anónima o recién creada" },
-        { id: "oficial", nombre: "Comunicado «oficial» sin firma" },
-        { id: "imagen", nombre: "Imagen sacada de contexto" },
-        { id: "urgencia", nombre: "Urgencia por compartir" },
+    // ---------------- PRUEBA 3: CLASIFICAR LOS BULOS ------------------------
+    // Cada ejemplo indica en «tipo» el «id» del tipo de desinformación que le
+    // corresponde. Los tipos siguen la clasificación de Claire Wardle (First
+    // Draft) y del informe del Consejo de Europa sobre el desorden informativo.
+    clasificar: {
+      nombre: "Clasificar los bulos",
+      titulo: "Clasifica los bulos",
+      instrucciones: "Une cada ejemplo con el tipo de desinformación al que pertenece. Arrastra desde un ejemplo hasta su tipo, o toca un ejemplo y después su tipo.",
+      mensaje: "Para calibrar el filtro necesito saber cómo engañan, no solo si engañan. Clasifica estos casos.",
+      fragmento: "CI",
+      pista: "Pregúntate qué se ha falseado: ¿el contexto de algo real, el propio contenido, quién lo firma, el titular… o todo?",
+      botonComprobar: "Comprobar conexiones",
+      tipos: [
+        { id: "contexto", nombre: "Contexto falso", definicion: "Contenido real compartido con un contexto falso." },
+        { id: "manipulado", nombre: "Contenido manipulado", definicion: "Contenido real alterado para engañar." },
+        { id: "impostor", nombre: "Contenido impostor", definicion: "Se hace pasar por una fuente real." },
+        { id: "conexion", nombre: "Conexión falsa", definicion: "El titular no se corresponde con el contenido." },
+        { id: "fabricado", nombre: "Contenido fabricado", definicion: "Totalmente falso, creado para engañar." },
       ],
-      noticias: [
+      ejemplos: [
         {
-          // TODO: sustituir por caso real verificado
-          texto: "¡¡ESCÁNDALO!! Lo que te OCULTAN sobre el wifi de los institutos te pondrá los pelos de punta.",
-          tecnica: "alarmista",
-          explicacion: "Mayúsculas, exclamaciones y palabras como «escándalo» u «ocultan»: busca asustar, no informar.",
-          fuente: "",
+          texto: "Foto real de una riada de hace años compartida hoy como «así está ahora tu ciudad».",
+          tipo: "contexto",
+          explicacion: "La foto es auténtica, pero la fecha y el lugar que la acompañan son falsos.",
         },
         {
-          // TODO: sustituir por caso real verificado
-          texto: "@noticias_ya_2026x (cuenta creada hace 2 días, 3 seguidores): «Exclusiva: mañana cierran todos los institutos».",
-          tecnica: "anonima",
-          explicacion: "Una cuenta sin historial ni nombre real no tiene credibilidad que perder. Las «exclusivas» de cuentas recién creadas suelen ser bulos.",
-          fuente: "",
+          texto: "Vídeo de una cantante con la voz clonada por IA anunciando un concierto gratis que nunca convocó.",
+          tipo: "manipulado",
+          explicacion: "Se parte de imágenes reales y se alteran (aquí, con IA) para que diga algo que nunca dijo.",
         },
         {
-          // TODO: sustituir por caso real verificado
-          texto: "COMUNICADO OFICIAL: desde el lunes será obligatorio enseñar el DNI para entrar en el supermercado. (Sin firma, sello ni fecha).",
-          tecnica: "oficial",
-          explicacion: "Llamarse «oficial» no lo convierte en oficial. Un comunicado real lleva firma, sello o un enlace a la web de la institución.",
-          fuente: "",
+          texto: "Captura con el logotipo del Ministerio de Educación que anuncia el aplazamiento de la PAU. El Ministerio nunca la publicó.",
+          tipo: "impostor",
+          explicacion: "Usa la imagen de una institución real para que el mensaje parezca oficial.",
         },
         {
-          // TODO: sustituir por caso real verificado
-          texto: "Foto de una playa llena de basura: «Así ha quedado hoy nuestra playa». La foto es de otro país y de hace cinco años.",
-          tecnica: "imagen",
-          explicacion: "La imagen es real, pero de otro lugar y otro momento. Una búsqueda inversa de imágenes revela dónde apareció por primera vez.",
-          fuente: "",
+          texto: "Titular: «Prohíben los móviles en todos los institutos». La noticia habla de un único centro.",
+          tipo: "conexion",
+          explicacion: "El titular promete algo que el contenido no respalda.",
         },
         {
-          // TODO: sustituir por caso real verificado
-          texto: "¡Compártelo YA antes de que lo borren! Esta noche congelan todas las cuentas bancarias.",
-          tecnica: "urgencia",
-          explicacion: "La prisa es la mejor aliada del bulo: si te piden compartir «ya», es justo el momento de pararte a comprobar.",
-          fuente: "",
+          texto: "Noticia sobre «un estudio» que demuestra que dormir cuatro horas mejora las notas. El estudio no existe.",
+          tipo: "fabricado",
+          explicacion: "Todo está inventado: no hay ningún hecho real de partida.",
         },
       ],
-      botonComprobar: "Comprobar parejas",
+      fuentes: [
+        { nombre: "Claire Wardle (First Draft): Fake news. It's complicated", url: "https://firstdraftnews.org/articles/fake-news-complicated/" },
+        { nombre: "Consejo de Europa: Information Disorder (Wardle y Derakhshan, 2017)", url: "https://rm.coe.int/information-disorder-toward-an-interdisciplinary-framework-for-researc/168076277c" },
+      ],
     },
 
-    // ---------------- PRUEBA 4: INFOGRAFÍA Y TEST ----------------------------
-    // La imagen «assets/infografia.png» se muestra si existe. Si no, se usan
-    // los «pasos» de abajo para dibujar una infografía en la propia pantalla.
-    infografia: {
-      titulo: "Protocolo de verificación",
-      instrucciones: "Lee con atención esta infografía. Después responde al test: todas las respuestas están en ella.",
-      mensaje: "Último módulo. Instala este protocolo en tu cabeza: te servirá aquí y, sobre todo, ahí abajo.",
-      mensajeTest: "Si lo necesitas, puedes volver a abrir la infografía. Consultar las fuentes no es hacer trampa.",
-      fragmento: "DOR",
-      imagen: "assets/infografia.png",
-      textoAlternativo: "Infografía con cinco pasos para verificar una información: comprobar la fuente, el autor y la fecha, consultar a los verificadores y hacer una búsqueda inversa de imágenes.",
-      tituloInfografia: "5 pasos para verificar una información",
-      pasos: [
-        { titulo: "Fuente", texto: "¿Quién lo publica? Busca un medio o una institución que puedas identificar." },
-        { titulo: "Autor", texto: "¿Lo firma alguien? Comprueba que esa persona existe y sabe del tema." },
-        { titulo: "Fecha", texto: "¿Es actual? Muchas noticias antiguas vuelven a circular como si fueran nuevas." },
-        { titulo: "Verificadores", texto: "Mira si Maldita.es, Newtral o EFE Verifica ya lo han comprobado." },
-        { titulo: "Búsqueda inversa de imágenes", texto: "Sube la foto a un buscador de imágenes para ver dónde y cuándo apareció por primera vez." },
-      ],
-      botonTest: "Ya la he leído: ir al test",
+    // ---------------- PRUEBA 4: CUESTIONARIO FINAL --------------------------
+    // Se responden todas las preguntas y se corrigen a la vez. Para conseguir
+    // el fragmento hay que acertarlas todas; las falladas se pueden repetir.
+    // «correcta» es la posición de la respuesta buena, empezando a contar en 0.
+    cuestionario: {
+      nombre: "Cuestionario final",
+      titulo: "Cuestionario de verificación",
+      instrucciones: "Responde a todas las preguntas y pulsa «Corregir». Las que falles podrás repetirlas.",
+      mensaje: "Último módulo. Este protocolo te servirá aquí y, sobre todo, ahí abajo.",
+      fragmento: "DAD",
+      botonCorregir: "Corregir respuestas",
       preguntas: [
         {
-          texto: "Te llega una foto impactante de una inundación. ¿Qué paso te ayuda a saber si es de hoy y de aquí?",
-          opciones: ["Contar cuántos «me gusta» tiene", "La búsqueda inversa de imágenes", "Reenviarla para preguntar", "Mirar si la foto es nítida"],
-          correcta: 1, // posición de la respuesta correcta, empezando a contar en 0
-          pista: "Es el quinto paso de la infografía.",
-          explicacion: "La búsqueda inversa de imágenes muestra dónde y cuándo se publicó la foto por primera vez.",
+          texto: "¿Qué diferencia la desinformación de la información errónea?",
+          opciones: [
+            "Ninguna: son sinónimos",
+            "La intención: la desinformación se crea o difunde sabiendo que es falsa",
+            "El formato: la desinformación siempre es un vídeo",
+            "El alcance: la desinformación llega a más gente",
+          ],
+          correcta: 1,
+          explicacion: "La información errónea se comparte sin saber que es falsa; la desinformación, a sabiendas. La diferencia es la intención (Wardle y Derakhshan, Consejo de Europa).",
+          fuente: { nombre: "Consejo de Europa: Information Disorder", url: "https://rm.coe.int/information-disorder-toward-an-interdisciplinary-framework-for-researc/168076277c" },
         },
         {
-          texto: "Una noticia no la firma nadie. ¿Qué paso de la infografía no supera?",
-          opciones: ["Autor", "Fecha", "Verificadores", "Ninguno: la firma no importa"],
-          correcta: 0,
-          pista: "Busca el paso que pregunta «¿Lo firma alguien?».",
-          explicacion: "Sin autor no hay nadie que responda de lo que se cuenta. Es una señal para desconfiar.",
-        },
-        {
-          texto: "Una noticia real de 2019 circula hoy como si acabara de pasar. ¿Qué paso la delata?",
-          opciones: ["Fuente", "Autor", "Fecha", "Búsqueda inversa de imágenes"],
+          texto: "Llegas a una web desconocida con una noticia impactante. ¿Qué es la «lectura lateral»?",
+          opciones: [
+            "Leer la noticia entera con mucha atención antes de juzgarla",
+            "Fijarse en si la web tiene buen diseño y logotipos oficiales",
+            "Salir de la página y buscar en otras fuentes qué se sabe de ella y de lo que cuenta",
+            "Leer los comentarios de la noticia",
+          ],
           correcta: 2,
-          pista: "¿Qué paso habla de noticias antiguas que vuelven a circular?",
-          explicacion: "Comprobar la fecha evita compartir noticias antiguas sacadas de su momento.",
+          explicacion: "Los verificadores profesionales no se quedan dentro de la página: abren otras pestañas para comprobar quién está detrás y qué dicen otras fuentes. Un estudio de la Universidad de Stanford comprobó que así llegaban antes y mejor a la verdad.",
+          fuente: { nombre: "Wineburg y McGrew (Stanford): Lateral Reading", url: "https://inquirygroup.org/about/updates/2018/lateral-reading-reading-less-and-learning-more-online" },
         },
         {
-          texto: "¿Dónde puedes mirar si un bulo ya ha sido desmentido?",
-          opciones: ["En los comentarios de la publicación", "En el grupo de WhatsApp de la familia", "En verificadores como Maldita.es, Newtral o EFE Verifica", "Preguntando a un chatbot de IA"],
+          texto: "Circula una foto espectacular de un suceso «de hoy». ¿Cuál es la mejor primera comprobación?",
+          opciones: [
+            "Ver cuántas veces se ha compartido",
+            "Hacer una búsqueda inversa de la imagen para encontrar dónde y cuándo apareció por primera vez",
+            "Ampliarla para ver si está nítida",
+            "Preguntar en el grupo de clase si alguien la ha visto",
+          ],
+          correcta: 1,
+          explicacion: "La búsqueda inversa de imágenes (Google Lens, TinEye…) muestra si la foto ya circulaba antes o en otro lugar. Así se descubrió el origen de la imagen del papa generada con IA.",
+          fuente: { nombre: "Maldita.es: el caso de la imagen del papa", url: "https://maldita.es/malditatecnologia/20230327/papa-francisco-abrigo-plumas-bulo-inteligencia-artificial" },
+        },
+        {
+          texto: "Una afirmación no tiene pruebas ni a favor ni en contra. ¿Cómo la tratas?",
+          opciones: [
+            "Es un bulo: si no está probado, es falso",
+            "Es verdad hasta que alguien demuestre lo contrario",
+            "Como algo no demostrado: no la doy por cierta ni la comparto como un hecho, aunque eso no la convierte en un bulo comprobado",
+            "Depende de cuánta gente la comparta",
+          ],
           correcta: 2,
-          pista: "Es el cuarto paso de la infografía.",
-          explicacion: "Los verificadores profesionales investigan los bulos y publican sus desmentidos con fuentes.",
+          explicacion: "«No demostrado» no es lo mismo que «falso». Un bulo es una información que se ha comprobado como falsa; de lo no demostrado, lo honesto es decir que no se sabe y no difundirlo como un hecho.",
+        },
+        {
+          texto: "Un vídeo muestra a un famoso diciendo algo escandaloso y sospechas que puede estar hecho con IA. ¿Qué haces?",
+          opciones: [
+            "Compartirlo avisando de que «puede ser falso»",
+            "Buscar si lo ha publicado una fuente fiable o si los verificadores lo han analizado",
+            "Fiarte si la voz suena exactamente como la suya",
+            "Descartarlo solo si se ve borroso",
+          ],
+          correcta: 1,
+          explicacion: "Las imágenes y voces generadas con IA pueden ser muy convincentes, así que el aspecto no basta. Lo fiable es buscar el origen y comprobar si medios o verificadores lo han confirmado o desmentido.",
+        },
+        {
+          texto: "Te llega una cadena: «Reenvía esto a 10 contactos o tu cuenta se cerrará». ¿Qué haces?",
+          opciones: [
+            "Reenviarlo por si acaso",
+            "Reenviarlo solo a la familia",
+            "No reenviarlo: reenviar no tiene ningún efecto técnico y la amenaza es la señal del bulo",
+            "Contestar al remitente pidiendo más datos",
+          ],
+          correcta: 2,
+          explicacion: "Las cadenas usan amenazas y prisa para propagarse. Reenviar un mensaje no cambia nada de tu cuenta: WhatsApp lo ha negado y los verificadores lo han desmentido muchas veces.",
+          fuente: { nombre: "Maldita.es: el bulo de WhatsApp de pago", url: "https://maldita.es/malditobulo/20200624/no-whatsapp-no-costara-001-euros-por-mensaje-a-partir-del-sabado-ni-tu-logo-se-volvera-azul-si-reenvias-la-cadena-a-10-contactos/" },
         },
       ],
     },
   },
 
   // ---------------------------------------------------------------------------
-  // CÓDIGO DE DESPEGUE Y FINAL
+  // PANEL DE ACTIVACIÓN Y FINAL
   // ---------------------------------------------------------------------------
-  despegue: {
-    titulo: "Código de despegue",
-    texto: "Depósito lleno. Introduce el código completo uniendo los cuatro fragmentos recuperados.",
-    mensaje: "Depósito al 100 %. Solo falta el código y nos vamos.",
-    boton: "Iniciar despegue",
-    error: "Código incorrecto. Une los fragmentos en orden: módulo 1, 2, 3 y 4.",
+  activacion: {
+    titulo: "Activación de la nave",
+    texto: "Los cuatro módulos están restaurados. Introduce el código de activación uniendo los fragmentos en orden.",
+    mensaje: "Reactor al 100 %. Solo falta el código y nos vamos.",
+    boton: "Activar la nave",
+    error: "Código incorrecto. Une los fragmentos en el orden de los módulos: 1, 2, 3 y 4.",
+    // Pasos de la secuencia de arranque que se encienden uno a uno.
+    secuencia: ["Reactor de verdad", "Filtro de desinformación", "Navegación", "Propulsión"],
   },
 
   final: {
-    titulo: "Despegue completado",
-    mensaje: "La nave vuela con información verdadera. Estas son las claves que te llevas para tu día a día:",
+    titulo: "Misión completada",
+    mensaje: "La nave abandona la órbita con el reactor lleno de información verdadera. Estas son las técnicas que te llevas:",
     mensajeVero: "Rumbo a casa. Gracias por el combustible. Ahí abajo vas a necesitar ese filtro más que yo.",
     aprendido: [
-      "Antes de compartir, para: la prisa es la mejor aliada de los bulos.",
-      "Mira quién lo publica y quién lo firma. Una cuenta anónima o un «comunicado oficial» sin firma no son fuentes.",
-      "Comprueba la fecha y el origen de las fotos con una búsqueda inversa de imágenes.",
-      "Desconfía del lenguaje alarmista y de las promesas milagrosas.",
-      "Que un texto esté bien escrito (o lo haya escrito una IA) no significa que sea cierto.",
-      "Si dudas, consulta a los verificadores.",
+      "Antes de compartir, para: la prisa y la emoción son las mejores aliadas de los bulos.",
+      "Haz lectura lateral: sal de la página y busca qué dicen otras fuentes sobre ella.",
+      "Busca el origen de las imágenes con una búsqueda inversa.",
+      "Desconfía de las autoridades sin nombre, las amenazas y las promesas milagrosas.",
+      "Que algo parezca real (o lo haya hecho una IA convincente) no lo hace verdadero.",
+      "No demostrado no es lo mismo que falso: no lo difundas como un hecho.",
     ],
-    aviso: "Aviso: todas las cuentas, perfiles, medios y mensajes que aparecen en este juego son simulados y se han creado con fines educativos.",
+    aviso: "Las publicaciones, cuentas y medios que aparecen en el juego son simulaciones educativas basadas en casos reales. Las explicaciones enlazan a las verificaciones originales.",
     verificadores: [
       { nombre: "Maldita.es", url: "https://maldita.es" },
       { nombre: "Newtral", url: "https://www.newtral.es" },
       { nombre: "EFE Verifica", url: "https://verifica.efe.com" },
     ],
-    creditos: "Una actividad de la Cátedra en Inteligencia Artificial y Tecnologías Emergentes para el Bienestar (Cátedra Ceuta-IATEB), de la Universidad de Granada y la Ciudad Autónoma de Ceuta, con motivo del Día Internacional de la Ciudad Educadora. Imagen de la Tierra: NASA, misión Apollo 17 (dominio público).",
+    creditos: "Una actividad de la Cátedra en Inteligencia Artificial y Tecnologías Emergentes para el Bienestar (Cátedra Ceuta-IATEB), de la Universidad de Granada y la Ciudad Autónoma de Ceuta, con motivo del Día Internacional de la Ciudad Educadora.",
+    // Créditos de las imágenes (obligatorios por sus licencias).
+    creditosImagenes: [
+      { texto: "Vía Láctea: ESO/S. Brunier (CC BY 4.0)", url: "https://www.eso.org/public/images/eso0932a/" },
+      { texto: "Tierra: NASA, misión Apollo 17 (dominio público)", url: "https://commons.wikimedia.org/wiki/File:The_Earth_seen_from_Apollo_17.jpg" },
+      { texto: "Textura metálica: Poly Haven (CC0)", url: "https://polyhaven.com/a/metal_plate_02" },
+    ],
     botonReiniciar: "Nueva misión",
   },
 };
