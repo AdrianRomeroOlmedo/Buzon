@@ -18,9 +18,60 @@ Cada módulo da un 25 % de energía y un fragmento del código de activación. C
 - **Tres monitores encastrados en el panel de control**:
   - **Estado de la nave**: los cuatro módulos (pendiente, en curso o restaurado), su fragmento del código y el reactor.
   - **Pantalla principal**: donde se juega. En pantallas grandes tiene su propio desplazamiento.
-  - **Canal de comunicación**: Vero, el extraterrestre, que reacciona a cada respuesta. Debajo están los ajustes: sonido (apagado al empezar), volumen, ampliar texto y reiniciar.
+  - **Canal de comunicación**: Vero, el extraterrestre, que reacciona a cada respuesta. Debajo están los ajustes: sonido (apagado al empezar), volumen, ampliar texto, datos de la partida y reiniciar.
 
-El juego es una página estática: HTML, CSS y JavaScript, sin frameworks ni instalación. No envía datos a ningún servidor. El progreso se guarda solo en el navegador de quien juega. El sonido se genera en el propio navegador, sin archivos de audio.
+El juego es una página estática: HTML, CSS y JavaScript, sin frameworks ni instalación. El sonido se genera en el propio navegador, sin archivos de audio.
+
+## Privacidad
+
+- **No hay ninguna petición externa al cargar.** La tipografía está incluida en `assets/fuentes/` y no se pide a Google.
+- **No envía datos a ningún servidor.** El progreso, los datos de la partida y el cuestionario se guardan solo en el navegador del dispositivo.
+- **Los enlaces externos** (las fuentes de cada caso, los verificadores y los créditos) solo se abren si se pulsan, en una pestaña nueva y sin enviar a esa web desde qué página se viene.
+
+## Datos para la evaluación del piloto
+
+Estos cambios responden a la «Propuesta integrada de evaluación de Operación Verdad».
+
+### Datos de la partida
+
+El botón **Datos de la partida**, en los ajustes, abre un resumen de la partida de ese dispositivo. Está disponible también en partidas sin terminar. Incluye:
+
+- **Código de partida**: un código seudónimo (por ejemplo, `OV-7K3Q-M2PA`) que se crea al pulsar «Iniciar misión». Sirve para no confundir registros; no identifica a nadie.
+- **Versión de la web**: el campo `edicion` de `content.js` y la versión del contenido.
+- **Estado**: sin iniciar, en curso (con el módulo) o finalizada, y módulos restaurados.
+- **Tiempos**:
+  - Tiempo total, desde «Iniciar misión» hasta el despegue (incluye pausas). Solo aparece en partidas finalizadas.
+  - Tiempo transcurrido hasta ahora, en partidas sin terminar.
+  - Tiempo activo aproximado: solo cuenta mientras la pestaña está visible y ha habido alguna interacción en los últimos 2 minutos.
+- **Pistas solicitadas**, en total y por módulo. No incluye la ayuda del profesorado ni de compañeros.
+- **Contadores por módulo**: cada uno mide una sola cosa, en lugar del antiguo contador mezclado de «errores».
+  - Módulos 1 y 2: rondas acertadas al primer intento y respuestas incorrectas.
+  - Módulo 3: conexiones correctas en la primera comprobación, comprobaciones con algún error y conexiones incorrectas en total.
+  - Módulo 4: preguntas correctas en la primera corrección, correcciones con algún error y respuestas incorrectas en total.
+  - Códigos de activación incorrectos.
+- **Cuestionario de opinión**: respondido o sin responder.
+
+Lo que aún no se ha podido observar aparece como **«No disponible»**, nunca como cero. Por ejemplo, el módulo 3 de una partida que se abandonó en el módulo 2.
+
+El resumen se puede **copiar** (texto) o **descargar en CSV**: una fila por partida, separada por punto y coma y en UTF-8, lista para Excel o LibreOffice. Para unir varias partidas, se copian las filas de datos (sin la cabecera) en una misma hoja.
+
+La pantalla final muestra el tiempo, las pistas y los **aciertos al primer intento** (de 17 respuestas posibles). Estos datos describen la partida: no son una calificación ni una medida de aprendizaje.
+
+### Dispositivos compartidos
+
+Al abrir la web con una partida guardada, se pregunta si se quiere **continuar** o **empezar una partida nueva**. Cada partida nueva tiene su propio código. Antes de empezar otra, conviene copiar o descargar los datos de la anterior si se necesitan: al empezar una nueva se borran.
+
+### Cuestionario de opinión
+
+Es el cuestionario del apartado 6 de la propuesta, con los textos tal cual, en `cuestionarioOpinion` de `content.js`. Si se cambia algún ítem, hay que cambiar también su `version`.
+
+- **Cuándo**: es opcional. Se ofrece al terminar la misión y también se puede abrir desde «Datos de la partida», aunque la misión haya quedado incompleta.
+- **Cómo se responde**: 12 frases con escala del 1 al 5 y **NV** («No puedo valorarlo»), y dos preguntas abiertas opcionales. Se puede dejar cualquier pregunta sin responder. Hay un campo opcional para el código de participante; no se pide el nombre.
+- **Dónde se guardan las respuestas**: solo en el dispositivo.
+- **Cómo se entregan**: con **Descargar respuestas (CSV)** o **Copiar**. Las respuestas van en las mismas columnas del CSV de la partida (`item_1` a `item_12`, `pregunta_13` y `pregunta_14`):
+  - Las respuestas numéricas se guardan como 1 a 5.
+  - NV se guarda como `NV`.
+  - Las preguntas sin responder quedan **vacías**: no se convierten en 3 ni en 0.
 
 ## Archivos
 
@@ -30,7 +81,7 @@ El juego es una página estática: HTML, CSS y JavaScript, sin frameworks ni ins
 | `content.js` | **Todo el contenido**: textos, publicaciones, respuestas, explicaciones, fuentes, pistas y preguntas. |
 | `styles.css` | El aspecto: colores, iluminación, monitores y animaciones. |
 | `app.js` | El funcionamiento del juego. No hace falta tocarlo para cambiar textos. |
-| `assets/` | Imágenes: `espacio.jpg` (Vía Láctea), `tierra.jpg` (Tierra), `chapa.jpg` (textura del panel) y `favicon.svg`. |
+| `assets/` | Imágenes: `espacio.jpg` (Vía Láctea), `tierra.jpg` (Tierra), `chapa.jpg` (textura del panel) y `favicon.svg`. En `assets/fuentes/`, la tipografía Barlow y su licencia. |
 
 ## Probarlo en tu ordenador
 
@@ -80,6 +131,7 @@ Fuentes que usa el contenido actual (todas comprobadas):
 | `assets/espacio.jpg` | Recorte de la panorámica de la Vía Láctea de [ESO/S. Brunier](https://www.eso.org/public/images/eso0932a/) | CC BY 4.0: hay que citar «ESO/S. Brunier» |
 | `assets/tierra.jpg` | «The Blue Marble», [NASA, misión Apollo 17](https://commons.wikimedia.org/wiki/File:The_Earth_seen_from_Apollo_17.jpg) | Dominio público |
 | `assets/chapa.jpg` | Textura [metal_plate_02 de Poly Haven](https://polyhaven.com/a/metal_plate_02) | CC0 |
+| `assets/fuentes/*.woff2` | Tipografía [Barlow](https://github.com/jpt/barlow) (Barlow y Barlow Condensed) | SIL Open Font License 1.1 (`assets/fuentes/OFL.txt`) |
 
 Los créditos aparecen en la pantalla final (campo `creditosImagenes` de `content.js`). Si cambias una imagen, actualiza también su crédito.
 
@@ -111,4 +163,5 @@ Esta carpeta se sirve también desde la web de la Cátedra, en `/juegos/escape-r
 - Los aciertos, fallos y estados se indican con texto e iconos, no solo con colores.
 - Los avisos y las reacciones de Vero se anuncian a los lectores de pantalla.
 - Las animaciones se desactivan si el sistema tiene activado «reducir movimiento».
-- El botón **Ampliar texto** agranda la letra para proyectar.
+- El botón **Ampliar** agranda la letra para proyectar.
+- La ventana de datos de la partida se cierra con Esc y devuelve el foco al juego.

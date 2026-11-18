@@ -13,6 +13,15 @@
    Los colores están en :root para adaptarlos a la identidad de la Cátedra.
    ========================================================================== */
 
+/* Tipografía incluida en la web (Barlow y Barlow Condensed, licencia SIL OFL 1.1,
+   ver assets/fuentes/OFL.txt): así la página no hace ninguna petición externa. */
+@font-face { font-family: "Barlow"; font-weight: 400; font-style: normal; font-display: swap; src: url("assets/fuentes/barlow-400.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-weight: 500; font-style: normal; font-display: swap; src: url("assets/fuentes/barlow-500.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-weight: 600; font-style: normal; font-display: swap; src: url("assets/fuentes/barlow-600.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 500; font-style: normal; font-display: swap; src: url("assets/fuentes/barlow-condensed-500.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 600; font-style: normal; font-display: swap; src: url("assets/fuentes/barlow-condensed-600.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 700; font-style: normal; font-display: swap; src: url("assets/fuentes/barlow-condensed-700.woff2") format("woff2"); }
+
 :root {
   /* Casco y monitores */
   --vacio: #030509;
@@ -316,7 +325,7 @@ body[data-energia="0"] .vidrio-principal::before { animation: interferencia 8s i
   .mando span { overflow: hidden; text-overflow: ellipsis; }
   .volumen { grid-column: 1 / -1; }
   .volumen input { flex: 1; width: auto; }
-  #boton-reiniciar { grid-column: 1 / -1; }
+  #boton-datos, #boton-reiniciar { grid-column: 1 / -1; }
 
   .vidrio-com { flex-direction: column; flex-wrap: nowrap; align-items: stretch; padding: 16px; gap: 12px; overflow-y: auto; }
   .vidrio-com .mensaje { flex: 0 0 auto; }
@@ -620,6 +629,51 @@ body[data-energia="0"] .vidrio-principal::before { animation: interferencia 8s i
 .final-contenido { display: grid; gap: 20px; }
 body.despegando .final-contenido { animation: encender 600ms var(--curva) 3s both; }
 .cuenta-atras { font-family: var(--fuente-rotulo); font-size: 1.4rem; font-weight: 600; color: var(--ambar); }
+
+/* ---------- Datos de la partida (ventana) ---------- */
+.dialogo {
+  width: min(680px, calc(100vw - 24px)); max-height: calc(100vh - 32px); padding: 0; overflow: auto;
+  color: var(--texto); background: var(--cristal); border: 1px solid #2d384c; border-radius: 10px;
+  box-shadow: 0 30px 80px -20px #000;
+}
+.dialogo::backdrop { background: rgba(2, 4, 8, .72); }
+.dialogo-cuerpo { display: grid; gap: 14px; padding: 22px 22px 20px; }
+.dialogo h2 { font-size: 1.5rem; outline: none; }
+.dialogo-nota { color: var(--texto-suave); font-size: .95rem; }
+.dialogo-aviso { min-height: 1.4em; color: var(--verificado); font-weight: 600; }
+.datos-lista { margin: 0; display: grid; gap: 0; border: 1px solid #1d2838; border-radius: 6px; }
+.datos-lista div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4px 14px; padding: 8px 12px; border-top: 1px solid #1d2838; }
+.datos-lista div:first-child { border-top: 0; }
+.datos-lista dt { color: var(--texto-suave); font-size: .92rem; }
+.datos-lista dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.no-disponible { color: #6c788d; font-weight: 500; font-style: italic; }
+.dato-nota { display: block; font-size: .8rem; font-weight: 400; color: var(--texto-suave); margin-top: 2px; }
+@media (max-width: 520px) { .datos-lista div { grid-template-columns: 1fr; } }
+
+/* ---------- Cuestionario de opinión ---------- */
+.campo-codigo-participante { display: grid; gap: 6px; max-width: 420px; }
+.campo-codigo-participante label, .campo-abierto label { font-weight: 600; }
+.campo-codigo-participante input, .campo-abierto textarea {
+  min-height: 44px; padding: 10px 12px; border-radius: 6px; font: inherit;
+  color: var(--texto); background: #050a11; border: 1px solid #2d384c;
+}
+.campo-abierto { display: grid; gap: 6px; }
+.campo-abierto textarea { resize: vertical; min-height: 84px; }
+.campo-codigo-participante input:focus-visible, .campo-abierto textarea:focus-visible { border-color: var(--ion); }
+.leyenda-escala { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .85rem; color: var(--texto-suave); padding: 10px 12px; border: 1px dashed #2a3548; border-radius: 6px; }
+.leyenda-escala strong { color: var(--ion); }
+.escala { clear: both; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; max-width: 420px; }
+.escala-opcion { position: relative; cursor: pointer; }
+.escala-opcion input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.escala-opcion > span[aria-hidden] {
+  display: grid; place-items: center; min-height: 44px; border-radius: 5px;
+  font-family: var(--fuente-rotulo); font-weight: 700; font-size: 1.05rem;
+  background: rgba(10, 18, 28, .85); border: 1px solid #2a3548;
+}
+.escala-opcion.nv > span[aria-hidden] { font-size: .9rem; color: var(--texto-suave); }
+.escala-opcion:hover > span[aria-hidden] { border-color: rgba(120, 200, 230, .6); }
+.escala-opcion input:checked + span { background: var(--ion); border-color: var(--ion); color: var(--texto-oscuro); }
+.escala-opcion input:focus-visible + span { outline: 2px solid var(--foco); outline-offset: 2px; }
 
 .aviso-carga { padding: 18px; border-radius: 6px; border: 1px solid var(--alerta); background: rgba(229, 72, 77, .08); }
 

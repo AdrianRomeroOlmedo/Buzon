@@ -47,14 +47,40 @@
       pantalla: 'portada', paso: 0, logro: null, superadas: [],
       conexiones: {}, conexionesCorrectas: [], ordenEjemplos: null, ordenTipos: null,
       respuestasTest: {}, testCorrectas: [],
-      fallos: 0, pistas: 0, inicio: null, fin: null, finTiempo: null,
+      pistas: 0, inicio: null, fin: null, finTiempo: null,
+      registro: registroInicial(),
+      opinion: null, pantallaAntesOpinion: null, pasoAntesOpinion: 0,
+    };
+  }
+  // Registro de la partida para la evaluación: cada contador mide una sola cosa.
+  // Lo que no ha llegado a observarse se queda en null (no en 0).
+  function registroInicial() {
+    return {
+      codigo: null,
+      activoMs: 0,
+      pistas: { p1: 0, p2: 0, p3: 0 },
+      primerIntento: { p1: {}, p2: {} },          // ronda → true/false
+      respuestasIncorrectas: { p1: 0, p2: 0 },
+      comprobacionesP3: 0, comprobacionesConErroresP3: 0, conexionesIncorrectasP3: 0, correctasPrimeraComprobacionP3: null,
+      correccionesP4: 0, correccionesConErroresP4: 0, respuestasIncorrectasP4: 0, correctasPrimeraCorreccionP4: null,
+      codigosIncorrectos: 0,
     };
   }
   function temporalInicial() {
     return {
       respuesta: null, pista: false, reaccion: null, aviso: null,
       seleccion: null, erroneas: [], resultadoTest: {}, errorCodigo: false, secuencia: false,
+      reanudar: false, opinionGuardada: false,
     };
+  }
+
+  // Código seudónimo de la partida (sin caracteres que se confundan, como 0/O o 1/I).
+  function nuevoCodigo() {
+    const signos = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+    const valores = new Uint8Array(8);
+    (window.crypto || window.msCrypto).getRandomValues(valores);
+    const texto = Array.from(valores, (v) => signos[v % signos.length]).join('');
+    return `OV-${texto.slice(0, 4)}-${texto.slice(4)}`;
   }
 
   let estado = leer(CLAVE_PROGRESO, (guardado) => guardado.version === C.version ? Object.assign(estadoInicial(), guardado.estado) : null) || estadoInicial();
@@ -413,6 +439,7 @@
         temporal.pista = true;
         temporal.reaccion = { expresion: 'sorprendido', texto: C.alien.alPedirPista };
         estado.pistas++;
+        if (estado.pantalla in estado.registro.pistas) estado.registro.pistas[estado.pantalla]++;
         Sonido.clic();
         guardar();
         pintar();
@@ -445,7 +472,11 @@
   function responder(acierto, datos) {
     temporal.respuesta = Object.assign({ acierto }, datos);
     reaccionar(acierto);
-    if (!acierto) estado.fallos++;
+    const r = estado.registro;
+    if (estado.pantalla in r.primerIntento) {
+      if (r.primerIntento[estado.pantalla][estado.paso] === undefined) r.primerIntento[estado.pantalla][estado.paso] = acierto;
+      if (!acierto) r.respuestasIncorrectas[estado.pantalla]++;
+    }
     guardar();
     pintar();
     enfocar('[data-foco="seguir"], [data-foco="reintentar"]');
@@ -523,6 +554,7 @@
           type: 'button', class: 'boton', 'data-foco': 'empezar',
           onclick: () => {
             if (!estado.inicio) estado.inicio = Date.now();
+            if (!estado.registro.codigo) estado.registro.codigo = nuevoCodigo();
             const t = C.ajustes && C.ajustes.temporizador;
             if (t && t.activo && !estado.finTiempo) estado.finTiempo = Date.now() + t.minutos * 60000;
             ir('intro');
@@ -817,13 +849,17 @@
       if (estado.conexiones[i] === e.tipo) estado.conexionesCorrectas.push(i);
       else erroneas.push(i);
     });
+    const r = estado.registro;
+    r.comprobacionesP3++;
+    if (r.correctasPrimeraComprobacionP3 === null) r.correctasPrimeraComprobacionP3 = estado.conexionesCorrectas.length;
     if (!erroneas.length) {
       reaccionar(true);
       guardar();
       superarPrueba(2);
       return;
     }
-    estado.fallos++;
+    r.comprobacionesConErroresP3++;
+    r.conexionesIncorrectasP3 += erroneas.length;
     temporal.erroneas = erroneas;
     reaccionar(false);
     temporal.aviso = `${estado.conexionesCorrectas.length} de ${prueba.ejemplos.length} conexiones correctas. Las incorrectas se marcan en rojo y se soltarán para que las vuelvas a unir.`;
@@ -907,7 +943,10 @@
       if (bien) estado.testCorrectas.push(q);
       else fallos++;
     });
-    if (fallos) estado.fallos++;
+    const r = estado.registro;
+    r.correccionesP4++;
+    if (r.correctasPrimeraCorreccionP4 === null) r.correctasPrimeraCorreccionP4 = estado.testCorrectas.length;
+    if (fallos) { r.correccionesConErroresP4++; r.respuestasIncorrectasP4 += fallos; }
     reaccionar(!fallos);
     guardar();
     pintar();
@@ -972,7 +1011,7 @@
         onsubmit: (evento) => {
           evento.preventDefault();
           if (normalizar(entrada.value) === normalizar(CODIGO)) { lanzarSecuencia(); return; }
-          estado.fallos++;
+          estado.registro.codigosIncorrectos++;
           temporal.errorCodigo = true;
           reaccionar(false);
           guardar();
@@ -1007,7 +1046,8 @@
   function pantallaFinal() {
     const f = C.final;
     comunicar('contento', f.mensajeVero);
-    const minutos = estado.inicio && estado.fin ? Math.max(1, Math.round((estado.fin - estado.inicio) / 60000)) : null;
+    const minutosTotales = estado.inicio && estado.fin ? Math.max(1, Math.round((estado.fin - estado.inicio) / 60000)) : null;
+    const primeros = aciertosPrimerIntento();
     return el('section', { class: 'pantalla' },
       el('div', { class: 'cabecera-modulo' }, el('p', {}, 'Propulsión activada'), el('p', { class: 'progreso-ronda' }, 'Saliendo de órbita')),
       el('div', { class: 'final-contenido' },
@@ -1015,9 +1055,14 @@
         el('p', { class: 'instrucciones' }, f.mensaje),
         el('ul', { class: 'aprendido' }, f.aprendido.map((t) => el('li', {}, t))),
         el('dl', { class: 'informe' },
-          el('div', {}, el('dt', {}, 'Tiempo'), el('dd', {}, minutos ? `${minutos} min` : '—')),
-          el('div', {}, el('dt', {}, 'Errores'), el('dd', {}, estado.fallos)),
+          el('div', {}, el('dt', {}, 'Tiempo'), el('dd', {}, minutosTotales ? `${minutosTotales} min` : '—')),
+          el('div', {}, el('dt', {}, 'Aciertos al primer intento'), el('dd', {}, `${primeros.aciertos} de ${primeros.total}`)),
           el('div', {}, el('dt', {}, 'Pistas'), el('dd', {}, estado.pistas))
+        ),
+        el('div', { class: 'acciones' },
+          el('button', { type: 'button', class: estado.opinion ? 'boton boton-secundario' : 'boton', onclick: abrirOpinion },
+            estado.opinion ? 'Revisar mi opinión' : 'Dar mi opinión (opcional)'),
+          el('button', { type: 'button', class: 'boton boton-secundario', onclick: abrirDatos }, 'Ver datos de la partida')
         ),
         el('p', { class: 'aviso-simulacion' }, f.aviso),
         el('h3', {}, 'Si dudas de una información, consulta a los verificadores'),
@@ -1031,6 +1076,332 @@
         ),
         el('div', { class: 'acciones' }, el('button', { type: 'button', class: 'boton boton-secundario', onclick: reiniciar }, icono('repetir'), f.botonReiniciar))
       )
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Datos de la partida (para el registro de la evaluación). Nada se envía:
+  // se pueden copiar o descargar en CSV desde el propio dispositivo.
+  // ---------------------------------------------------------------------------
+
+  // Respuestas acertadas al primer intento en todo el juego: rondas de los
+  // módulos 1 y 2, conexiones de la primera comprobación y preguntas de la
+  // primera corrección del cuestionario.
+  function aciertosPrimerIntento() {
+    const r = estado.registro;
+    const rondas = (clave) => Object.values(r.primerIntento[clave]).filter(Boolean).length;
+    const aciertos = rondas('p1') + rondas('p2') + (r.correctasPrimeraComprobacionP3 || 0) + (r.correctasPrimeraCorreccionP4 || 0);
+    const total = C.pruebas.detectar.rondas.length + C.pruebas.verificar.rondas.length +
+      C.pruebas.clasificar.ejemplos.length + C.pruebas.cuestionario.preguntas.length;
+    return { aciertos, total };
+  }
+
+  function minutos(ms) {
+    return ms === null || ms === undefined ? null : Math.max(0, Math.round(ms / 60000));
+  }
+  function fechaHora(marca) {
+    return marca ? new Date(marca).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }) : null;
+  }
+
+  // Cada fila: clave de la columna CSV, etiqueta, valor a mostrar, valor para
+  // el CSV y una nota opcional. null significa «no disponible» (nunca cero).
+  function datosPartida() {
+    const r = estado.registro;
+    const iniciada = !!estado.inicio;
+    const finalizada = !!estado.fin;
+    const fila = (clave, etiqueta, mostrar, csv, nota) => ({ clave, etiqueta, mostrar: mostrar === undefined ? null : mostrar, csv: csv === undefined ? mostrar : csv, nota });
+    const rondas = (clave, prueba) => {
+      const hechas = Object.values(r.primerIntento[clave]);
+      if (!hechas.length) return null;
+      const total = C.pruebas[prueba].rondas.length;
+      const aciertos = hechas.filter(Boolean).length;
+      return { aciertos, hechas: hechas.length, total, texto: `${aciertos} de ${hechas.length}` + (hechas.length < total ? ` (de ${total} rondas)` : '') };
+    };
+    const m1 = rondas('p1', 'detectar');
+    const m2 = rondas('p2', 'verificar');
+    const nEjemplos = C.pruebas.clasificar.ejemplos.length;
+    const nPreguntas = C.pruebas.cuestionario.preguntas.length;
+    const transcurrido = iniciada ? (estado.fin || Date.now()) - estado.inicio : null;
+    const enCurso = PRUEBAS.findIndex((p) => p.pantalla === estado.pantalla || (estado.pantallaAntesOpinion === p.pantalla && estado.pantalla === 'opinion'));
+    const situacion = !iniciada ? 'Sin iniciar'
+      : finalizada ? 'Finalizada'
+        : `En curso${enCurso >= 0 ? `, en el módulo ${enCurso + 1}` : ''}`;
+    const valorSi = (condicion, valor) => (condicion ? valor : null);
+
+    return [
+      fila('codigo_partida', 'Código de partida', r.codigo),
+      fila('version_web', 'Versión de la web', `${C.edicion} (contenido ${C.version})`),
+      fila('fecha_inicio', 'Inicio', fechaHora(estado.inicio)),
+      fila('estado', 'Estado', situacion),
+      fila('modulos_restaurados', 'Módulos restaurados', valorSi(iniciada, `${estado.superadas.length} de ${PRUEBAS.length}`), valorSi(iniciada, estado.superadas.length)),
+      fila('tiempo_total_min', 'Tiempo total', valorSi(finalizada, `${minutos(transcurrido)} min`), valorSi(finalizada, minutos(transcurrido)),
+        'Desde «Iniciar misión» hasta el despegue. Incluye pausas.'),
+      fila('tiempo_hasta_ahora_min', 'Tiempo transcurrido hasta ahora', valorSi(iniciada && !finalizada, `${minutos(transcurrido)} min`), valorSi(iniciada && !finalizada, minutos(transcurrido)),
+        'Solo en partidas sin terminar. Incluye pausas.'),
+      fila('tiempo_activo_min', 'Tiempo activo aproximado', valorSi(iniciada, `${minutos(r.activoMs)} min`), valorSi(iniciada, minutos(r.activoMs)),
+        'Con la pestaña visible y alguna interacción en los últimos 2 minutos.'),
+      fila('pistas_total', 'Pistas solicitadas', valorSi(iniciada, String(estado.pistas)), valorSi(iniciada, estado.pistas),
+        valorSi(iniciada, `Módulo 1: ${r.pistas.p1} · módulo 2: ${r.pistas.p2} · módulo 3: ${r.pistas.p3}. No incluye la ayuda del profesorado o de compañeros.`)),
+      fila('pistas_m1', null, null, valorSi(iniciada, r.pistas.p1)),
+      fila('pistas_m2', null, null, valorSi(iniciada, r.pistas.p2)),
+      fila('pistas_m3', null, null, valorSi(iniciada, r.pistas.p3)),
+      fila('m1_aciertos_primer_intento', 'Módulo 1: rondas acertadas al primer intento', m1 && m1.texto, m1 && m1.aciertos),
+      fila('m1_rondas_respondidas', null, null, m1 && m1.hechas),
+      fila('m1_respuestas_incorrectas', 'Módulo 1: respuestas incorrectas', m1 && String(r.respuestasIncorrectas.p1), m1 && r.respuestasIncorrectas.p1),
+      fila('m2_aciertos_primer_intento', 'Módulo 2: rondas acertadas al primer intento', m2 && m2.texto, m2 && m2.aciertos),
+      fila('m2_rondas_respondidas', null, null, m2 && m2.hechas),
+      fila('m2_respuestas_incorrectas', 'Módulo 2: respuestas incorrectas', m2 && String(r.respuestasIncorrectas.p2), m2 && r.respuestasIncorrectas.p2),
+      fila('m3_correctas_primera_comprobacion', 'Módulo 3: conexiones correctas en la primera comprobación',
+        r.correctasPrimeraComprobacionP3 === null ? null : `${r.correctasPrimeraComprobacionP3} de ${nEjemplos}`, r.correctasPrimeraComprobacionP3),
+      fila('m3_comprobaciones', 'Módulo 3: comprobaciones con algún error', valorSi(r.comprobacionesP3, `${r.comprobacionesConErroresP3} de ${r.comprobacionesP3}`), valorSi(r.comprobacionesP3, r.comprobacionesP3)),
+      fila('m3_comprobaciones_con_errores', null, null, valorSi(r.comprobacionesP3, r.comprobacionesConErroresP3)),
+      fila('m3_conexiones_incorrectas', 'Módulo 3: conexiones incorrectas en total', valorSi(r.comprobacionesP3, String(r.conexionesIncorrectasP3)), valorSi(r.comprobacionesP3, r.conexionesIncorrectasP3)),
+      fila('m4_correctas_primera_correccion', 'Módulo 4: preguntas correctas en la primera corrección',
+        r.correctasPrimeraCorreccionP4 === null ? null : `${r.correctasPrimeraCorreccionP4} de ${nPreguntas}`, r.correctasPrimeraCorreccionP4),
+      fila('m4_correcciones', 'Módulo 4: correcciones con algún error', valorSi(r.correccionesP4, `${r.correccionesConErroresP4} de ${r.correccionesP4}`), valorSi(r.correccionesP4, r.correccionesP4)),
+      fila('m4_correcciones_con_errores', null, null, valorSi(r.correccionesP4, r.correccionesConErroresP4)),
+      fila('m4_respuestas_incorrectas', 'Módulo 4: respuestas incorrectas en total', valorSi(r.correccionesP4, String(r.respuestasIncorrectasP4)), valorSi(r.correccionesP4, r.respuestasIncorrectasP4)),
+      fila('codigos_incorrectos', 'Códigos de activación incorrectos', valorSi(estado.superadas.length === PRUEBAS.length, String(r.codigosIncorrectos)), valorSi(estado.superadas.length === PRUEBAS.length, r.codigosIncorrectos)),
+      fila('cuestionario_opinion', 'Cuestionario de opinión', estado.opinion ? 'Respondido' : 'Sin responder', estado.opinion ? 'si' : 'no'),
+    ];
+  }
+
+  // Columnas del cuestionario de opinión para el CSV (vacías si no se respondió).
+  function columnasOpinion() {
+    const q = C.cuestionarioOpinion;
+    const o = estado.opinion;
+    return [
+      ['cuestionario_version', o ? o.version : ''],
+      ['codigo_participante', o ? o.participante : ''],
+      ...q.items.map((_, i) => [`item_${i + 1}`, o && o.respuestas[i + 1] ? o.respuestas[i + 1] : '']),
+      ...q.abiertas.map((_, i) => [`pregunta_${q.items.length + i + 1}`, o ? (o.abiertas[q.items.length + i + 1] || '') : '']),
+    ];
+  }
+
+  function textoResumen() {
+    const lineas = [`${C.portada.titulo}: datos de la partida`];
+    datosPartida().filter((f) => f.etiqueta).forEach((f) => {
+      lineas.push(`${f.etiqueta}: ${f.mostrar === null ? 'no disponible' : f.mostrar}`);
+    });
+    if (estado.opinion) {
+      lineas.push('', `Cuestionario de opinión (${estado.opinion.version})`);
+      columnasOpinion().forEach(([clave, valor]) => lineas.push(`${clave}: ${valor === '' ? 'en blanco' : valor}`));
+    }
+    lineas.push('', 'Los contadores describen esta partida; no son una calificación ni una medida de aprendizaje.');
+    return lineas.join('\n');
+  }
+
+  function celdaCSV(valor) {
+    const texto = valor === null || valor === undefined ? '' : String(valor);
+    return /[;"\n\r]/.test(texto) ? `"${texto.replace(/"/g, '""')}"` : texto;
+  }
+
+  // CSV con punto y coma (lo abre bien Excel en español) y UTF-8 con BOM.
+  function descargarCSV() {
+    const columnas = [...datosPartida().map((f) => [f.clave, f.csv]), ...columnasOpinion()];
+    const linea = (valores) => valores.map(celdaCSV).join(';');
+    const texto = '﻿' + linea(columnas.map((c) => c[0])) + '\r\n' + linea(columnas.map((c) => c[1])) + '\r\n';
+    const enlace = el('a', {
+      href: URL.createObjectURL(new Blob([texto], { type: 'text/csv;charset=utf-8' })),
+      download: `operacion-verdad-${estado.registro.codigo || 'sin-iniciar'}.csv`,
+    });
+    document.body.append(enlace);
+    enlace.click();
+    enlace.remove();
+    setTimeout(() => URL.revokeObjectURL(enlace.href), 2000);
+    return true;
+  }
+
+  async function copiarTexto(texto) {
+    try {
+      await navigator.clipboard.writeText(texto);
+      return true;
+    } catch (e) {
+      // Sin portapapeles moderno (por ejemplo, al abrir el archivo desde el disco).
+      const area = el('textarea', { style: 'position:fixed;top:0;left:0;opacity:0' });
+      area.value = texto;
+      // Con la ventana de datos abierta, el resto de la página no admite selección.
+      (dialogoDatos.open ? dialogoDatos : document.body).append(area);
+      area.select();
+      const hecho = document.execCommand('copy');
+      area.remove();
+      return hecho;
+    }
+  }
+
+  const dialogoDatos = document.getElementById('dialogo-datos');
+  const avisoDatos = document.getElementById('datos-aviso');
+  function pintarDatos() {
+    document.getElementById('datos-lista').replaceChildren(...datosPartida().filter((f) => f.etiqueta).map((f) => el('div', {},
+      el('dt', {}, f.etiqueta),
+      el('dd', {}, f.mostrar === null ? el('span', { class: 'no-disponible' }, 'No disponible') : f.mostrar,
+        f.nota && f.mostrar !== null ? el('span', { class: 'dato-nota' }, f.nota) : null)
+    )));
+    avisoDatos.textContent = '';
+  }
+  function abrirDatos() {
+    pintarDatos();
+    if (typeof dialogoDatos.showModal === 'function') dialogoDatos.showModal(); else dialogoDatos.setAttribute('open', '');
+  }
+  function cerrarDatos() {
+    if (dialogoDatos.open) dialogoDatos.close();
+  }
+  document.getElementById('boton-datos').addEventListener('click', abrirDatos);
+  document.getElementById('datos-cerrar').addEventListener('click', cerrarDatos);
+  document.getElementById('datos-copiar').addEventListener('click', async () => {
+    avisoDatos.textContent = (await copiarTexto(textoResumen())) ? 'Resumen copiado.' : 'No se ha podido copiar. Selecciona el texto y cópialo a mano.';
+  });
+  document.getElementById('datos-descargar').addEventListener('click', () => {
+    descargarCSV();
+    avisoDatos.textContent = 'Archivo CSV descargado.';
+  });
+  document.getElementById('datos-opinion').addEventListener('click', abrirOpinion);
+  // Clic fuera del contenido: cierra.
+  dialogoDatos.addEventListener('click', (evento) => { if (evento.target === dialogoDatos) cerrarDatos(); });
+
+  // Tiempo activo: suma cada 5 segundos si la pestaña está visible y ha habido
+  // alguna interacción en los últimos 2 minutos.
+  let ultimaActividad = Date.now();
+  ['pointerdown', 'keydown', 'wheel', 'touchstart', 'scroll'].forEach((tipo) => {
+    window.addEventListener(tipo, () => { ultimaActividad = Date.now(); }, { passive: true, capture: true });
+  });
+  setInterval(() => {
+    if (!estado.inicio || estado.fin || document.visibilityState !== 'visible' || Date.now() - ultimaActividad > 120000) return;
+    estado.registro.activoMs += 5000;
+    guardar();
+  }, 5000);
+
+  // ---------------------------------------------------------------------------
+  // Partida guardada: en un dispositivo compartido, se pregunta si se continúa
+  // o se empieza una nueva antes de seguir.
+  // ---------------------------------------------------------------------------
+  function pantallaReanudar() {
+    const terminada = !!estado.fin;
+    comunicar('neutral', 'Canal restablecido. Hay una misión guardada en este dispositivo.');
+    return el('section', { class: 'pantalla' },
+      el('div', { class: 'cabecera-modulo' }, el('p', {}, 'Partida guardada'), el('p', { class: 'progreso-ronda' }, estado.registro.codigo || '')),
+      titulo(terminada ? 'Hay una misión terminada en este dispositivo' : 'Hay una misión a medias en este dispositivo'),
+      el('p', { class: 'instrucciones' },
+        terminada
+          ? `Se completó el ${fechaHora(estado.fin)}.`
+          : `Empezó el ${fechaHora(estado.inicio)} y tiene ${estado.superadas.length} de ${PRUEBAS.length} módulos restaurados.`,
+        ' Si ahora juega otra persona o equipo, empieza una partida nueva para no mezclar los datos.'),
+      el('div', { class: 'acciones' },
+        el('button', {
+          type: 'button', class: 'boton', 'data-foco': 'continuar-partida',
+          onclick: () => { temporal.reanudar = false; Sonido.clic(); ultimaVista = null; pintar(); },
+        }, terminada ? 'Ver la misión terminada' : 'Continuar la partida', icono('siguiente')),
+        el('button', { type: 'button', class: 'boton boton-secundario', onclick: nuevaPartida }, icono('repetir'), 'Empezar una partida nueva'),
+        el('button', { type: 'button', class: 'boton boton-secundario', onclick: abrirDatos }, 'Ver datos de esta partida')
+      )
+    );
+  }
+
+  function nuevaPartida() {
+    estado = estadoInicial();
+    temporal = temporalInicial();
+    avisoTiempoDado = false;
+    guardar();
+    conmutar(() => {});
+  }
+
+  // ---------------------------------------------------------------------------
+  // Cuestionario de opinión: anónimo, opcional y guardado solo en el dispositivo.
+  // Se puede responder aunque la misión no se haya terminado.
+  // ---------------------------------------------------------------------------
+  function abrirOpinion() {
+    cerrarDatos();
+    if (estado.pantalla !== 'opinion') {
+      estado.pantallaAntesOpinion = temporal.reanudar ? 'portada' : estado.pantalla;
+      estado.pasoAntesOpinion = estado.paso;
+    }
+    temporal.reanudar = false;
+    ir('opinion');
+  }
+
+  function volverDeOpinion() {
+    conmutar(() => {
+      estado.pantalla = estado.pantallaAntesOpinion || 'portada';
+      estado.paso = estado.pasoAntesOpinion || 0;
+      estado.pantallaAntesOpinion = null;
+      temporal = temporalInicial();
+      guardar();
+    });
+  }
+
+  function pantallaOpinion() {
+    const q = C.cuestionarioOpinion;
+    comunicar('contento', q.mensajeVero);
+    const previo = estado.opinion || { participante: '', respuestas: {}, abiertas: {} };
+    const valores = ['1', '2', '3', '4', '5', 'NV'];
+    const nombreValor = (v) => (v === 'NV' ? q.noValorable : `${v}, ${q.escala[Number(v) - 1].toLowerCase()}`);
+
+    const items = q.items.map((texto, i) => {
+      const n = i + 1;
+      return el('fieldset', { class: 'pregunta likert' },
+        el('legend', {}, el('span', { class: 'numero' }, `${n}.`), texto),
+        el('div', { class: 'escala' }, valores.map((v) => el('label', { class: 'escala-opcion' + (v === 'NV' ? ' nv' : '') },
+          el('input', { type: 'radio', name: `item-${n}`, value: v, checked: previo.respuestas[n] === v }),
+          el('span', { 'aria-hidden': 'true' }, v),
+          el('span', { class: 'solo-lector' }, nombreValor(v))
+        )))
+      );
+    });
+    const abiertas = q.abiertas.map((texto, i) => {
+      const n = q.items.length + i + 1;
+      return el('div', { class: 'campo-abierto' },
+        el('label', { for: `abierta-${n}` }, `${n}. ${texto}`, el('span', { class: 'nota' }, ' (opcional)')),
+        el('textarea', { id: `abierta-${n}`, name: `abierta-${n}`, rows: '3', maxlength: '1000' }, previo.abiertas[n] || '')
+      );
+    });
+
+    const formulario = el('form', {
+      class: 'cuestionario',
+      onsubmit: (evento) => {
+        evento.preventDefault();
+        const datos = new FormData(evento.target);
+        const respuestas = {};
+        q.items.forEach((_, i) => { const v = datos.get(`item-${i + 1}`); if (v) respuestas[i + 1] = v; });
+        const textos = {};
+        q.abiertas.forEach((_, i) => { const n = q.items.length + i + 1; textos[n] = String(datos.get(`abierta-${n}`) || '').trim(); });
+        estado.opinion = { version: q.version, participante: String(datos.get('participante') || '').trim(), respuestas, abiertas: textos, guardado: Date.now() };
+        temporal.opinionGuardada = true;
+        Sonido.acierto();
+        guardar();
+        pintar();
+        anunciar('Respuestas guardadas.');
+        enfocar('[data-foco="opinion-guardada"]');
+      },
+    },
+    el('div', { class: 'campo-codigo-participante' },
+      el('label', { for: 'participante' }, q.etiquetaCodigo),
+      el('input', { id: 'participante', name: 'participante', type: 'text', autocomplete: 'off', maxlength: '40', value: previo.participante || '' })
+    ),
+    el('div', { class: 'leyenda-escala', 'aria-hidden': 'true' },
+      q.escala.map((t, i) => el('span', {}, el('strong', {}, String(i + 1)), ` ${t}`)),
+      el('span', {}, el('strong', {}, 'NV'), ` ${q.noValorable}`)
+    ),
+    items,
+    abiertas,
+    temporal.opinionGuardada
+      ? el('div', { class: 'respuesta acierto', tabindex: '-1', 'data-foco': 'opinion-guardada' },
+        el('p', { class: 'respuesta-titulo' }, icono('ok'), 'Respuestas guardadas'),
+        el('p', {}, q.guardado),
+        el('div', { class: 'acciones' },
+          el('button', { type: 'button', class: 'boton', onclick: () => { descargarCSV(); anunciar('Archivo descargado.'); } }, 'Descargar respuestas (CSV)'),
+          el('button', { type: 'button', class: 'boton boton-secundario', onclick: async () => { anunciar((await copiarTexto(textoResumen())) ? 'Respuestas copiadas.' : 'No se ha podido copiar.'); } }, 'Copiar'),
+          el('button', { type: 'button', class: 'boton boton-secundario', onclick: volverDeOpinion }, 'Volver a la misión')))
+      : el('div', { class: 'acciones' },
+        el('button', { type: 'submit', class: 'boton' }, q.boton),
+        el('button', { type: 'button', class: 'boton boton-secundario', onclick: volverDeOpinion }, 'Volver sin guardar'))
+    );
+
+    return el('section', { class: 'pantalla' },
+      el('div', { class: 'cabecera-modulo' }, el('p', {}, 'Evaluación de la actividad'), el('p', { class: 'progreso-ronda' }, q.version)),
+      titulo(q.titulo),
+      el('p', { class: 'instrucciones' }, q.introduccion),
+      el('p', { class: 'instrucciones' }, q.instrucciones),
+      formulario
     );
   }
 
@@ -1108,6 +1479,7 @@
     portada: pantallaPortada, intro: pantallaIntro,
     p1: pantallaDetectar, p2: pantallaVerificar, p3: pantallaClasificar, p4: pantallaCuestionario,
     logro: pantallaLogro, activacion: pantallaActivacion, final: pantallaFinal,
+    opinion: pantallaOpinion,
   };
   let ultimaVista = null;
 
@@ -1120,9 +1492,9 @@
   function pintar() {
     // Si el foco estaba en un control que se vuelve a dibujar, pasa a su copia nueva.
     const conFoco = document.activeElement && document.activeElement.getAttribute('data-foco');
-    const vista = `${estado.pantalla}:${estado.paso}:${temporal.secuencia}`;
+    const vista = temporal.reanudar ? 'reanudar' : `${estado.pantalla}:${estado.paso}:${temporal.secuencia}`;
     try {
-      const pantalla = (PANTALLAS[estado.pantalla] || pantallaPortada)();
+      const pantalla = temporal.reanudar ? pantallaReanudar() : (PANTALLAS[estado.pantalla] || pantallaPortada)();
       if (vista !== ultimaVista) pantalla.classList.add('entrar');
       juego.replaceChildren(pantalla);
     } catch (error) {
@@ -1151,12 +1523,8 @@
   }
 
   function reiniciar() {
-    if (!confirm('¿Seguro que quieres reiniciar la misión? Se perderá el progreso.')) return;
-    estado = estadoInicial();
-    temporal = temporalInicial();
-    avisoTiempoDado = false;
-    guardar();
-    conmutar(() => {});
+    if (!confirm('¿Empezar una partida nueva? Se borrarán el progreso y los datos de esta partida en este dispositivo. Si los necesitas, cópialos antes desde «Datos de la partida».')) return;
+    nuevaPartida();
   }
 
   // Las líneas se recalculan si cambia el tamaño o, en móvil, al desplazarse
@@ -1181,7 +1549,9 @@
 
   function aplicarSonido() {
     botonSonido.setAttribute('aria-pressed', preferencias.sonido ? 'true' : 'false');
-    textoSonido.textContent = preferencias.sonido ? 'Silenciar' : 'Activar sonido';
+    // El nombre es fijo («Sonido»); su estado lo indican aria-pressed y el icono.
+    textoSonido.textContent = 'Sonido';
+    botonSonido.title = preferencias.sonido ? 'Silenciar' : 'Activar el sonido';
   }
   botonSonido.addEventListener('click', () => {
     preferencias.sonido = !preferencias.sonido;
@@ -1216,5 +1586,7 @@
 
   document.getElementById('boton-reiniciar').addEventListener('click', reiniciar);
 
+  // Si al abrir hay una partida guardada, se pregunta antes de continuar.
+  if (estado.inicio) temporal.reanudar = true;
   pintar();
 })();

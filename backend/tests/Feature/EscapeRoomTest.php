@@ -27,4 +27,19 @@ class EscapeRoomTest extends TestCase
             'content.js tiene que cargarse antes que app.js'
         );
     }
+
+    public function test_static_game_makes_no_external_requests_on_load(): void
+    {
+        $carpeta = public_path('juegos/escape-room');
+
+        foreach (['index.html', 'styles.css'] as $archivo) {
+            $contenido = file_get_contents("{$carpeta}/{$archivo}");
+            $this->assertDoesNotMatchRegularExpression('#(src|href)="https?://|url\(["\']?https?://#i', $contenido, "{$archivo} carga recursos externos");
+        }
+
+        foreach (glob("{$carpeta}/assets/fuentes/*.woff2") ?: [] as $fuente) {
+            $this->assertStringContainsString(basename($fuente), file_get_contents("{$carpeta}/styles.css"));
+        }
+        $this->assertFileExists("{$carpeta}/assets/fuentes/OFL.txt");
+    }
 }

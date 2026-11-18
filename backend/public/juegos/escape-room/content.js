@@ -28,7 +28,10 @@
 
 window.CONTENIDO = {
 
-  version: 3,
+  version: 4,
+  // Edición de la web: aparece en «Datos de la partida» para que el profesorado
+  // anote qué versión se usó en cada sesión. Cámbiala al publicar cambios.
+  edicion: "18-11-2026",
 
   // ---------------------------------------------------------------------------
   // AJUSTES GENERALES
@@ -408,6 +411,45 @@ window.CONTENIDO = {
     error: "Código incorrecto. Une los fragmentos en el orden de los módulos: 1, 2, 3 y 4.",
     // Pasos de la secuencia de arranque que se encienden uno a uno.
     secuencia: ["Reactor de verdad", "Filtro de desinformación", "Navegación", "Propulsión"],
+  },
+
+  // ---------------------------------------------------------------------------
+  // CUESTIONARIO DE OPINIÓN (evaluación del piloto)
+  // Textos del apartado 6 de la «Propuesta integrada de evaluación». Si cambias
+  // algún ítem, cambia también «version» para saber qué versión se respondió.
+  // Las respuestas se guardan solo en el dispositivo y se entregan descargando
+  // el archivo CSV desde la propia web: no se envían a ningún sitio.
+  // ---------------------------------------------------------------------------
+  cuestionarioOpinion: {
+    version: "Propuesta 1 (no validada)",
+    titulo: "Cuestionario de opinión: Operación Verdad",
+    etiquetaCodigo: "Código de participante, solo si te lo han facilitado",
+    introduccion: "Queremos conocer tu opinión sobre la actividad de Vero. No hay respuestas correctas ni incorrectas. Tus respuestas nos ayudarán a mejorar la actividad y no afectarán a tus calificaciones. No escribas tu nombre. Puedes dejar preguntas sin responder.",
+    instrucciones: "Marca una opción para cada frase. Si no has llegado a esa parte o no puedes valorarla, marca NV. En la pregunta 12, marca NV si no has utilizado ninguna pista.",
+    // Significado de cada valor de la escala, de 1 a 5.
+    escala: ["Totalmente en desacuerdo", "En desacuerdo", "Ni de acuerdo ni en desacuerdo", "De acuerdo", "Totalmente de acuerdo"],
+    noValorable: "No puedo valorarlo",
+    items: [
+      "Me ha resultado interesante participar en la misión de Vero.",
+      "Creo que esta actividad puede ayudarme a pensar qué comprobar antes de compartir una noticia.",
+      "Me ha resultado fácil entender cómo avanzar por la web.",
+      "He disfrutado realizando las pruebas de la actividad.",
+      "Creo que lo trabajado puede servirme para pensar cómo comprobar una imagen o un vídeo que encuentro en Internet.",
+      "Las explicaciones que aparecen después de responder me han resultado claras.",
+      "Me ha gustado la historia de la nave y de Vero.",
+      "Creo que la actividad puede ayudarme a distinguir mejor entre información fiable e información engañosa.",
+      "La historia de Vero me ha ayudado a entender lo que tenía que hacer.",
+      "La misión de ayudar a Vero me ha animado a continuar con la actividad.",
+      "La dificultad de las pruebas me ha parecido adecuada.",
+      "Las pistas me han ayudado a continuar cuando las he necesitado.",
+    ],
+    abiertas: [
+      "¿Qué parte de la actividad o de la historia te ha gustado más? ¿Por qué?",
+      "¿Qué cambiarías de la historia, las pruebas o la web para mejorarlas?",
+    ],
+    mensajeVero: "Antes de irme: tu opinión me ayudará a mejorar la misión para la próxima tripulación.",
+    boton: "Guardar respuestas",
+    guardado: "Respuestas guardadas en este dispositivo. Para entregarlas, descarga el archivo o cópialas, según os haya indicado el profesorado.",
   },
 
   final: {
