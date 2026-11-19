@@ -2,14 +2,13 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Schema;
-
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Gate;
-use App\Models\User;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -39,6 +38,12 @@ class AppServiceProvider extends ServiceProvider
                 Limit::perMinute(3)->by($request->ip()),
                 Limit::perHour(10)->by($request->ip()),
             ];
+        });
+
+        // Escape room: el juego envía las métricas en cada cambio de pantalla. Margen amplio porque
+        // en un aula muchos equipos salen a internet con la misma IP.
+        RateLimiter::for('escape-room', function (Request $request) {
+            return Limit::perMinute(300)->by($request->ip());
         });
 
         // Acceso al panel de revisión: solo cuentas marcadas como revisoras.

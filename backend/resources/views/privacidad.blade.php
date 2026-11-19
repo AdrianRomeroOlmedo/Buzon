@@ -88,7 +88,7 @@
         <span class="eyebrow">Buzón ciudadano · Cátedra Ceuta-IATEB</span>
         <h1>Información de privacidad</h1>
         <p class="lead">Qué datos recoge el buzón «Ceuta Me Preocupa», para qué los usamos, cómo los protegemos y qué derechos tienes sobre ellos.</p>
-        <span class="actualizado">Última actualización: 29/09/2026</span>
+        <span class="actualizado">Última actualización: 19/11/2026</span>
       </div>
     </div>
   </section>
@@ -136,6 +136,7 @@
             <li><a href="#sensibles">Datos sensibles y de terceros</a></li>
             <li><a href="#cookies">Cookies</a></li>
             <li><a href="#limites">Límites del buzón</a></li>
+            <li><a href="#escape-room">Escape room «Operación Verdad»</a></li>
             <li><a href="#cambios">Cambios</a></li>
           </ol>
         </nav>
@@ -235,8 +236,20 @@
             </ul>
           </article>
 
+          <article id="escape-room">
+            <h2><span class="num">13.</span>Escape room «Operación Verdad»</h2>
+            <p>El escape room sobre desinformación de la Cátedra guarda en nuestro servidor los datos de cada partida, solo si se acepta el aviso que aparece al empezar. Sirven para evaluar y mejorar la actividad, y solo se publican de forma agregada.</p>
+            <ul>
+              <li><strong>Qué se guarda:</strong> cómo avanza la partida (módulos superados, aciertos y fallos, pistas y tiempos) y, si se rellena, el cuestionario de opinión. Cada partida lleva un código aleatorio, por ejemplo OV-7K3Q-M2PA.</li>
+              <li><strong>Qué no se guarda:</strong> nombre, correo, dirección IP ni ningún otro dato identificativo. En las preguntas abiertas del cuestionario pedimos que no se escriba el nombre.</li>
+              <li><strong>Base jurídica:</strong> el consentimiento, que se da al pulsar «Aceptar y jugar». Las personas menores de 14 años necesitan el permiso de su madre, padre o tutor legal.</li>
+              <li><strong>Conservación:</strong> mientras dure el proyecto y el plazo necesario para su análisis.</li>
+              <li><strong>Supresión:</strong> para borrar una partida, escribe a <a href="mailto:{{ $contacto }}">{{ $contacto }}</a> indicando su código, que aparece en «Datos de la partida».</li>
+            </ul>
+          </article>
+
           <article id="cambios">
-            <h2><span class="num">13.</span>Cambios en esta información</h2>
+            <h2><span class="num">14.</span>Cambios en esta información</h2>
             <p>Podemos actualizar este texto para adaptarlo a cambios normativos o en el funcionamiento del buzón. La fecha de la última actualización figura al principio de la página.</p>
           </article>
         </div>
