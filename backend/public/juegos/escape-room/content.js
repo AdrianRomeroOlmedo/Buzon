@@ -59,6 +59,47 @@ window.CONTENIDO = {
     // Volumen inicial del sonido (0 a 1). El sonido empieza siempre apagado:
     // cada jugador lo activa desde el panel de sistemas.
     volumen: 0.5,
+    // Dirección del servidor donde se guardan las métricas de cada partida
+    // (web de la Cátedra, ruta «escape-room.partidas.store» de Laravel). Solo
+    // se envían si se acepta el aviso de datos. Abierto desde el disco o desde
+    // GitHub Pages, el envío falla sin molestar y el juego sigue igual.
+    // Con «url: ""» no se envía nada.
+    registro: {
+      url: "/escape-room/partidas",
+    },
+  },
+
+  // ---------------------------------------------------------------------------
+  // AVISO DE DATOS: aparece al cargar y hay que aceptarlo para jugar.
+  // Se vuelve a pedir en cada partida nueva (puede jugar otra persona).
+  // Si cambias lo que se recoge, cambia también «version» (queda guardada con
+  // cada partida) y la política de privacidad de la web.
+  // ---------------------------------------------------------------------------
+  avisoDatos: {
+    version: "v1",
+    titulo: "Antes de empezar",
+    parrafos: [
+      "Para evaluar y mejorar esta actividad, la Cátedra Ceuta-IATEB (Universidad de Granada y Ciudad Autónoma de Ceuta) guarda en su servidor los datos de cada partida.",
+    ],
+    seGuarda: {
+      titulo: "Qué se guarda",
+      puntos: [
+        "Cómo avanzas por el juego: módulos superados, aciertos y fallos, pistas y tiempos.",
+        "Tus respuestas al cuestionario de opinión, si decides rellenarlo.",
+        "Un código aleatorio para no mezclar partidas, por ejemplo OV-7K3Q-M2PA.",
+      ],
+    },
+    noSeGuarda: {
+      titulo: "Qué no se guarda",
+      puntos: [
+        "Tu nombre, tu correo, tu dirección IP ni ningún dato que te identifique.",
+      ],
+    },
+    notas: [
+      "No es un examen: los datos no cuentan para la nota.",
+      "Si tienes menos de 14 años, necesitas el permiso de tu madre, padre o tutor legal.",
+    ],
+    boton: "Aceptar y jugar",
   },
 
   // ---------------------------------------------------------------------------
@@ -97,7 +138,7 @@ window.CONTENIDO = {
       { sistema: "Batería del enlace", estado: "20 minutos", correcto: false },
     ],
     boton: "Aceptar la conexión",
-    nota: "20 minutos, individual o en grupo. Sin registro.",
+    nota: "20 minutos, individual o en grupo. No hace falta crear una cuenta.",
   },
 
   // ---------------------------------------------------------------------------
@@ -435,8 +476,9 @@ window.CONTENIDO = {
   // CUESTIONARIO DE OPINIÓN (evaluación del piloto)
   // Textos del apartado 6 de la «Propuesta integrada de evaluación». Si cambias
   // algún ítem, cambia también «version» para saber qué versión se respondió.
-  // Las respuestas se guardan solo en el dispositivo y se entregan descargando
-  // el archivo CSV desde la propia web: no se envían a ningún sitio.
+  // Las respuestas se guardan en el dispositivo y, con el aviso aceptado, se
+  // envían al servidor con el resto de datos de la partida. También se pueden
+  // descargar en CSV desde la propia web.
   // ---------------------------------------------------------------------------
   cuestionarioOpinion: {
     // El texto de la propuesta habla de «Vero»; aquí se ha cambiado por «Vere».
@@ -468,7 +510,7 @@ window.CONTENIDO = {
     ],
     mensajeVere: "Tu opinión me ayudará a mejorar la misión para la próxima persona a la que pida ayuda.",
     boton: "Guardar respuestas",
-    guardado: "Respuestas guardadas en este dispositivo. Para entregarlas, descarga el archivo o cópialas, según os haya indicado el profesorado.",
+    guardado: "Respuestas guardadas y enviadas con los datos de la partida. Si el profesorado os lo pide, también puedes descargarlas o copiarlas.",
   },
 
   final: {

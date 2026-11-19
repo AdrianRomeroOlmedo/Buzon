@@ -36,7 +36,9 @@ El juego es una página estática: HTML, CSS y JavaScript, sin frameworks ni ins
 ## Privacidad
 
 - **No hay ninguna petición externa al cargar.** La tipografía está incluida en `assets/fuentes/` y no se pide a Google.
-- **No envía datos a ningún servidor.** El progreso, los datos de la partida y el cuestionario se guardan solo en el navegador del dispositivo.
+- **Aviso de datos al cargar.** Antes de la portada aparece un aviso con lo que se guarda y lo que no. Hay que pulsar «Aceptar y jugar» para jugar. Se vuelve a pedir en cada partida nueva, porque puede jugar otra persona. Los textos están en `avisoDatos` de `content.js`.
+- **Las métricas se guardan en la base de datos de la web**, solo con el aviso aceptado (ver «Base de datos» más abajo). No se guarda nombre, correo, IP ni cookies: cada partida se identifica solo por su código aleatorio.
+- **Fuera de la web de la Cátedra** (abierto desde el disco o en GitHub Pages) no hay servidor: el envío falla sin avisar y el juego funciona igual, con los datos solo en el dispositivo.
 - **Los enlaces externos** (las fuentes de cada caso, los verificadores y los créditos) solo se abren si se pulsan, en una pestaña nueva y sin enviar a esa web desde qué página se viene.
 
 ## Datos para la evaluación del piloto
@@ -71,7 +73,7 @@ La pantalla final muestra el tiempo, las pistas y los **aciertos al primer inten
 
 ### Dispositivos compartidos
 
-Al abrir la web con una partida guardada, se pregunta si se quiere **continuar** o **empezar una partida nueva**. Cada partida nueva tiene su propio código. Antes de empezar otra, conviene copiar o descargar los datos de la anterior si se necesitan: al empezar una nueva se borran.
+Al abrir la web con una partida guardada, se pregunta si se quiere **continuar** o **empezar una partida nueva**. Cada partida nueva tiene su propio código. Al empezar una partida nueva, la anterior se borra del dispositivo, pero lo que ya se envió sigue en la base de datos. Sin servidor (GitHub Pages o el archivo abierto desde el disco), conviene copiar o descargar antes los datos de la anterior.
 
 ### Cuestionario de opinión
 
@@ -79,11 +81,23 @@ Es el cuestionario del apartado 6 de la propuesta, con los textos tal cual, en `
 
 - **Cuándo**: es opcional. Se ofrece al terminar la misión y también se puede abrir desde «Datos de la partida», aunque la misión haya quedado incompleta.
 - **Cómo se responde**: 12 frases con escala del 1 al 5 y **NV** («No puedo valorarlo»), y dos preguntas abiertas opcionales. Se puede dejar cualquier pregunta sin responder. Hay un campo opcional para el código de participante; no se pide el nombre.
-- **Dónde se guardan las respuestas**: solo en el dispositivo.
-- **Cómo se entregan**: con **Descargar respuestas (CSV)** o **Copiar**. Las respuestas van en las mismas columnas del CSV de la partida (`item_1` a `item_12`, `pregunta_13` y `pregunta_14`):
+- **Dónde se guardan las respuestas**: en el dispositivo y, con el aviso aceptado, en la base de datos, junto a los datos de la partida.
+- **También se pueden entregar** con **Descargar respuestas (CSV)** o **Copiar**. Las respuestas van en las mismas columnas del CSV de la partida (`item_1` a `item_12`, `pregunta_13` y `pregunta_14`):
   - Las respuestas numéricas se guardan como 1 a 5.
   - NV se guarda como `NV`.
   - Las preguntas sin responder quedan **vacías**: no se convierten en 3 ni en 0.
+
+### Base de datos
+
+Las métricas de cada partida se guardan en la tabla `partidas_escape_room` de la web Laravel:
+
+- **Cuándo se envían**: en cada cambio de pantalla, al guardar el cuestionario de opinión y al cerrar o cambiar de pestaña. Cada envío es la instantánea completa y sustituye a la anterior, así que una partida abandonada a medias también queda registrada hasta donde llegó.
+- **Qué se guarda**: `codigo`, `estado`, `finalizada`, `version_web`, la versión del aviso aceptado y su fecha, `datos` (JSON con las mismas columnas que el CSV de «Datos de la partida») y `opinion` (JSON con las columnas del cuestionario, o vacío).
+- **A dónde se envían**: `POST /escape-room/partidas` (ruta `escape-room.partidas.store`). La dirección está en `ajustes.registro.url` de `content.js`; con `url: ""` no se envía nada.
+- **Protección**: el servidor rechaza envíos sin el aviso aceptado, con un código mal formado o con campos raros, y limita las peticiones por IP (300 por minuto, porque en un aula muchos equipos comparten la misma IP). La IP no se guarda.
+- **Borrar una partida**: por su código, que aparece en «Datos de la partida».
+
+Antes de usarlo en la web publicada hay que ejecutar las migraciones (`php artisan migrate`).
 
 ## Archivos
 

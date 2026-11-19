@@ -453,6 +453,12 @@ body.conectando .monitor-sistemas::after { animation: ruido .2s steps(1) infinit
 .diagnostico .mal { color: var(--alerta); font-weight: 600; }
 .diagnostico .bien { color: var(--verificado); font-weight: 600; }
 .nota { font-size: .92rem; color: var(--texto-suave); }
+
+/* Aviso de datos (antes de la portada) */
+.aviso-datos-columnas { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; max-width: 720px; }
+.aviso-datos-bloque { padding: 12px 14px; border: 1px solid #1d2838; border-radius: 6px; background: rgba(0, 0, 0, .25); }
+.aviso-datos-bloque h2 { margin: 0 0 6px; font-family: var(--fuente-rotulo); font-size: .95rem; font-weight: 600; color: var(--texto-suave); }
+.aviso-datos-bloque ul { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; }
 .aviso-senal { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; font-family: var(--fuente-rotulo); font-weight: 700; font-size: 1rem; letter-spacing: .04em; color: var(--alerta); }
 .aviso-senal-luz { width: 9px; height: 9px; border-radius: 50%; background: var(--alerta); box-shadow: 0 0 10px var(--alerta); animation: alarma 1s steps(2, start) infinite; }
 .plazo { font-family: var(--fuente-rotulo); font-weight: 600; font-size: 1.1rem; color: var(--verificado); }

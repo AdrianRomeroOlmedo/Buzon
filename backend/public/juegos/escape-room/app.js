@@ -51,6 +51,7 @@
       registro: registroInicial(),
       opinion: null, pantallaAntesOpinion: null, pasoAntesOpinion: 0,
       avisosTiempo: { cinco: false, uno: false },
+      aviso: null,               // aviso de datos aceptado: { version, fecha }
     };
   }
   // Registro de la partida para la evaluación: cada contador mide una sola cosa.
@@ -595,6 +596,61 @@
       el('p', { class: 'nota' }, p.nota)
     );
   }
+
+  // Aviso de datos: se muestra antes de todo y hay que aceptarlo para jugar.
+  function pantallaAviso() {
+    const a = C.avisoDatos;
+    comunicar('neutral', C.alien.saludo);
+    const lista = (bloque) => el('div', { class: 'aviso-datos-bloque' },
+      el('h2', {}, bloque.titulo),
+      el('ul', {}, bloque.puntos.map((t) => el('li', {}, t))));
+    return el('section', { class: 'pantalla aviso-datos' },
+      el('div', { class: 'cabecera-modulo' }, el('p', {}, 'Aviso de datos'), el('p', { class: 'progreso-ronda' }, a.version)),
+      el('h1', { tabindex: '-1', 'data-enfocar': '' }, a.titulo),
+      a.parrafos.map((t) => el('p', { class: 'instrucciones' }, t)),
+      el('div', { class: 'aviso-datos-columnas' }, lista(a.seGuarda), lista(a.noSeGuarda)),
+      a.notas.map((t) => el('p', { class: 'nota' }, t)),
+      el('div', { class: 'acciones' },
+        el('button', {
+          type: 'button', class: 'boton', 'data-foco': 'aceptar-aviso',
+          onclick: () => {
+            conmutar(() => {
+              estado.aviso = { version: a.version, fecha: Date.now() };
+              guardar();
+            });
+          },
+        }, a.boton, icono('siguiente')))
+    );
+  }
+
+  // Envío de las métricas al servidor de la Cátedra: la misma instantánea que
+  // el CSV de «Datos de la partida». Solo con el aviso aceptado y la partida
+  // empezada. Si no hay servidor (archivo local, GitHub Pages) falla en silencio.
+  function enviarPartida() {
+    const url = C.ajustes.registro && C.ajustes.registro.url;
+    if (!url || !estado.aviso || !estado.registro.codigo || !/^https?:$/.test(location.protocol)) return;
+    const datos = {};
+    datosPartida().forEach((f) => { datos[f.clave] = f.csv === undefined ? null : f.csv; });
+    const opinion = estado.opinion ? Object.fromEntries(columnasOpinion()) : null;
+    try {
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          codigo: estado.registro.codigo,
+          acepta_aviso: true,
+          version_aviso: estado.aviso.version,
+          datos,
+          opinion,
+        }),
+        credentials: 'omit', // sin cookies: no hace falta sesión
+        keepalive: true,     // para que llegue aunque se cierre la pestaña
+      }).catch(() => {});
+    } catch (e) { /* navegador sin fetch: no se envía */ }
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') enviarPartida();
+  });
 
   function pantallaIntro() {
     const intro = C.introduccion;
@@ -1357,7 +1413,8 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Cuestionario de opinión: anónimo, opcional y guardado solo en el dispositivo.
+  // Cuestionario de opinión: anónimo y opcional. Se guarda en el dispositivo y
+  // se envía con los datos de la partida (enviarPartida).
   // Se puede responder aunque la misión no se haya terminado.
   // ---------------------------------------------------------------------------
   function abrirOpinion() {
@@ -1419,6 +1476,7 @@
         temporal.opinionGuardada = true;
         Sonido.acierto();
         guardar();
+        enviarPartida();
         pintar();
         anunciar('Respuestas guardadas.');
         enfocar('[data-foco="opinion-guardada"]');
@@ -1584,9 +1642,10 @@
   function pintar() {
     // Si el foco estaba en un control que se vuelve a dibujar, pasa a su copia nueva.
     const conFoco = document.activeElement && document.activeElement.getAttribute('data-foco');
-    const vista = temporal.reanudar ? 'reanudar' : `${estado.pantalla}:${estado.paso}:${temporal.secuencia}`;
+    const vista = !estado.aviso ? 'aviso' : temporal.reanudar ? 'reanudar' : `${estado.pantalla}:${estado.paso}:${temporal.secuencia}`;
     try {
-      const pantalla = temporal.reanudar ? pantallaReanudar() : (PANTALLAS[estado.pantalla] || pantallaPortada)();
+      const pantalla = !estado.aviso ? pantallaAviso()
+        : temporal.reanudar ? pantallaReanudar() : (PANTALLAS[estado.pantalla] || pantallaPortada)();
       if (vista !== ultimaVista) pantalla.classList.add('entrar');
       juego.replaceChildren(pantalla);
     } catch (error) {
@@ -1601,6 +1660,7 @@
     if (vista !== ultimaVista) {
       const primeraVez = ultimaVista === null;
       ultimaVista = vista;
+      enviarPartida(); // en cada cambio de pantalla
       if (!primeraVez) {
         const cabecera = juego.querySelector('[data-enfocar]');
         if (cabecera) cabecera.focus({ preventScroll: true });
