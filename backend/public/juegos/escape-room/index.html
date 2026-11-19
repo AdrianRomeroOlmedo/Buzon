@@ -28,18 +28,25 @@
           <circle cx="120" cy="90" r="6" stroke-width="1.6"/>
         </g>
       </svg>
-      <!-- HUD proyectado en el cristal -->
+      <!-- HUD del enlace remoto, superpuesto a la imagen de la cabina -->
       <svg class="hud" viewBox="0 0 1000 300" preserveAspectRatio="xMidYMid meet">
         <g fill="none" stroke="currentColor" stroke-width="1.2">
-          <path d="M470 130 H488 M512 130 H530 M500 100 V118 M500 142 V160"/>
-          <circle cx="500" cy="130" r="5"/>
-          <path d="M380 92 H420 M580 92 H620 M380 168 H420 M580 168 H620"/>
+          <path d="M470 150 H488 M512 150 H530 M500 120 V138 M500 162 V180"/>
+          <circle cx="500" cy="150" r="5"/>
+          <path d="M380 112 H420 M580 112 H620 M380 188 H420 M580 188 H620"/>
         </g>
         <g fill="currentColor" font-family="Barlow Condensed, sans-serif" font-size="15" letter-spacing="1.5">
-          <text x="380" y="80">ALT 412 KM</text>
-          <text x="620" y="80" text-anchor="end" id="hud-estado">REACTOR · 3 %</text>
+          <text x="380" y="72">ENLACE REMOTO</text>
+          <g class="barras-senal"><rect x="478" y="62" width="4" height="10"/><rect x="485" y="58" width="4" height="14"/><rect x="492" y="54" width="4" height="18"/><rect x="499" y="50" width="4" height="22"/></g>
+          <text x="620" y="72" text-anchor="end" id="hud-tiempo">BATERÍA 20:00</text>
+          <text x="380" y="96" font-size="13" opacity=".8">ALT 412 KM</text>
+          <text x="620" y="96" text-anchor="end" font-size="13" opacity=".8" id="hud-estado">REACTOR 3 %</text>
         </g>
       </svg>
+      <!-- Rótulo de la cámara de cabina: lo que se ve es la imagen del enlace -->
+      <p class="camara"><span class="camara-punto"></span>Cámara de cabina · <span id="camara-nombre">Vere</span></p>
+      <!-- Estática: sin señal antes de conectar, y al perder el enlace en el despegue -->
+      <div class="estatica"><span class="estatica-texto" id="estatica-texto">Sin señal</span></div>
     </div>
 
     <!-- Estructura de la cúpula: travesaño superior, montantes y marco -->
@@ -88,7 +95,10 @@
             <p class="codigo" id="codigo"></p>
           </div>
 
-          <p class="temporizador" id="temporizador" hidden></p>
+          <div class="bateria" id="bateria" hidden>
+            <p class="sistemas-etiqueta" id="bateria-etiqueta">Batería del enlace</p>
+            <p class="bateria-tiempo" id="temporizador" role="timer" aria-labelledby="bateria-etiqueta">20:00</p>
+          </div>
         </div>
       </aside>
 
@@ -100,7 +110,7 @@
       </section>
 
       <section class="monitor monitor-com" aria-label="Canal de comunicación">
-        <p class="placa" aria-hidden="true">COM · Canal de comunicación</p>
+        <p class="placa" aria-hidden="true" id="placa-com">COM · Enlace con Vere</p>
         <div class="vidrio vidrio-com">
           <div id="holograma" class="holograma"></div>
           <p id="mensaje" class="mensaje" aria-live="polite"></p>

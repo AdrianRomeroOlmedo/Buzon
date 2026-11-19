@@ -28,18 +28,34 @@
 
 window.CONTENIDO = {
 
-  version: 4,
+  version: 5,
   // Edición de la web: aparece en «Datos de la partida» para que el profesorado
   // anote qué versión se usó en cada sesión. Cámbiala al publicar cambios.
-  edicion: "18-11-2026",
+  edicion: "19-11-2026",
+
+  // LA HISTORIA EN DOS LÍNEAS
+  // Quien juega está en la Tierra. Su terminal capta la señal de auxilio de
+  // Vere, varado en órbita, que le da acceso remoto a los sistemas de su nave:
+  // lo que se ve en pantalla es la cabina de Vere a través de ese enlace. Las
+  // baterías de emergencia mantienen el enlace 20 minutos. Al despegar, la nave
+  // se va y la señal se pierde; quien juega se queda en la Tierra.
 
   // ---------------------------------------------------------------------------
   // AJUSTES GENERALES
   // ---------------------------------------------------------------------------
   ajustes: {
-    // Temporizador opcional: «activo: true» muestra una cuenta atrás en el
-    // panel de sistemas. Al llegar a cero no se pierde la partida.
-    temporizador: { activo: false, minutos: 25 },
+    // Cuenta atrás de la batería del enlace. Empieza al aceptar la conexión.
+    // Al llegar a cero la partida no se pierde: Vere conecta la reserva
+    // auxiliar y se puede seguir jugando hasta despegar (queda anotado en los
+    // datos de la partida). Con «activo: false» no hay cuenta atrás.
+    temporizador: {
+      activo: true,
+      minutos: 20,
+      etiqueta: "Batería del enlace",
+      aviso5: "Quedan 5 minutos de batería en el enlace. Tenemos que darnos prisa.",
+      aviso1: "Último minuto de batería. Si se agota, tendré que tirar de la reserva auxiliar.",
+      agotado: "Batería agotada. He conectado la reserva auxiliar: el enlace aguanta, pero hay que despegar cuanto antes.",
+    },
     // Volumen inicial del sonido (0 a 1). El sonido empieza siempre apagado:
     // cada jugador lo activa desde el panel de sistemas.
     volumen: 0.5,
@@ -49,8 +65,8 @@ window.CONTENIDO = {
   // EL PERSONAJE (habla por el canal de comunicación)
   // ---------------------------------------------------------------------------
   alien: {
-    nombre: "Vero",
-    saludo: "¿Me recibes? Estoy en órbita sobre tu planeta y los sistemas se apagan. Necesito ayuda.",
+    nombre: "Vere",
+    saludo: "Señal de auxilio en bucle… ¿Alguien me recibe?",
     alAcertar: [
       "Dato limpio. El reactor lo acepta.",
       "Correcto. La presión del reactor sube.",
@@ -68,38 +84,40 @@ window.CONTENIDO = {
   // ---------------------------------------------------------------------------
   // PANTALLA DE ARRANQUE
   // ---------------------------------------------------------------------------
+  // Lo que ve quien juega antes de conectarse: la señal de auxilio en su terminal.
   portada: {
     titulo: "Operación Verdad",
-    subtitulo: "Estás a bordo de una nave averiada en órbita. Su reactor funciona con información verdadera, y tú eres quien tiene que separarla de los bulos.",
-    // Líneas del diagnóstico. «correcto: true» se muestra como operativo.
+    aviso: "Señal de auxilio recibida",
+    subtitulo: "Tu terminal ha captado una llamada de socorro desde una nave averiada en órbita. Su reactor funciona con información verdadera, y su piloto, Vere, pide acceso remoto a alguien en la Tierra que le ayude a separarla de los bulos.",
+    // Datos que llegan con la señal. «correcto: true» se muestra como operativo.
     diagnostico: [
+      { sistema: "Origen", estado: "órbita terrestre baja", correcto: true },
       { sistema: "Reactor de verdad", estado: "3 % · crítico", correcto: false },
       { sistema: "Propulsión", estado: "sin energía", correcto: false },
-      { sistema: "Filtro de desinformación", estado: "sin calibrar", correcto: false },
-      { sistema: "Canal de comunicación", estado: "operativo", correcto: true },
+      { sistema: "Batería del enlace", estado: "20 minutos", correcto: false },
     ],
-    boton: "Iniciar misión",
-    nota: "Unos 20 minutos, individual o en grupo. Sin registro.",
+    boton: "Aceptar la conexión",
+    nota: "20 minutos, individual o en grupo. Sin registro.",
   },
 
   // ---------------------------------------------------------------------------
-  // INTRODUCCIÓN: la transmisión de Vero, una línea por mensaje.
+  // INTRODUCCIÓN: Vere habla por el enlace, una línea por mensaje.
   // ---------------------------------------------------------------------------
   introduccion: {
-    titulo: "Transmisión entrante",
-    estadoCanal: "Transmitiendo…",
+    titulo: "Enlace establecido",
+    estadoCanal: "Enlace remoto activo",
     dialogos: [
-      "Soy Vero. Esta nave no funciona con combustible: funciona con verdad. Cada dato verdadero alimenta el reactor; cada bulo lo atasca.",
-      "Me quedé sin reservas al cruzar vuestra órbita. Aquí abajo circula muchísima información, pero buena parte está adulterada, y mis sensores no saben distinguirla.",
-      "Tú analizas, yo piloto. Hay cuatro módulos que restaurar. Cada uno devuelve un 25 % de energía y un fragmento del código de activación.",
+      "Te veo. Soy Vere. Lo que tienes en pantalla es la cabina de mi nave: te he dado acceso remoto a sus sistemas.",
+      "Esta nave no funciona con combustible: funciona con verdad. Me quedé sin reservas al cruzar vuestra órbita, y la información que capto de tu planeta está llena de datos adulterados que mis sensores no saben distinguir.",
+      "Las baterías de emergencia mantienen este enlace 20 minutos. Hay cuatro módulos que restaurar: cada uno devuelve un 25 % de energía y un fragmento del código de activación. Tú analizas desde ahí abajo; yo piloto desde aquí.",
     ],
-    boton: "Aceptar la misión",
+    boton: "Empezar a restaurar la nave",
   },
 
   // ---------------------------------------------------------------------------
   // LOS CUATRO MÓDULOS
   // · «nombre»: cómo aparece en el panel de sistemas.
-  // · «mensaje»: lo que dice Vero por el canal mientras se juega el módulo.
+  // · «mensaje»: lo que dice Vere por el canal mientras se juega el módulo.
   // · «instrucciones»: lo que se lee en la pantalla principal.
   // · «fragmento»: el trozo del código que entrega al superarlo. Los cuatro
   //   juntos, en orden, forman el código de activación.
@@ -421,25 +439,26 @@ window.CONTENIDO = {
   // el archivo CSV desde la propia web: no se envían a ningún sitio.
   // ---------------------------------------------------------------------------
   cuestionarioOpinion: {
-    version: "Propuesta 1 (no validada)",
+    // El texto de la propuesta habla de «Vero»; aquí se ha cambiado por «Vere».
+    version: "Propuesta 1 (no validada), con el personaje renombrado a Vere",
     titulo: "Cuestionario de opinión: Operación Verdad",
     etiquetaCodigo: "Código de participante, solo si te lo han facilitado",
-    introduccion: "Queremos conocer tu opinión sobre la actividad de Vero. No hay respuestas correctas ni incorrectas. Tus respuestas nos ayudarán a mejorar la actividad y no afectarán a tus calificaciones. No escribas tu nombre. Puedes dejar preguntas sin responder.",
+    introduccion: "Queremos conocer tu opinión sobre la actividad de Vere. No hay respuestas correctas ni incorrectas. Tus respuestas nos ayudarán a mejorar la actividad y no afectarán a tus calificaciones. No escribas tu nombre. Puedes dejar preguntas sin responder.",
     instrucciones: "Marca una opción para cada frase. Si no has llegado a esa parte o no puedes valorarla, marca NV. En la pregunta 12, marca NV si no has utilizado ninguna pista.",
     // Significado de cada valor de la escala, de 1 a 5.
     escala: ["Totalmente en desacuerdo", "En desacuerdo", "Ni de acuerdo ni en desacuerdo", "De acuerdo", "Totalmente de acuerdo"],
     noValorable: "No puedo valorarlo",
     items: [
-      "Me ha resultado interesante participar en la misión de Vero.",
+      "Me ha resultado interesante participar en la misión de Vere.",
       "Creo que esta actividad puede ayudarme a pensar qué comprobar antes de compartir una noticia.",
       "Me ha resultado fácil entender cómo avanzar por la web.",
       "He disfrutado realizando las pruebas de la actividad.",
       "Creo que lo trabajado puede servirme para pensar cómo comprobar una imagen o un vídeo que encuentro en Internet.",
       "Las explicaciones que aparecen después de responder me han resultado claras.",
-      "Me ha gustado la historia de la nave y de Vero.",
+      "Me ha gustado la historia de la nave y de Vere.",
       "Creo que la actividad puede ayudarme a distinguir mejor entre información fiable e información engañosa.",
-      "La historia de Vero me ha ayudado a entender lo que tenía que hacer.",
-      "La misión de ayudar a Vero me ha animado a continuar con la actividad.",
+      "La historia de Vere me ha ayudado a entender lo que tenía que hacer.",
+      "La misión de ayudar a Vere me ha animado a continuar con la actividad.",
       "La dificultad de las pruebas me ha parecido adecuada.",
       "Las pistas me han ayudado a continuar cuando las he necesitado.",
     ],
@@ -447,15 +466,19 @@ window.CONTENIDO = {
       "¿Qué parte de la actividad o de la historia te ha gustado más? ¿Por qué?",
       "¿Qué cambiarías de la historia, las pruebas o la web para mejorarlas?",
     ],
-    mensajeVero: "Antes de irme: tu opinión me ayudará a mejorar la misión para la próxima tripulación.",
+    mensajeVere: "Tu opinión me ayudará a mejorar la misión para la próxima persona a la que pida ayuda.",
     boton: "Guardar respuestas",
     guardado: "Respuestas guardadas en este dispositivo. Para entregarlas, descarga el archivo o cópialas, según os haya indicado el profesorado.",
   },
 
   final: {
     titulo: "Misión completada",
-    mensaje: "La nave abandona la órbita con el reactor lleno de información verdadera. Estas son las técnicas que te llevas:",
-    mensajeVero: "Rumbo a casa. Gracias por el combustible. Ahí abajo vas a necesitar ese filtro más que yo.",
+    mensaje: "La nave de Vere abandona la órbita con el reactor lleno de información verdadera. El enlace se ha perdido, pero el registro de la misión se queda en tu terminal. Estas son las técnicas que te llevas:",
+    mensajeVere: "Rumbo a casa. Gracias por el combustible. Ahí abajo vas a necesitar ese filtro más que yo. Cambio y cierro.",
+    // Frase sobre el tiempo: {resto} se sustituye por la batería que quedaba.
+    dentroDePlazo: "Despegue con {resto} de batería en el enlace.",
+    fueraDePlazo: "Despegue con la reserva auxiliar, después de agotar los 20 minutos de batería.",
+    senalPerdida: "Señal perdida",
     aprendido: [
       "Antes de compartir, para: la prisa y la emoción son las mejores aliadas de los bulos.",
       "Haz lectura lateral: sal de la página y busca qué dicen otras fuentes sobre ella.",

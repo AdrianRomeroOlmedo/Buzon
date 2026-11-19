@@ -2,23 +2,34 @@
 
 Escape room web sobre desinformación de la **Cátedra Ceuta-IATEB** (Universidad de Granada y Ciudad Autónoma de Ceuta), para alumnado de Bachillerato (unos 16 años). Se creó para el 30 de noviembre, Día Internacional de la Ciudad Educadora.
 
-Quien juega está en la cabina de una nave extraterrestre averiada en órbita. El reactor funciona con **información verdadera**, y para recargarlo hay que restaurar cuatro módulos:
+Quien juega está **en la Tierra**. Su terminal capta una señal de auxilio: Vere, un extraterrestre con la nave averiada en órbita, pide acceso remoto. Al aceptar la conexión, la pantalla pasa de la estática a la cámara de cabina de la nave: lo que se ve es lo que Vere ve, y quien juega analiza la información desde abajo mientras Vere pilota desde arriba.
+
+El reactor de la nave funciona con **información verdadera**, y para recargarlo hay que restaurar cuatro módulos:
 
 1. **Detectar el bulo**: dos publicaciones (red social, WhatsApp, medio digital o SMS); hay que elegir la verdadera.
 2. **Verificar la noticia**: una publicación y un veredicto, «Verdadera» o «Bulo».
 3. **Clasificar los bulos**: unir cada ejemplo con su tipo de desinformación mediante líneas. Se puede arrastrar, tocar un elemento de cada columna o usar el teclado.
 4. **Cuestionario final**: seis preguntas con corrección. Las falladas se pueden repetir.
 
-Cada módulo da un 25 % de energía y un fragmento del código de activación. Con los cuatro fragmentos se introduce el código (`VERACIDAD`) y empieza la secuencia de despegue.
+Cada módulo da un 25 % de energía y un fragmento del código de activación. Con los cuatro fragmentos se introduce el código (`VERACIDAD`) y empieza la secuencia de despegue. Al despegar, la nave se aleja y **el enlace se pierde**: vuelve la estática con el rótulo «Señal perdida» y el canal de comunicación queda con el último mensaje recibido.
+
+### Cronómetro: 20 minutos de batería
+
+Las baterías de la nave solo mantienen el enlace **20 minutos**, y así lo explica Vere en la introducción. La cuenta atrás empieza al aceptar la conexión y se ve en el panel de estado y en el HUD del parabrisas:
+
+- Con **5 minutos** restantes, el reloj pasa a ámbar y Vere avisa.
+- Con **1 minuto**, pasa a rojo y Vere vuelve a avisar.
+- **Al llegar a cero no se pierde la partida**: Vere conecta la reserva auxiliar y se puede terminar. El final indica si el despegue fue dentro de plazo (y con cuánta batería) o con la reserva auxiliar, y los datos de la partida lo registran.
 
 ## La escena
 
-- **Parabrisas**: la Vía Láctea y la Tierra, que son fotografías reales, con el marco de la cúpula y un HUD proyectado.
+- **Parabrisas (imagen del enlace)**: la Vía Láctea y la Tierra, que son fotografías reales, con el marco de la cúpula, un HUD con la señal y la batería del enlace, y el rótulo «Cámara de cabina · Vere». Antes de conectar y después del despegue se ve estática.
+- **Pantallas sin señal**: antes de aceptar la conexión, el panel de estado y el canal de comunicación muestran «Sin señal».
 - **Iluminación**: depende de la energía. La nave empieza en emergencia, con luz roja, el cristal agrietado y pantallas con interferencias. Con cada módulo restaurado, la luz pasa a azul.
 - **Tres monitores encastrados en el panel de control**:
   - **Estado de la nave**: los cuatro módulos (pendiente, en curso o restaurado), su fragmento del código y el reactor.
   - **Pantalla principal**: donde se juega. En pantallas grandes tiene su propio desplazamiento.
-  - **Canal de comunicación**: Vero, el extraterrestre, que reacciona a cada respuesta. Debajo están los ajustes: sonido (apagado al empezar), volumen, ampliar texto, datos de la partida y reiniciar.
+  - **Canal de comunicación**: Vere, el extraterrestre, que reacciona a cada respuesta. Debajo están los ajustes: sonido (apagado al empezar), volumen, ampliar texto, datos de la partida y reiniciar.
 
 El juego es una página estática: HTML, CSS y JavaScript, sin frameworks ni instalación. El sonido se genera en el propio navegador, sin archivos de audio.
 
@@ -36,11 +47,11 @@ Estos cambios responden a la «Propuesta integrada de evaluación de Operación 
 
 El botón **Datos de la partida**, en los ajustes, abre un resumen de la partida de ese dispositivo. Está disponible también en partidas sin terminar. Incluye:
 
-- **Código de partida**: un código seudónimo (por ejemplo, `OV-7K3Q-M2PA`) que se crea al pulsar «Iniciar misión». Sirve para no confundir registros; no identifica a nadie.
+- **Código de partida**: un código seudónimo (por ejemplo, `OV-7K3Q-M2PA`) que se crea al pulsar «Aceptar la conexión». Sirve para no confundir registros; no identifica a nadie.
 - **Versión de la web**: el campo `edicion` de `content.js` y la versión del contenido.
 - **Estado**: sin iniciar, en curso (con el módulo) o finalizada, y módulos restaurados.
 - **Tiempos**:
-  - Tiempo total, desde «Iniciar misión» hasta el despegue (incluye pausas). Solo aparece en partidas finalizadas.
+  - Tiempo total, desde «Aceptar la conexión» hasta el despegue (incluye pausas). Solo aparece en partidas finalizadas.
   - Tiempo transcurrido hasta ahora, en partidas sin terminar.
   - Tiempo activo aproximado: solo cuenta mientras la pestaña está visible y ha habido alguna interacción en los últimos 2 minutos.
 - **Pistas solicitadas**, en total y por módulo. No incluye la ayuda del profesorado ni de compañeros.
@@ -49,6 +60,7 @@ El botón **Datos de la partida**, en los ajustes, abre un resumen de la partida
   - Módulo 3: conexiones correctas en la primera comprobación, comprobaciones con algún error y conexiones incorrectas en total.
   - Módulo 4: preguntas correctas en la primera corrección, correcciones con algún error y respuestas incorrectas en total.
   - Códigos de activación incorrectos.
+- **Batería**: si se agotaron los 20 minutos y, en partidas finalizadas, la batería restante al despegar.
 - **Cuestionario de opinión**: respondido o sin responder.
 
 Lo que aún no se ha podido observar aparece como **«No disponible»**, nunca como cero. Por ejemplo, el módulo 3 de una partida que se abandonó en el módulo 2.
@@ -103,7 +115,7 @@ Ejemplos:
 - **Prueba 3:** cada ejemplo indica en `tipo` el `id` de su tipo de desinformación. Debe haber tantos ejemplos como tipos, uno por tipo.
 - **Cuestionario:** `correcta` es la posición de la respuesta buena, **empezando a contar en 0**.
 - **Código de activación:** es la unión de los cuatro `fragmento`, en orden.
-- **Temporizador:** en `ajustes`, pon `temporizador: { activo: true, minutos: 25 }`. Al llegar a cero solo aparece un aviso.
+- **Cronómetro:** en `ajustes → temporizador` se cambian los minutos (`minutos: 20`), la etiqueta y los avisos de Vere (`aviso5`, `aviso1`, `agotado`). Con `activo: false` desaparece la cuenta atrás. Si cambias los minutos, revisa también los textos de la portada, la introducción y el final que los mencionan.
 
 ### Rigor del contenido
 
@@ -143,7 +155,7 @@ Los colores están al principio de `styles.css`, en `:root`:
 - `--ambar`: energía y código.
 - `--alerta` y `--verificado`: rojo y verde de las respuestas.
 
-La luz de cada nivel de energía está en las reglas `body[data-energia="…"]`. Vero está dibujado en SVG en `app.js` (función `alienSVG`).
+La luz de cada nivel de energía está en las reglas `body[data-energia="…"]`. Vere está dibujado en SVG en `app.js` (función `alienSVG`).
 
 ## Publicarlo en GitHub Pages, paso a paso
 
@@ -161,7 +173,7 @@ Esta carpeta se sirve también desde la web de la Cátedra, en `/juegos/escape-r
 
 - Se puede jugar entero con teclado. En la prueba 3 se elige un ejemplo y después su tipo con Tab y Enter.
 - Los aciertos, fallos y estados se indican con texto e iconos, no solo con colores.
-- Los avisos y las reacciones de Vero se anuncian a los lectores de pantalla.
+- Los avisos y las reacciones de Vere se anuncian a los lectores de pantalla.
 - Las animaciones se desactivan si el sistema tiene activado «reducir movimiento».
 - El botón **Ampliar** agranda la letra para proyectar.
 - La ventana de datos de la partida se cierra con Esc y devuelve el foco al juego.

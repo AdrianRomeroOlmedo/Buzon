@@ -130,7 +130,7 @@ body[data-energia="2"] .grieta, body[data-energia="3"] .grieta, body[data-energi
   mask: radial-gradient(circle, transparent 0 8%, #000 36%);
 }
 
-.cupula { position: absolute; left: 0; top: 0; width: 100%; height: 180px; pointer-events: none; z-index: 1; }
+.cupula { position: absolute; left: 0; top: 0; width: 100%; height: 180px; pointer-events: none; z-index: 3; }
 .pilotos-techo rect { fill: var(--alerta); }
 body[data-energia="0"] .pilotos-techo rect { animation: alarma 1.6s steps(2, start) infinite; }
 body[data-energia="1"] .pilotos-techo rect, body[data-energia="2"] .pilotos-techo rect { fill: var(--ambar); }
@@ -211,7 +211,7 @@ body[data-energia="0"] .vidrio-principal::before { animation: interferencia 8s i
 .vidrio-sistemas {
   display: grid; gap: 10px 12px; padding: 10px 12px;
   grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas: "modulos modulos" "reactor codigo";
+  grid-template-areas: "modulos modulos" "reactor bateria";
 }
 .sistemas-titulo { display: none; }
 .sistemas-etiqueta { font-family: var(--fuente-rotulo); font-size: .8rem; font-weight: 600; color: var(--texto-suave); letter-spacing: .02em; }
@@ -249,7 +249,65 @@ body[data-energia="0"] .vidrio-principal::before { animation: interferencia 8s i
 }
 .fragmento.conseguido { border-style: solid; border-color: rgba(233, 162, 59, .7); color: var(--ambar); text-shadow: 0 0 10px rgba(233, 162, 59, .6); }
 
-.temporizador { grid-area: codigo; font-family: var(--fuente-rotulo); font-weight: 600; color: var(--ion); }
+/* Batería del enlace: la cuenta atrás de 20 minutos */
+.bateria { grid-area: bateria; display: flex; align-items: baseline; gap: 6px; }
+.bateria[hidden] { display: none; }
+.bateria .sistemas-etiqueta { white-space: nowrap; }
+.bateria-tiempo { font-family: var(--fuente-rotulo); font-weight: 700; font-size: 1.15rem; color: var(--ion); font-variant-numeric: tabular-nums; }
+body[data-tiempo="aviso"] .bateria-tiempo { color: var(--ambar); }
+body[data-tiempo="critico"] .bateria-tiempo, body[data-tiempo="agotado"] .bateria-tiempo { color: var(--alerta); }
+body[data-tiempo="critico"] .bateria-tiempo { animation: alarma .8s steps(2, start) infinite; }
+body[data-tiempo="agotado"] .bateria-tiempo { font-size: 1rem; }
+body[data-tiempo="aviso"] #hud-tiempo { fill: var(--ambar); }
+body[data-tiempo="critico"] #hud-tiempo, body[data-tiempo="agotado"] #hud-tiempo { fill: var(--alerta); }
+.barras-senal rect { opacity: .22; transition: opacity var(--t-media) ease; }
+.barras-senal rect.activa { opacity: 1; }
+
+/* ---------- Enlace remoto: rótulo de cámara y estática ---------- */
+.camara {
+  position: absolute; right: 14%; top: 16%; z-index: 1; display: none; align-items: center; gap: 6px;
+  font-family: var(--fuente-rotulo); font-size: .78rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: rgba(220, 235, 255, .7);
+}
+.camara-punto { width: 7px; height: 7px; border-radius: 50%; background: var(--alerta); animation: alarma 1.2s steps(2, start) infinite; }
+
+/* Ruido de televisión hecho con un filtro SVG (sin imágenes externas) */
+:root { --ruido: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23r)'/></svg>"); }
+@keyframes ruido { 25% { background-position: 40px 70px; } 50% { background-position: -60px 20px; } 75% { background-position: 80px -40px; } 100% { background-position: -20px -90px; } }
+.estatica {
+  position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; pointer-events: none; opacity: 0;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .35) 0 1px, transparent 1px 3px), var(--ruido) 0 0 / 160px, #0b0d12;
+  animation: ruido .32s steps(1) infinite;
+}
+.estatica-texto {
+  font-family: var(--fuente-rotulo); font-size: 1.05rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
+  padding: 6px 16px; color: #e3e9f2; background: rgba(4, 6, 10, .78); border: 1px solid rgba(227, 233, 242, .35);
+}
+/* Sin conectar: todo el parabrisas es estática y el vídeo de Vere no llega */
+body[data-enlace="off"] .estatica { opacity: .94; }
+/* Al aceptar la conexión, la imagen entra entre interferencias */
+body.conectando .estatica { animation: ruido .2s steps(1) infinite, conectar 1.1s ease-out forwards; }
+@keyframes conectar { 0% { opacity: .95; } 40% { opacity: 1; } 55% { opacity: .25; } 68% { opacity: .8; } 100% { opacity: 0; } }
+/* Despegue: la nave se va y el enlace se pierde */
+body[data-enlace="perdido"] .estatica { animation: ruido .3s steps(1) infinite, perder-senal 1.2s ease-in 3.4s both; }
+@keyframes perder-senal { 0% { opacity: 0; } 30% { opacity: .6; } 45% { opacity: .15; } 100% { opacity: .92; } }
+
+.holograma { position: relative; }
+body[data-enlace="off"] .holograma::after, body.conectando .holograma::after, body[data-enlace="perdido"] .holograma::after {
+  content: "Sin vídeo"; position: absolute; inset: -2px; display: grid; place-items: center; border-radius: 6px;
+  font-family: var(--fuente-rotulo); font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #e3e9f2;
+  background: var(--ruido) 0 0 / 120px, #0b0d12; animation: ruido .32s steps(1) infinite;
+}
+body.conectando .holograma::after { animation: ruido .2s steps(1) infinite, conectar 1.1s ease-out forwards; }
+body[data-enlace="perdido"] .holograma::after { content: "Señal perdida"; animation: ruido .3s steps(1) infinite, perder-senal 1.2s ease-in 3.4s both; }
+/* Antes de conectar, el panel de sistemas de la nave tampoco tiene señal */
+body[data-enlace="off"] .monitor-sistemas::after, body.conectando .monitor-sistemas::after {
+  content: "Sin señal"; position: absolute; inset: 24px 9px 9px; z-index: 2; display: grid; place-items: center; border-radius: 7px;
+  font-family: var(--fuente-rotulo); font-size: .9rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #e3e9f2;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .3) 0 1px, transparent 1px 3px), var(--ruido) 0 0 / 140px, #0b0d12;
+  animation: ruido .32s steps(1) infinite;
+}
+body.conectando .monitor-sistemas::after { animation: ruido .2s steps(1) infinite, conectar 1.1s ease-out forwards; }
 
 .mandos { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding-top: 8px; border-top: 1px solid #172131; }
 .mando {
@@ -294,6 +352,7 @@ body[data-energia="0"] .vidrio-principal::before { animation: interferencia 8s i
   .tierra { width: min(15vh, 12vw); right: 21%; top: 10vh; }
   .grieta { width: 320px; top: 6vh; left: 11%; }
   .hud { display: block; }
+  .camara { display: flex; }
 
   .consola {
     position: absolute; left: 0; right: 0; bottom: 0; top: 37vh; margin: 0;
@@ -305,6 +364,7 @@ body[data-energia="0"] .vidrio-principal::before { animation: interferencia 8s i
     perspective: 1600px;
   }
   .monitor { padding: 28px 12px 12px; }
+  body[data-enlace="off"] .monitor-sistemas::after, body.conectando .monitor-sistemas::after { inset: 28px 12px 12px; }
   .placa { top: 8px; }
   .vidrio { flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #2b3648 transparent; }
   .monitor-sistemas { transform: rotateY(16deg); transform-origin: 100% 50%; }
@@ -312,6 +372,9 @@ body[data-energia="0"] .vidrio-principal::before { animation: interferencia 8s i
 
   .vidrio-sistemas { display: flex; flex-direction: column; gap: 12px; padding: 12px; }
   .modulos { grid-template-columns: 1fr; gap: 6px; }
+  .bateria { order: -1; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 5px; border: 1px solid #1c2636; background: rgba(4, 9, 15, .6); }
+  .bateria-tiempo { font-size: 1.9rem; line-height: 1.05; }
+  body[data-tiempo="agotado"] .bateria-tiempo { font-size: 1.15rem; }
   .modulo { grid-template-columns: auto minmax(0, 1fr) auto; padding: 7px 10px; }
   .modulo-nombre { font-size: .95rem; white-space: normal; }
   .modulo .fragmento { grid-row: span 2; grid-column: 3; }
@@ -390,6 +453,10 @@ body[data-energia="0"] .vidrio-principal::before { animation: interferencia 8s i
 .diagnostico .mal { color: var(--alerta); font-weight: 600; }
 .diagnostico .bien { color: var(--verificado); font-weight: 600; }
 .nota { font-size: .92rem; color: var(--texto-suave); }
+.aviso-senal { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; font-family: var(--fuente-rotulo); font-weight: 700; font-size: 1rem; letter-spacing: .04em; color: var(--alerta); }
+.aviso-senal-luz { width: 9px; height: 9px; border-radius: 50%; background: var(--alerta); box-shadow: 0 0 10px var(--alerta); animation: alarma 1s steps(2, start) infinite; }
+.plazo { font-family: var(--fuente-rotulo); font-weight: 600; font-size: 1.1rem; color: var(--verificado); }
+.plazo.fuera { color: var(--ambar); }
 
 /* ---------- Transmisión ---------- */
 .registro { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; max-width: 64ch; }
@@ -681,7 +748,8 @@ body.despegando .final-contenido { animation: encender 600ms var(--curva) 3s bot
 @media (max-width: 999px), (max-height: 619px) {
   /* El panel de sistemas queda fijo arriba y compacto: módulos y reactor */
   .monitor-sistemas { position: sticky; top: 0; z-index: 6; }
-  .vidrio-sistemas { grid-template-columns: minmax(0, 1fr); grid-template-areas: "modulos" "reactor"; gap: 8px; }
+  .vidrio-sistemas { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "modulos modulos" "reactor bateria"; gap: 8px 12px; }
+  .bateria .sistemas-etiqueta { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .codigo-bloque { display: none; } /* los fragmentos aparecen en cada módulo */
   .reactor-bloque .sistemas-etiqueta { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .reactor-bloque { grid-template-columns: minmax(0, 1fr) auto; }

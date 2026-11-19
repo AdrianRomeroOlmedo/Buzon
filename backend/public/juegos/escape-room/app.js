@@ -7,7 +7,7 @@
      la activación y el final.
    · Panel de sistemas: los cuatro módulos con su estado, el reactor, el código
      de activación y los mandos (sonido, volumen, texto grande, reiniciar).
-   · Canal de comunicación: Vero, el extraterrestre (alienSVG), y lo que dice.
+   · Canal de comunicación: Vere, el extraterrestre (alienSVG), y lo que dice.
    · Sonido: sintetizado con Web Audio (sin archivos), apagado por defecto.
    ========================================================================== */
 (function () {
@@ -50,6 +50,7 @@
       pistas: 0, inicio: null, fin: null, finTiempo: null,
       registro: registroInicial(),
       opinion: null, pantallaAntesOpinion: null, pasoAntesOpinion: 0,
+      avisosTiempo: { cinco: false, uno: false },
     };
   }
   // Registro de la partida para la evaluación: cada contador mide una sola cosa.
@@ -64,6 +65,7 @@
       comprobacionesP3: 0, comprobacionesConErroresP3: 0, conexionesIncorrectasP3: 0, correctasPrimeraComprobacionP3: null,
       correccionesP4: 0, correccionesConErroresP4: 0, respuestasIncorrectasP4: 0, correctasPrimeraCorreccionP4: null,
       codigosIncorrectos: 0,
+      tiempoAgotado: false,      // ¿se acabaron los 20 minutos de batería antes de despegar?
     };
   }
   function temporalInicial() {
@@ -275,11 +277,31 @@
       desbloqueo() { [523, 659, 784, 1047].forEach((f, i) => tono(f, 0.28, 'triangle', 0.12, i * 0.09)); },
       paso() { tono(880, 0.08, 'square', 0.04); },
       arranque() { tono(55, 3.2, 'sawtooth', 0.16, 0, 440); tono(110, 3, 'sine', 0.14, 0.3, 880); },
+      // Ráfaga de estática: al conectar el enlace y al perderlo.
+      estatica(duracion) {
+        if (!activo || !ctx) return;
+        const t = ctx.currentTime;
+        const datos = ctx.createBuffer(1, Math.floor(ctx.sampleRate * duracion), ctx.sampleRate);
+        const canal = datos.getChannelData(0);
+        for (let i = 0; i < canal.length; i++) canal[i] = Math.random() * 2 - 1;
+        const fuente = ctx.createBufferSource();
+        fuente.buffer = datos;
+        const filtro = ctx.createBiquadFilter();
+        filtro.type = 'bandpass';
+        filtro.frequency.value = 2200;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.12, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + duracion);
+        fuente.connect(filtro);
+        filtro.connect(g);
+        g.connect(maestro);
+        fuente.start(t);
+      },
     };
   })();
 
   // ---------------------------------------------------------------------------
-  // Vero en el canal de comunicación: un alienígena de cráneo alargado, ojos
+  // Vere en el canal de comunicación: un alienígena de cráneo alargado, ojos
   // negros rasgados y manchas bioluminiscentes, con cuatro expresiones
   // (neutral, contento, preocupado, sorprendido).
   // ---------------------------------------------------------------------------
@@ -337,7 +359,7 @@
       '</svg>';
   }
 
-  // Cada pantalla dice qué cuenta Vero. Si hay una reacción pendiente
+  // Cada pantalla dice qué cuenta Vere. Si hay una reacción pendiente
   // (acierto, fallo, pista), se muestra esa en su lugar.
   let canal = { expresion: 'neutral', texto: '' };
   let canalPintado = null;
@@ -543,10 +565,13 @@
   function pantallaPortada() {
     const p = C.portada;
     comunicar('preocupado', C.alien.saludo);
+    // Esta pantalla es el terminal de quien juega, en la Tierra: todavía no
+    // hay imagen de la nave (estática), solo la señal de auxilio.
     return el('section', { class: 'pantalla arranque' },
+      el('p', { class: 'aviso-senal' }, el('span', { class: 'aviso-senal-luz', 'aria-hidden': 'true' }), p.aviso),
       el('h1', { tabindex: '-1', 'data-enfocar': '' }, p.titulo),
       el('p', { class: 'subtitulo' }, p.subtitulo),
-      el('ul', { class: 'diagnostico', 'aria-label': 'Diagnóstico de la nave' },
+      el('ul', { class: 'diagnostico', 'aria-label': 'Datos de la señal' },
         p.diagnostico.map((d) => el('li', {}, el('span', {}, d.sistema), el('span', { class: d.correcto ? 'bien' : 'mal' }, d.estado)))
       ),
       el('div', { class: 'acciones' },
@@ -557,6 +582,12 @@
             if (!estado.registro.codigo) estado.registro.codigo = nuevoCodigo();
             const t = C.ajustes && C.ajustes.temporizador;
             if (t && t.activo && !estado.finTiempo) estado.finTiempo = Date.now() + t.minutos * 60000;
+            // La imagen de la cabina entra entre interferencias.
+            Sonido.estatica(1.1);
+            if (!MOVIMIENTO_REDUCIDO) {
+              document.body.classList.add('conectando');
+              setTimeout(() => document.body.classList.remove('conectando'), 1150);
+            }
             ir('intro');
           },
         }, p.boton, icono('siguiente'))
@@ -1040,18 +1071,35 @@
       Sonido.arranque();
       estado.fin = estado.fin || Date.now();
       ir('final');
+      // Cuando la nave sale del alcance, el enlace se corta.
+      setTimeout(() => Sonido.estatica(1.4), MOVIMIENTO_REDUCIDO ? 0 : 3400);
     }, ritmo * (pasos.length + 1));
+  }
+
+  // Batería que quedaba al despegar (texto «m:ss») o null si se agotó.
+  function bateriaRestante() {
+    if (!estado.finTiempo || !estado.fin) return null;
+    const ms = estado.finTiempo - estado.fin;
+    return ms > 0 ? relojTexto(ms) : null;
+  }
+  function relojTexto(ms) {
+    const total = Math.ceil(Math.max(0, ms) / 1000);
+    return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
   }
 
   function pantallaFinal() {
     const f = C.final;
-    comunicar('contento', f.mensajeVero);
+    comunicar('contento', f.mensajeVere);
     const minutosTotales = estado.inicio && estado.fin ? Math.max(1, Math.round((estado.fin - estado.inicio) / 60000)) : null;
     const primeros = aciertosPrimerIntento();
+    const resto = bateriaRestante();
+    const plazo = !estado.finTiempo ? null
+      : resto ? f.dentroDePlazo.replace('{resto}', resto) : f.fueraDePlazo;
     return el('section', { class: 'pantalla' },
-      el('div', { class: 'cabecera-modulo' }, el('p', {}, 'Propulsión activada'), el('p', { class: 'progreso-ronda' }, 'Saliendo de órbita')),
+      el('div', { class: 'cabecera-modulo' }, el('p', {}, 'Registro de la misión'), el('p', { class: 'progreso-ronda' }, 'Enlace finalizado')),
       el('div', { class: 'final-contenido' },
         titulo(f.titulo),
+        plazo ? el('p', { class: 'plazo' + (resto ? '' : ' fuera') }, plazo) : null,
         el('p', { class: 'instrucciones' }, f.mensaje),
         el('ul', { class: 'aprendido' }, f.aprendido.map((t) => el('li', {}, t))),
         el('dl', { class: 'informe' },
@@ -1135,9 +1183,13 @@
       fila('estado', 'Estado', situacion),
       fila('modulos_restaurados', 'Módulos restaurados', valorSi(iniciada, `${estado.superadas.length} de ${PRUEBAS.length}`), valorSi(iniciada, estado.superadas.length)),
       fila('tiempo_total_min', 'Tiempo total', valorSi(finalizada, `${minutos(transcurrido)} min`), valorSi(finalizada, minutos(transcurrido)),
-        'Desde «Iniciar misión» hasta el despegue. Incluye pausas.'),
+        'Desde «Aceptar la conexión» hasta el despegue. Incluye pausas.'),
       fila('tiempo_hasta_ahora_min', 'Tiempo transcurrido hasta ahora', valorSi(iniciada && !finalizada, `${minutos(transcurrido)} min`), valorSi(iniciada && !finalizada, minutos(transcurrido)),
         'Solo en partidas sin terminar. Incluye pausas.'),
+      fila('tiempo_agotado', 'Se agotaron los 20 minutos de batería',
+        valorSi(iniciada && !!estado.finTiempo, r.tiempoAgotado ? 'Sí' : finalizada ? 'No' : 'Todavía no'),
+        valorSi(iniciada && !!estado.finTiempo, r.tiempoAgotado ? 'si' : finalizada ? 'no' : 'todavia_no')),
+      fila('bateria_restante', 'Batería restante al despegar', valorSi(finalizada && !!bateriaRestante(), bateriaRestante())),
       fila('tiempo_activo_min', 'Tiempo activo aproximado', valorSi(iniciada, `${minutos(r.activoMs)} min`), valorSi(iniciada, minutos(r.activoMs)),
         'Con la pestaña visible y alguna interacción en los últimos 2 minutos.'),
       fila('pistas_total', 'Pistas solicitadas', valorSi(iniciada, String(estado.pistas)), valorSi(iniciada, estado.pistas),
@@ -1300,7 +1352,6 @@
   function nuevaPartida() {
     estado = estadoInicial();
     temporal = temporalInicial();
-    avisoTiempoDado = false;
     guardar();
     conmutar(() => {});
   }
@@ -1331,7 +1382,7 @@
 
   function pantallaOpinion() {
     const q = C.cuestionarioOpinion;
-    comunicar('contento', q.mensajeVero);
+    comunicar('contento', q.mensajeVere);
     const previo = estado.opinion || { participante: '', respuestas: {}, abiertas: {} };
     const valores = ['1', '2', '3', '4', '5', 'NV'];
     const nombreValor = (v) => (v === 'NV' ? q.noValorable : `${v}, ${q.escala[Number(v) - 1].toLowerCase()}`);
@@ -1451,23 +1502,64 @@
     document.body.classList.toggle('despegando', estado.pantalla === 'final');
     const hud = document.getElementById('hud-estado');
     if (hud) hud.textContent = estado.pantalla === 'final' ? 'PROPULSIÓN ACTIVA' : `REACTOR ${Math.max(3, porcentaje)} %`;
+
+    // Enlace remoto: sin señal antes de conectar, activo durante la misión y
+    // perdido cuando la nave despega.
+    const enlace = !estado.inicio ? 'off' : estado.pantalla === 'final' ? 'perdido' : 'on';
+    document.body.dataset.enlace = enlace;
+    document.getElementById('estatica-texto').textContent = enlace === 'perdido' ? C.final.senalPerdida : 'Sin señal';
+    document.getElementById('placa-com').textContent = enlace === 'perdido' ? 'COM · Último mensaje recibido' : `COM · Enlace con ${C.alien.nombre}`;
+    document.getElementById('camara-nombre').textContent = C.alien.nombre;
+    // La señal mejora a medida que la nave recupera energía.
+    document.querySelectorAll('.barras-senal rect').forEach((barra, i) => barra.classList.toggle('activa', enlace === 'on' && i <= superadas));
     actualizarTemporizador();
   }
 
-  let avisoTiempoDado = false;
+  // Cuenta atrás de la batería del enlace, con avisos a los 5 minutos y al
+  // último minuto. Al agotarse, Vere conecta la reserva auxiliar y se sigue.
   function actualizarTemporizador() {
+    const bloque = document.getElementById('bateria');
     const caja = document.getElementById('temporizador');
+    const hud = document.getElementById('hud-tiempo');
     const t = C.ajustes && C.ajustes.temporizador;
-    if (!t || !t.activo || !estado.finTiempo) { caja.hidden = true; return; }
-    caja.hidden = false;
-    // Al terminar la misión, el reloj se queda parado en el tiempo que sobraba.
+    if (!t || !t.activo) {
+      bloque.hidden = true;
+      if (hud) hud.textContent = '';
+      delete document.body.dataset.tiempo;
+      return;
+    }
+    if (!estado.finTiempo) {
+      bloque.hidden = true;
+      if (hud) hud.textContent = `BATERÍA ${t.minutos}:00`;
+      delete document.body.dataset.tiempo;
+      return;
+    }
+    bloque.hidden = false;
+    // Al despegar, el reloj se queda parado en lo que sobraba.
     const restante = Math.max(0, estado.finTiempo - (estado.fin || Date.now()));
-    const min = Math.floor(restante / 60000);
-    const seg = Math.floor((restante % 60000) / 1000);
-    caja.textContent = restante > 0 ? `Tiempo restante ${min}:${String(seg).padStart(2, '0')}` : 'Tiempo agotado';
-    if (restante === 0 && !avisoTiempoDado && !estado.fin) {
-      avisoTiempoDado = true;
-      anunciar('Se ha acabado el tiempo. Puedes seguir jugando hasta despegar.');
+    const reloj = relojTexto(restante);
+    caja.textContent = restante > 0 ? reloj : 'Reserva auxiliar';
+    if (hud) hud.textContent = restante > 0 ? `BATERÍA ${reloj}` : 'RESERVA AUXILIAR';
+    document.body.dataset.tiempo = restante === 0 ? 'agotado' : restante <= 60000 ? 'critico' : restante <= 300000 ? 'aviso' : 'normal';
+    if (estado.fin) return;
+
+    const avisar = (texto) => {
+      temporal.reaccion = { expresion: 'preocupado', texto };
+      pintarCanal();
+      anunciar(texto);
+      Sonido.fallo();
+      guardar();
+    };
+    if (restante === 0 && !estado.registro.tiempoAgotado) {
+      estado.registro.tiempoAgotado = true;
+      estado.avisosTiempo.cinco = estado.avisosTiempo.uno = true;
+      avisar(t.agotado);
+    } else if (restante > 0 && restante <= 60000 && !estado.avisosTiempo.uno) {
+      estado.avisosTiempo.cinco = estado.avisosTiempo.uno = true;
+      avisar(t.aviso1);
+    } else if (restante > 60000 && restante <= 300000 && !estado.avisosTiempo.cinco) {
+      estado.avisosTiempo.cinco = true;
+      avisar(t.aviso5);
     }
   }
   setInterval(actualizarTemporizador, 1000);
