@@ -1,14 +1,15 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Admin\SugerenciaAdminController;
+use App\Http\Controllers\PartidaEscapeRoomController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\RecursoController;
 use App\Http\Controllers\SugerenciaController;
-use App\Http\Controllers\Admin\SugerenciaAdminController;
 use App\Models\Proyecto;
 use App\Support\InstagramUltimoPost;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
 Route::get('/', fn () => view('inicio', [
@@ -31,9 +32,17 @@ Route::post('/sugerencias', [SugerenciaController::class, 'store'])
     ->middleware('throttle:buzon')
     ->name('sugerencias.store');
 
-
-
 Route::view('/privacidad', 'privacidad')->name('privacidad');
+// Escape room del 30 de noviembre: es una web estática independiente (public/juegos/escape-room/),
+// publicable también en GitHub Pages. Se apunta a index.html y no a la carpeta porque Laravel quita la
+// barra final de las redirecciones, y sin ella fallarían las rutas relativas del juego (styles.css…).
+Route::redirect('/escape-room', '/juegos/escape-room/index.html')->name('escape-room');
+// Métricas de las partidas, solo si se ha aceptado el aviso del juego. La página del juego es estática y no
+// lleva token CSRF; no hay sesión ni cuenta que proteger: la petición solo guarda la propia partida.
+Route::post('/escape-room/partidas', [PartidaEscapeRoomController::class, 'store'])
+    ->withoutMiddleware(ValidateCsrfToken::class)
+    ->middleware('throttle:escape-room')
+    ->name('escape-room.partidas.store');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -54,4 +63,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
