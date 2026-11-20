@@ -107,7 +107,7 @@ Antes de usarlo en la web publicada hay que ejecutar las migraciones (`php artis
 | `content.js` | **Todo el contenido**: textos, publicaciones, respuestas, explicaciones, fuentes, pistas y preguntas. |
 | `styles.css` | El aspecto: colores, iluminación, monitores y animaciones. |
 | `app.js` | El funcionamiento del juego. No hace falta tocarlo para cambiar textos. |
-| `assets/` | Imágenes: `espacio.jpg` (Vía Láctea), `tierra.jpg` (Tierra), `chapa.jpg` (textura del panel) y `favicon.svg`. En `assets/fuentes/`, la tipografía Barlow y su licencia. |
+| `assets/` | Imágenes: `espacio.jpg` (Vía Láctea), `tierra.jpg` (Tierra), `chapa.jpg` (textura del panel), `papa-plumifero-ia.webp` (imagen falsa del módulo 2) y `favicon.svg`. En `assets/fuentes/`, la tipografía Barlow y su licencia. |
 
 ## Probarlo en tu ordenador
 
@@ -125,7 +125,7 @@ Abre `content.js` con cualquier editor de texto. Está comentado por secciones.
 
 Ejemplos:
 
-- **Cambiar una publicación de la prueba 1:** en `detectar → rondas`, cada ronda tiene dos `tarjetas`. Marca la verdadera con `verdadera: true`. El campo `formato` puede ser `"red"`, `"whatsapp"`, `"noticia"` o `"sms"`, y cada uno usa sus propios campos (copia una tarjeta del mismo formato como modelo).
+- **Cambiar una publicación de la prueba 1:** en `detectar → rondas`, cada ronda tiene dos `tarjetas`. Marca la verdadera con `verdadera: true`. En las publicaciones de red social, `imagen` es la descripción de la foto y `foto` la ruta del archivo (por ejemplo, `assets/mi-foto.webp`); sin `foto`, se ve solo la descripción en un recuadro. El campo `formato` puede ser `"red"`, `"whatsapp"`, `"noticia"` o `"sms"`, y cada uno usa sus propios campos (copia una tarjeta del mismo formato como modelo).
 - **Prueba 3:** cada ejemplo indica en `tipo` el `id` de su tipo de desinformación. Debe haber tantos ejemplos como tipos, uno por tipo.
 - **Cuestionario:** `correcta` es la posición de la respuesta buena, **empezando a contar en 0**.
 - **Código de activación:** es la unión de los cuatro `fragmento`, en orden.
@@ -157,6 +157,7 @@ Fuentes que usa el contenido actual (todas comprobadas):
 | `assets/espacio.jpg` | Recorte de la panorámica de la Vía Láctea de [ESO/S. Brunier](https://www.eso.org/public/images/eso0932a/) | CC BY 4.0: hay que citar «ESO/S. Brunier» |
 | `assets/tierra.jpg` | «The Blue Marble», [NASA, misión Apollo 17](https://commons.wikimedia.org/wiki/File:The_Earth_seen_from_Apollo_17.jpg) | Dominio público |
 | `assets/chapa.jpg` | Textura [metal_plate_02 de Poly Haven](https://polyhaven.com/a/metal_plate_02) | CC0 |
+| `assets/papa-plumifero-ia.webp` | Imagen **falsa** del papa Francisco con un plumífero, generada con IA (Midjourney) por Pablo Xavier en 2023 y verificada por [Maldita.es](https://maldita.es/malditatecnologia/20230327/papa-francisco-abrigo-plumas-bulo-inteligencia-artificial). Se usa en la ronda 3 del módulo 2 | Se reproduce con fines educativos, para analizar un caso de desinformación. Las imágenes generadas solo con IA no suelen tener derechos de autor, pero muestra a una persona real: úsala solo en este contexto |
 | `assets/fuentes/*.woff2` | Tipografía [Barlow](https://github.com/jpt/barlow) (Barlow y Barlow Condensed) | SIL Open Font License 1.1 (`assets/fuentes/OFL.txt`) |
 
 Los créditos aparecen en la pantalla final (campo `creditosImagenes` de `content.js`). Si cambias una imagen, actualiza también su crédito.

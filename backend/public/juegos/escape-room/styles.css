@@ -495,6 +495,7 @@ body.conectando .monitor-sistemas::after { animation: ruido .2s steps(1) infinit
   aspect-ratio: 16 / 9; max-height: 170px; border-radius: 8px; display: grid; place-items: center; padding: 14px; text-align: center;
   background: repeating-linear-gradient(135deg, #e6e9ef 0 10px, #dde1e8 10px 11px); color: #5b6476; font-size: .85rem; font-weight: 500;
 }
+.pub-red .foto { display: block; width: 100%; height: auto; max-height: 340px; object-fit: contain; border-radius: 8px; background: #e6e9ef; }
 .pub-red .metricas { display: flex; gap: 18px; font-size: .82rem; color: var(--papel-suave); border-top: 1px solid #e3e6ec; padding-top: 8px; }
 .pub-red .metricas span { display: inline-flex; align-items: center; gap: 5px; }
 .pub-red .metricas svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; }

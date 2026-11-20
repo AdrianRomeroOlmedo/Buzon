@@ -389,7 +389,8 @@
           el('span', {}, el('span', { class: 'autor' }, p.autor), el('span', { class: 'usuario' }, p.usuario))
         ),
         el('span', { class: 'texto' }, p.texto),
-        p.imagen ? el('span', { class: 'imagen', role: 'img', 'aria-label': p.imagen }, p.imagen) : null,
+        p.foto ? el('img', { class: 'foto', src: p.foto, alt: p.imagen || '', decoding: 'async' })
+          : p.imagen ? el('span', { class: 'imagen', role: 'img', 'aria-label': p.imagen }, p.imagen) : null,
         el('span', { class: 'metricas' },
           el('span', {}, icono('responder', 'icono-metrica'), 'Responder'),
           el('span', {}, icono('compartir', 'icono-metrica'), 'Compartir'),

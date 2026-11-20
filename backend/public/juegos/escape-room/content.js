@@ -149,7 +149,7 @@ window.CONTENIDO = {
     estadoCanal: "Enlace remoto activo",
     dialogos: [
       "Te veo. Soy Vere. Lo que tienes en pantalla es la cabina de mi nave: te he dado acceso remoto a sus sistemas.",
-      "Esta nave no funciona con combustible: funciona con verdad. Me quedé sin reservas al cruzar vuestra órbita, y la información que capto de tu planeta está llena de datos adulterados que mis sensores no saben distinguir.",
+      "Esta nave no funciona con combustible: funciona con verdad. Me quedé sin reservas al cruzar vuestra órbita y la información que capto de tu planeta está llena de datos adulterados que mis sensores no saben distinguir.",
       "Las baterías de emergencia mantienen este enlace 20 minutos. Hay cuatro módulos que restaurar: cada uno devuelve un 25 % de energía y un fragmento del código de activación. Tú analizas desde ahí abajo; yo piloto desde aquí.",
     ],
     boton: "Empezar a restaurar la nave",
@@ -308,7 +308,10 @@ window.CONTENIDO = {
             autor: "Moda y Tendencias",
             usuario: "@moda_tendencias_ya",
             texto: "El papa Francisco sorprende con su nuevo look: un abrigo plumífero blanco de diseño. Esta foto está dando la vuelta al mundo.",
-            imagen: "Fotografía viral: el papa Francisco con un enorme abrigo plumífero blanco",
+            // «imagen» describe la foto (texto alternativo). Con «foto» se muestra
+            // la imagen real; sin «foto», aparece solo la descripción en un recuadro.
+            imagen: "Dos fotos del papa Francisco con un enorme abrigo plumífero blanco, caminando por la calle",
+            foto: "assets/papa-plumifero-ia.webp",
             metricas: "48 mil me gusta · 21 mil compartidos",
           },
           esVerdad: false,
@@ -484,7 +487,7 @@ window.CONTENIDO = {
     // El texto de la propuesta habla de «Vero»; aquí se ha cambiado por «Vere».
     version: "Propuesta 1 (no validada), con el personaje renombrado a Vere",
     titulo: "Cuestionario de opinión: Operación Verdad",
-    etiquetaCodigo: "Código de participante, solo si te lo han facilitado",
+    etiquetaCodigo: "Código de la partida, solo si te lo han facilitado",
     introduccion: "Queremos conocer tu opinión sobre la actividad de Vere. No hay respuestas correctas ni incorrectas. Tus respuestas nos ayudarán a mejorar la actividad y no afectarán a tus calificaciones. No escribas tu nombre. Puedes dejar preguntas sin responder.",
     instrucciones: "Marca una opción para cada frase. Si no has llegado a esa parte o no puedes valorarla, marca NV. En la pregunta 12, marca NV si no has utilizado ninguna pista.",
     // Significado de cada valor de la escala, de 1 a 5.
@@ -541,6 +544,7 @@ window.CONTENIDO = {
       { texto: "Vía Láctea: ESO/S. Brunier (CC BY 4.0)", url: "https://www.eso.org/public/images/eso0932a/" },
       { texto: "Tierra: NASA, misión Apollo 17 (dominio público)", url: "https://commons.wikimedia.org/wiki/File:The_Earth_seen_from_Apollo_17.jpg" },
       { texto: "Textura metálica: Poly Haven (CC0)", url: "https://polyhaven.com/a/metal_plate_02" },
+      { texto: "Papa Francisco con plumífero: imagen falsa generada con IA (Midjourney) por Pablo Xavier en 2023; se reproduce con fines educativos", url: "https://maldita.es/malditatecnologia/20230327/papa-francisco-abrigo-plumas-bulo-inteligencia-artificial" },
     ],
     botonReiniciar: "Nueva misión",
   },
