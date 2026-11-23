@@ -4,14 +4,14 @@ Escape room web sobre desinformación de la **Cátedra Ceuta-IATEB** (Universida
 
 Quien juega está **en la Tierra**. Su terminal capta una señal de auxilio: Vere, un extraterrestre con la nave averiada en órbita, pide acceso remoto. Al aceptar la conexión, la pantalla pasa de la estática a la cámara de cabina de la nave: lo que se ve es lo que Vere ve, y quien juega analiza la información desde abajo mientras Vere pilota desde arriba.
 
-El reactor de la nave funciona con **información verdadera**, y para recargarlo hay que restaurar cuatro módulos:
+El reactor de la nave funciona con **información verdadera**, y para recargarlo hay que superar cuatro módulos:
 
 1. **Detectar el bulo**: dos publicaciones (red social, WhatsApp, medio digital o SMS); hay que elegir la verdadera.
 2. **Verificar la noticia**: una publicación y un veredicto, «Verdadera» o «Bulo».
 3. **Clasificar los bulos**: unir cada ejemplo con su tipo de desinformación mediante líneas. Se puede arrastrar, tocar un elemento de cada columna o usar el teclado.
-4. **Cuestionario final**: seis preguntas con corrección. Las falladas se pueden repetir.
+4. **Cuestionario final**: seis preguntas, de una en una. Cada respuesta se comprueba y su explicación aparece siempre, también al acertar, antes de pasar a la siguiente. Si se falla, se puede volver a intentar.
 
-Cada módulo da un 25 % de energía y un fragmento del código de activación. Con los cuatro fragmentos se introduce el código (`VERACIDAD`) y empieza la secuencia de despegue. Al despegar, la nave se aleja y **el enlace se pierde**: vuelve la estática con el rótulo «Señal perdida» y el canal de comunicación queda con el último mensaje recibido.
+Cada módulo da un 25 % de energía y un código de la secuencia de activación. Con los cuatro códigos se introduce la secuencia (`VERACIDAD`) y empieza la secuencia de despegue. Al despegar, la nave se aleja y **el enlace se pierde**: vuelve la estática con el rótulo «Señal perdida» y el canal de comunicación queda con el último mensaje recibido.
 
 ### Cronómetro: 20 minutos de batería
 
@@ -25,9 +25,9 @@ Las baterías de la nave solo mantienen el enlace **20 minutos**, y así lo expl
 
 - **Parabrisas (imagen del enlace)**: la Vía Láctea y la Tierra, que son fotografías reales, con el marco de la cúpula, un HUD con la señal y la batería del enlace, y el rótulo «Cámara de cabina · Vere». Antes de conectar y después del despegue se ve estática.
 - **Pantallas sin señal**: antes de aceptar la conexión, el panel de estado y el canal de comunicación muestran «Sin señal».
-- **Iluminación**: depende de la energía. La nave empieza en emergencia, con luz roja, el cristal agrietado y pantallas con interferencias. Con cada módulo restaurado, la luz pasa a azul.
+- **Iluminación**: depende de la energía. La nave empieza en emergencia, con luz roja, el cristal agrietado y pantallas con interferencias. Con cada módulo recargado, la luz pasa a azul.
 - **Tres monitores encastrados en el panel de control**:
-  - **Estado de la nave**: los cuatro módulos (pendiente, en curso o restaurado), su fragmento del código y el reactor.
+  - **Estado de la nave**: los cuatro módulos (pendiente, en curso o recargado), su código y el reactor.
   - **Pantalla principal**: donde se juega. En pantallas grandes tiene su propio desplazamiento.
   - **Canal de comunicación**: Vere, el extraterrestre, que reacciona a cada respuesta. Debajo están los ajustes: sonido (apagado al empezar), volumen, ampliar texto, datos de la partida y reiniciar.
 
@@ -51,7 +51,7 @@ El botón **Datos de la partida**, en los ajustes, abre un resumen de la partida
 
 - **Código de partida**: un código seudónimo (por ejemplo, `OV-7K3Q-M2PA`) que se crea al pulsar «Aceptar la conexión». Sirve para no confundir registros; no identifica a nadie.
 - **Versión de la web**: el campo `edicion` de `content.js` y la versión del contenido.
-- **Estado**: sin iniciar, en curso (con el módulo) o finalizada, y módulos restaurados.
+- **Estado**: sin iniciar, en curso (con el módulo) o finalizada, y módulos recargados.
 - **Tiempos**:
   - Tiempo total, desde «Aceptar la conexión» hasta el despegue (incluye pausas). Solo aparece en partidas finalizadas.
   - Tiempo transcurrido hasta ahora, en partidas sin terminar.
@@ -60,7 +60,7 @@ El botón **Datos de la partida**, en los ajustes, abre un resumen de la partida
 - **Contadores por módulo**: cada uno mide una sola cosa, en lugar del antiguo contador mezclado de «errores».
   - Módulos 1 y 2: rondas acertadas al primer intento y respuestas incorrectas.
   - Módulo 3: conexiones correctas en la primera comprobación, comprobaciones con algún error y conexiones incorrectas en total.
-  - Módulo 4: preguntas correctas en la primera corrección, correcciones con algún error y respuestas incorrectas en total.
+  - Módulo 4: preguntas acertadas al primer intento, comprobaciones con error y respuestas incorrectas en total.
   - Códigos de activación incorrectos.
 - **Batería**: si se agotaron los 20 minutos y, en partidas finalizadas, la batería restante al despegar.
 - **Cuestionario de opinión**: respondido o sin responder.
@@ -80,7 +80,7 @@ Al abrir la web con una partida guardada, se pregunta si se quiere **continuar**
 Es el cuestionario del apartado 6 de la propuesta, con los textos tal cual, en `cuestionarioOpinion` de `content.js`. Si se cambia algún ítem, hay que cambiar también su `version`.
 
 - **Cuándo**: es opcional. Se ofrece al terminar la misión y también se puede abrir desde «Datos de la partida», aunque la misión haya quedado incompleta.
-- **Cómo se responde**: 12 frases con escala del 1 al 5 y **NV** («No puedo valorarlo»), y dos preguntas abiertas opcionales. Se puede dejar cualquier pregunta sin responder. Hay un campo opcional para el código de participante; no se pide el nombre.
+- **Cómo se responde**: 12 frases con escala del 1 al 5 y **NV** («No puedo valorarlo»), y dos preguntas abiertas opcionales. Se puede dejar cualquier pregunta sin responder. No hay que escribir ningún código: las respuestas se guardan junto al código de la partida, que se muestra encima de las preguntas. No se pide el nombre.
 - **Dónde se guardan las respuestas**: en el dispositivo y, con el aviso aceptado, en la base de datos, junto a los datos de la partida.
 - **También se pueden entregar** con **Descargar respuestas (CSV)** o **Copiar**. Las respuestas van en las mismas columnas del CSV de la partida (`item_1` a `item_12`, `pregunta_13` y `pregunta_14`):
   - Las respuestas numéricas se guardan como 1 a 5.
@@ -128,7 +128,7 @@ Ejemplos:
 - **Cambiar una publicación de la prueba 1:** en `detectar → rondas`, cada ronda tiene dos `tarjetas`. Marca la verdadera con `verdadera: true`. En las publicaciones de red social, `imagen` es la descripción de la foto y `foto` la ruta del archivo (por ejemplo, `assets/mi-foto.webp`); sin `foto`, se ve solo la descripción en un recuadro. El campo `formato` puede ser `"red"`, `"whatsapp"`, `"noticia"` o `"sms"`, y cada uno usa sus propios campos (copia una tarjeta del mismo formato como modelo).
 - **Prueba 3:** cada ejemplo indica en `tipo` el `id` de su tipo de desinformación. Debe haber tantos ejemplos como tipos, uno por tipo.
 - **Cuestionario:** `correcta` es la posición de la respuesta buena, **empezando a contar en 0**.
-- **Código de activación:** es la unión de los cuatro `fragmento`, en orden.
+- **Secuencia de activación:** es la unión de los cuatro `fragmento` (en el juego se llaman «códigos»), en orden.
 - **Cronómetro:** en `ajustes → temporizador` se cambian los minutos (`minutos: 20`), la etiqueta y los avisos de Vere (`aviso5`, `aviso1`, `agotado`). Con `activo: false` desaparece la cuenta atrás. Si cambias los minutos, revisa también los textos de la portada, la introducción y el final que los mencionan.
 
 ### Rigor del contenido
