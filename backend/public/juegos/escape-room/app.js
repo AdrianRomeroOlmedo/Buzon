@@ -65,6 +65,7 @@
       respuestasIncorrectas: { p1: 0, p2: 0 },
       comprobacionesP3: 0, comprobacionesConErroresP3: 0, conexionesIncorrectasP3: 0, correctasPrimeraComprobacionP3: null,
       correccionesP4: 0, correccionesConErroresP4: 0, respuestasIncorrectasP4: 0, correctasPrimeraCorreccionP4: null,
+      primerIntentoP4: {},                         // pregunta → true/false
       codigosIncorrectos: 0,
       tiempoAgotado: false,      // ¿se acabaron los 20 minutos de batería antes de despegar?
     };
@@ -72,7 +73,7 @@
   function temporalInicial() {
     return {
       respuesta: null, pista: false, reaccion: null, aviso: null,
-      seleccion: null, erroneas: [], resultadoTest: {}, errorCodigo: false, secuencia: false,
+      seleccion: null, erroneas: [], errorCodigo: false, secuencia: false,
       reanudar: false, opinionGuardada: false,
     };
   }
@@ -510,7 +511,7 @@
     temporal = temporalInicial();
     Sonido.clic();
     pintar();
-    const primero = juego.querySelector('.opcion-publicacion, .boton-veredicto');
+    const primero = juego.querySelector('.opcion-publicacion, .boton-veredicto, .pregunta input:checked, .pregunta input');
     if (primero) primero.focus();
   }
 
@@ -533,7 +534,7 @@
       moduloRecien = indice;
     });
     Sonido.desbloqueo();
-    anunciar(`Módulo ${indice + 1} restaurado. Reactor al ${(estado.superadas.length + (estado.superadas.includes(indice) ? 0 : 1)) * 25} por ciento.`);
+    anunciar(`Módulo ${indice + 1} recargado. Reactor al ${(estado.superadas.length + (estado.superadas.includes(indice) ? 0 : 1)) * 25} por ciento.`);
   }
 
   function ir(pantalla) {
@@ -557,8 +558,8 @@
     }, 170);
   }
 
-  function textoSiguiente(paso, total) {
-    return paso + 1 < total ? 'Siguiente señal' : 'Restaurar el módulo';
+  function textoSiguiente(paso, total, indicePrueba) {
+    return paso + 1 < total ? 'Siguiente señal' : `Recargar el módulo ${indicePrueba + 1}`;
   }
 
   // ---------------------------------------------------------------------------
@@ -701,7 +702,7 @@
           );
         })
       ),
-      r ? bloqueRespuesta(r.acierto, ronda.explicacion, ronda.fuentes, textoSiguiente(estado.paso, prueba.rondas.length),
+      r ? bloqueRespuesta(r.acierto, ronda.explicacion, ronda.fuentes, textoSiguiente(estado.paso, prueba.rondas.length, 0),
         () => siguienteRonda(prueba.rondas.length, 0)) : botonPista(ronda.pista)
     );
   }
@@ -728,7 +729,7 @@
         r ? el('span', { class: 'veredicto-sello ' + (ronda.esVerdad ? 'verdadera' : 'bulo') }, icono(ronda.esVerdad ? 'ok' : 'no'), ronda.esVerdad ? 'Es verdadera' : 'Es un bulo') : null
       ),
       el('div', { class: 'botones-veredicto', role: 'group', 'aria-label': 'Veredicto' }, boton(true), boton(false)),
-      r ? bloqueRespuesta(r.acierto, ronda.explicacion, ronda.fuentes, textoSiguiente(estado.paso, prueba.rondas.length),
+      r ? bloqueRespuesta(r.acierto, ronda.explicacion, ronda.fuentes, textoSiguiente(estado.paso, prueba.rondas.length, 1),
         () => siguienteRonda(prueba.rondas.length, 1)) : botonPista(ronda.pista)
     );
   }
@@ -963,98 +964,97 @@
     }, MOVIMIENTO_REDUCIDO ? 2500 : 1800);
   }
 
-  // Prueba 4: cuestionario con corrección. Las acertadas quedan fijadas y las
-  // falladas se pueden volver a responder.
+  // Prueba 4: cuestionario, una pregunta cada vez. Se comprueba cada respuesta
+  // y su explicación aparece siempre (también al acertar) antes de pasar a la
+  // siguiente. Si se falla, se puede volver a intentar.
   function pantallaCuestionario() {
     const prueba = C.pruebas.cuestionario;
-    comunicar('neutral', prueba.mensaje);
     const total = prueba.preguntas.length;
-    const fijada = (q) => estado.testCorrectas.includes(q);
-    const pendientes = prueba.preguntas.map((_, q) => q).filter((q) => !fijada(q));
-    const listas = pendientes.every((q) => estado.respuestasTest[q] !== undefined);
-    const todas = estado.testCorrectas.length === total;
+    const q = Math.min(estado.paso, total - 1);
+    const pregunta = prueba.preguntas[q];
+    const acertada = estado.testCorrectas.includes(q);
+    const r = temporal.respuesta;
+    if (!r && !acertada) comunicar('neutral', prueba.mensaje);
+    const ultima = q + 1 >= total;
 
-    const preguntas = prueba.preguntas.map((pregunta, q) => {
-      const resultado = fijada(q) ? true : temporal.resultadoTest[q];
-      return el('fieldset', { class: 'pregunta' + (resultado === true ? ' acierto' : resultado === false ? ' fallo' : '') },
-        el('legend', {}, el('span', { class: 'numero' }, `${q + 1}.`), pregunta.texto),
-        el('div', { class: 'opciones-pregunta' },
-          pregunta.opciones.map((opcion, j) => {
-            const entrada = el('input', {
-              type: 'radio', name: `pregunta-${q}`, value: String(j), 'data-foco': `p${q}-${j}`,
-              disabled: fijada(q), checked: estado.respuestasTest[q] === j,
-            });
-            entrada.addEventListener('change', () => {
-              estado.respuestasTest[q] = j;
-              delete temporal.resultadoTest[q];
-              Sonido.clic();
-              guardar();
-              pintar();
-            });
-            return el('label', { class: 'opcion-pregunta' + (fijada(q) && j === pregunta.correcta ? ' correcta-marcada' : '') }, entrada, el('span', {}, opcion));
-          })
-        ),
-        resultado === true
-          ? el('div', { class: 'correccion' }, el('strong', {}, 'Correcta'), el('span', {}, pregunta.explicacion),
-            pregunta.fuente ? listaFuentes([pregunta.fuente]) : null)
-          : resultado === false
-            ? el('div', { class: 'correccion', role: 'status' }, el('strong', {}, 'Incorrecta'), el('span', {}, 'Revisa la pregunta y elige otra respuesta.'))
-            : null
-      );
-    });
+    const opciones = el('fieldset', { class: 'pregunta' + (acertada ? ' acierto' : r && !r.acierto ? ' fallo' : '') },
+      el('legend', {}, el('span', { class: 'numero' }, `${q + 1}.`), pregunta.texto),
+      el('div', { class: 'opciones-pregunta' },
+        pregunta.opciones.map((opcion, j) => {
+          const entrada = el('input', {
+            type: 'radio', name: `pregunta-${q}`, value: String(j), 'data-foco': `p${q}-${j}`,
+            disabled: acertada, checked: estado.respuestasTest[q] === j,
+          });
+          entrada.addEventListener('change', () => {
+            estado.respuestasTest[q] = j;
+            temporal.respuesta = null;
+            Sonido.clic();
+            guardar();
+            pintar();
+          });
+          return el('label', { class: 'opcion-pregunta' + (acertada && j === pregunta.correcta ? ' correcta-marcada' : '') }, entrada, el('span', {}, opcion));
+        })
+      )
+    );
+
+    let pie;
+    if (acertada) {
+      pie = bloqueRespuesta(true, pregunta.explicacion, pregunta.fuente ? [pregunta.fuente] : [],
+        ultima ? 'Recargar el módulo 4' : 'Siguiente pregunta', () => siguienteRonda(total, 3));
+    } else if (r && !r.acierto) {
+      pie = bloqueRespuesta(false, prueba.textoFallo, [], '', null);
+    } else {
+      pie = el('div', { class: 'acciones' },
+        el('button', {
+          type: 'submit', class: 'boton', 'data-foco': 'corregir',
+          disabled: estado.respuestasTest[q] === undefined,
+        }, prueba.botonCorregir));
+    }
 
     return el('section', { class: 'pantalla' },
-      cabeceraModulo(3, `${estado.testCorrectas.length} de ${total} correctas`),
+      cabeceraModulo(3, `Pregunta ${q + 1} de ${total}`),
       titulo(prueba.titulo),
       el('p', { class: 'instrucciones' }, prueba.instrucciones),
       el('form', { class: 'cuestionario', onsubmit: (evento) => { evento.preventDefault(); corregirCuestionario(); } },
-        preguntas,
-        todas
-          ? el('div', { class: 'respuesta acierto', tabindex: '-1' },
-            el('p', { class: 'respuesta-titulo' }, icono('ok'), 'Cuestionario superado'),
-            el('p', {}, 'Todas las respuestas son correctas. El filtro de desinformación está calibrado.'),
-            el('div', { class: 'acciones' }, el('button', { type: 'button', class: 'boton', 'data-foco': 'seguir', onclick: () => superarPrueba(3) }, 'Restaurar el módulo', icono('siguiente'))))
-          : el('div', { class: 'acciones' },
-            el('button', { type: 'submit', class: 'boton', disabled: !listas, 'data-foco': 'corregir' }, prueba.botonCorregir),
-            listas ? null : el('span', { class: 'nota' }, `Faltan ${pendientes.filter((q) => estado.respuestasTest[q] === undefined).length} por responder.`))
-      )
+        opciones, pie)
     );
   }
 
   function corregirCuestionario() {
     const prueba = C.pruebas.cuestionario;
-    let fallos = 0;
-    prueba.preguntas.forEach((pregunta, q) => {
-      if (estado.testCorrectas.includes(q)) return;
-      const bien = estado.respuestasTest[q] === pregunta.correcta;
-      temporal.resultadoTest[q] = bien;
-      if (bien) estado.testCorrectas.push(q);
-      else fallos++;
-    });
+    const q = estado.paso;
+    if (estado.testCorrectas.includes(q) || estado.respuestasTest[q] === undefined) return;
+    const bien = estado.respuestasTest[q] === prueba.preguntas[q].correcta;
     const r = estado.registro;
     r.correccionesP4++;
-    if (r.correctasPrimeraCorreccionP4 === null) r.correctasPrimeraCorreccionP4 = estado.testCorrectas.length;
-    if (fallos) { r.correccionesConErroresP4++; r.respuestasIncorrectasP4 += fallos; }
-    reaccionar(!fallos);
+    if (r.primerIntentoP4[q] === undefined) {
+      r.primerIntentoP4[q] = bien;
+      r.correctasPrimeraCorreccionP4 = Object.values(r.primerIntentoP4).filter(Boolean).length;
+    }
+    if (bien) estado.testCorrectas.push(q);
+    else { r.correccionesConErroresP4++; r.respuestasIncorrectasP4++; }
+    temporal.respuesta = { acierto: bien };
+    reaccionar(bien);
     guardar();
     pintar();
-    anunciar(fallos ? `${fallos} respuestas incorrectas. Revísalas y vuelve a corregir.` : 'Todas las respuestas son correctas.');
-    enfocar(fallos ? '.pregunta.fallo input:not(:disabled)' : '[data-foco="seguir"]');
+    anunciar(bien ? 'Respuesta correcta.' : 'Respuesta incorrecta. Vuelve a intentarlo.');
+    enfocar('[data-foco="seguir"], [data-foco="reintentar"]');
   }
 
-  // Tras cada módulo: el fragmento del código se descifra en pantalla.
+  // Tras cada módulo: su código (un trozo de la secuencia de activación) se
+  // descifra en pantalla.
   let moduloRecien = null;
   function pantallaLogro() {
     const indice = estado.logro;
     const ultima = indice === PRUEBAS.length - 1;
     const fragmento = PRUEBAS[indice].datos.fragmento;
     comunicar('contento', C.alien.alSuperarPrueba);
-    const caja = el('p', { class: 'fragmento-grande', 'aria-label': `Fragmento ${fragmento}` }, fragmento);
+    const caja = el('p', { class: 'fragmento-grande', 'aria-label': `Código ${fragmento}` }, fragmento);
     if (moduloRecien === indice && !MOVIMIENTO_REDUCIDO) descifrar(caja, fragmento);
     return el('section', { class: 'pantalla desbloqueo' },
-      cabeceraModulo(indice, 'Restaurado'),
-      titulo('Fragmento recuperado'),
-      el('p', { class: 'instrucciones' }, `El reactor sube al ${estado.superadas.length * 25} %. Guarda este fragmento: forma parte del código de activación.`),
+      cabeceraModulo(indice, 'Recargado'),
+      titulo('Código recuperado'),
+      el('p', { class: 'instrucciones' }, `El reactor sube al ${estado.superadas.length * 25} %. Anota este código: forma parte de la secuencia de activación.`),
       caja,
       el('div', { class: 'acciones' },
         el('button', {
@@ -1109,7 +1109,7 @@
           if (campo) campo.focus();
         },
       },
-      el('label', { for: 'codigo-activacion' }, 'Código de activación'),
+      el('label', { for: 'codigo-activacion' }, 'Secuencia de activación'),
       el('div', { class: 'fila' }, entrada, el('button', { type: 'submit', class: 'boton' }, icono('llave'), a.boton))
       ),
       temporal.errorCodigo ? el('p', { class: 'error', id: 'codigo-error' }, a.error) : null
@@ -1215,17 +1215,17 @@
     const iniciada = !!estado.inicio;
     const finalizada = !!estado.fin;
     const fila = (clave, etiqueta, mostrar, csv, nota) => ({ clave, etiqueta, mostrar: mostrar === undefined ? null : mostrar, csv: csv === undefined ? mostrar : csv, nota });
-    const rondas = (clave, prueba) => {
-      const hechas = Object.values(r.primerIntento[clave]);
+    const resumenIntentos = (intentos, total, unidad) => {
+      const hechas = Object.values(intentos || {});
       if (!hechas.length) return null;
-      const total = C.pruebas[prueba].rondas.length;
       const aciertos = hechas.filter(Boolean).length;
-      return { aciertos, hechas: hechas.length, total, texto: `${aciertos} de ${hechas.length}` + (hechas.length < total ? ` (de ${total} rondas)` : '') };
+      return { aciertos, hechas: hechas.length, total, texto: `${aciertos} de ${hechas.length}` + (hechas.length < total ? ` (de ${total} ${unidad})` : '') };
     };
+    const rondas = (clave, prueba) => resumenIntentos(r.primerIntento[clave], C.pruebas[prueba].rondas.length, 'rondas');
     const m1 = rondas('p1', 'detectar');
     const m2 = rondas('p2', 'verificar');
+    const m4 = resumenIntentos(r.primerIntentoP4, C.pruebas.cuestionario.preguntas.length, 'preguntas');
     const nEjemplos = C.pruebas.clasificar.ejemplos.length;
-    const nPreguntas = C.pruebas.cuestionario.preguntas.length;
     const transcurrido = iniciada ? (estado.fin || Date.now()) - estado.inicio : null;
     const enCurso = PRUEBAS.findIndex((p) => p.pantalla === estado.pantalla || (estado.pantallaAntesOpinion === p.pantalla && estado.pantalla === 'opinion'));
     const situacion = !iniciada ? 'Sin iniciar'
@@ -1238,7 +1238,7 @@
       fila('version_web', 'Versión de la web', `${C.edicion} (contenido ${C.version})`),
       fila('fecha_inicio', 'Inicio', fechaHora(estado.inicio)),
       fila('estado', 'Estado', situacion),
-      fila('modulos_restaurados', 'Módulos restaurados', valorSi(iniciada, `${estado.superadas.length} de ${PRUEBAS.length}`), valorSi(iniciada, estado.superadas.length)),
+      fila('modulos_restaurados', 'Módulos recargados', valorSi(iniciada, `${estado.superadas.length} de ${PRUEBAS.length}`), valorSi(iniciada, estado.superadas.length)),
       fila('tiempo_total_min', 'Tiempo total', valorSi(finalizada, `${minutos(transcurrido)} min`), valorSi(finalizada, minutos(transcurrido)),
         'Desde «Aceptar la conexión» hasta el despegue. Incluye pausas.'),
       fila('tiempo_hasta_ahora_min', 'Tiempo transcurrido hasta ahora', valorSi(iniciada && !finalizada, `${minutos(transcurrido)} min`), valorSi(iniciada && !finalizada, minutos(transcurrido)),
@@ -1265,9 +1265,8 @@
       fila('m3_comprobaciones', 'Módulo 3: comprobaciones con algún error', valorSi(r.comprobacionesP3, `${r.comprobacionesConErroresP3} de ${r.comprobacionesP3}`), valorSi(r.comprobacionesP3, r.comprobacionesP3)),
       fila('m3_comprobaciones_con_errores', null, null, valorSi(r.comprobacionesP3, r.comprobacionesConErroresP3)),
       fila('m3_conexiones_incorrectas', 'Módulo 3: conexiones incorrectas en total', valorSi(r.comprobacionesP3, String(r.conexionesIncorrectasP3)), valorSi(r.comprobacionesP3, r.conexionesIncorrectasP3)),
-      fila('m4_correctas_primera_correccion', 'Módulo 4: preguntas correctas en la primera corrección',
-        r.correctasPrimeraCorreccionP4 === null ? null : `${r.correctasPrimeraCorreccionP4} de ${nPreguntas}`, r.correctasPrimeraCorreccionP4),
-      fila('m4_correcciones', 'Módulo 4: correcciones con algún error', valorSi(r.correccionesP4, `${r.correccionesConErroresP4} de ${r.correccionesP4}`), valorSi(r.correccionesP4, r.correccionesP4)),
+      fila('m4_correctas_primera_correccion', 'Módulo 4: preguntas acertadas al primer intento', m4 && m4.texto, m4 && m4.aciertos),
+      fila('m4_correcciones', 'Módulo 4: comprobaciones con error', valorSi(r.correccionesP4, `${r.correccionesConErroresP4} de ${r.correccionesP4}`), valorSi(r.correccionesP4, r.correccionesP4)),
       fila('m4_correcciones_con_errores', null, null, valorSi(r.correccionesP4, r.correccionesConErroresP4)),
       fila('m4_respuestas_incorrectas', 'Módulo 4: respuestas incorrectas en total', valorSi(r.correccionesP4, String(r.respuestasIncorrectasP4)), valorSi(r.correccionesP4, r.respuestasIncorrectasP4)),
       fila('codigos_incorrectos', 'Códigos de activación incorrectos', valorSi(estado.superadas.length === PRUEBAS.length, String(r.codigosIncorrectos)), valorSi(estado.superadas.length === PRUEBAS.length, r.codigosIncorrectos)),
@@ -1281,7 +1280,6 @@
     const o = estado.opinion;
     return [
       ['cuestionario_version', o ? o.version : ''],
-      ['codigo_participante', o ? o.participante : ''],
       ...q.items.map((_, i) => [`item_${i + 1}`, o && o.respuestas[i + 1] ? o.respuestas[i + 1] : '']),
       ...q.abiertas.map((_, i) => [`pregunta_${q.items.length + i + 1}`, o ? (o.abiertas[q.items.length + i + 1] || '') : '']),
     ];
@@ -1393,7 +1391,7 @@
       el('p', { class: 'instrucciones' },
         terminada
           ? `Se completó el ${fechaHora(estado.fin)}.`
-          : `Empezó el ${fechaHora(estado.inicio)} y tiene ${estado.superadas.length} de ${PRUEBAS.length} módulos restaurados.`,
+          : `Empezó el ${fechaHora(estado.inicio)} y tiene ${estado.superadas.length} de ${PRUEBAS.length} módulos recargados.`,
         ' Si ahora juega otra persona o equipo, empieza una partida nueva para no mezclar los datos.'),
       el('div', { class: 'acciones' },
         el('button', {
@@ -1441,7 +1439,7 @@
   function pantallaOpinion() {
     const q = C.cuestionarioOpinion;
     comunicar('contento', q.mensajeVere);
-    const previo = estado.opinion || { participante: '', respuestas: {}, abiertas: {} };
+    const previo = estado.opinion || { respuestas: {}, abiertas: {} };
     const valores = ['1', '2', '3', '4', '5', 'NV'];
     const nombreValor = (v) => (v === 'NV' ? q.noValorable : `${v}, ${q.escala[Number(v) - 1].toLowerCase()}`);
 
@@ -1473,7 +1471,7 @@
         q.items.forEach((_, i) => { const v = datos.get(`item-${i + 1}`); if (v) respuestas[i + 1] = v; });
         const textos = {};
         q.abiertas.forEach((_, i) => { const n = q.items.length + i + 1; textos[n] = String(datos.get(`abierta-${n}`) || '').trim(); });
-        estado.opinion = { version: q.version, participante: String(datos.get('participante') || '').trim(), respuestas, abiertas: textos, guardado: Date.now() };
+        estado.opinion = { version: q.version, respuestas, abiertas: textos, guardado: Date.now() };
         temporal.opinionGuardada = true;
         Sonido.acierto();
         guardar();
@@ -1483,10 +1481,11 @@
         enfocar('[data-foco="opinion-guardada"]');
       },
     },
-    el('div', { class: 'campo-codigo-participante' },
-      el('label', { for: 'participante' }, q.etiquetaCodigo),
-      el('input', { id: 'participante', name: 'participante', type: 'text', autocomplete: 'off', maxlength: '40', value: previo.participante || '' })
-    ),
+    // El código de la partida va solo con las respuestas: se muestra para que
+    // quede claro que no hay que escribirlo ni buscarlo.
+    q.avisoCodigo && estado.registro.codigo
+      ? el('p', { class: 'nota aviso-codigo' }, q.avisoCodigo.replace('{codigo}', estado.registro.codigo))
+      : null,
     el('div', { class: 'leyenda-escala', 'aria-hidden': 'true' },
       q.escala.map((t, i) => el('span', {}, el('strong', {}, String(i + 1)), ` ${t}`)),
       el('span', {}, el('strong', {}, 'NV'), ` ${q.noValorable}`)
@@ -1526,12 +1525,12 @@
     document.getElementById('modulos').replaceChildren(...PRUEBAS.map((p, i) => {
       const hecho = estado.superadas.includes(i);
       const enCurso = i === actual;
-      const situacion = hecho ? 'Restaurado' : enCurso ? 'En curso' : 'Pendiente';
+      const situacion = hecho ? 'Recargado' : enCurso ? 'En curso' : 'Pendiente';
       return el('li', { class: 'modulo' + (hecho ? ' completado' : '') + (enCurso ? ' actual' : '') + (moduloRecien === i ? ' recien' : ''), 'aria-current': enCurso ? 'step' : false },
         el('span', { class: 'modulo-luz', 'aria-hidden': 'true' }),
         el('span', { class: 'modulo-nombre' }, el('span', { class: 'modulo-numero' }, `${i + 1}.`), ' ', el('span', { class: 'modulo-texto' }, p.datos.nombre)),
         el('span', { class: 'modulo-estado' }, situacion),
-        el('span', { class: 'fragmento' + (hecho ? ' conseguido' : ''), 'aria-label': hecho ? `fragmento ${p.datos.fragmento}` : 'fragmento oculto' }, hecho ? p.datos.fragmento : '··')
+        el('span', { class: 'fragmento' + (hecho ? ' conseguido' : ''), 'aria-label': hecho ? `código ${p.datos.fragmento}` : 'código oculto' }, hecho ? p.datos.fragmento : '··')
       );
     }));
     moduloRecien = null;
@@ -1554,7 +1553,7 @@
 
     document.getElementById('codigo').replaceChildren(...PRUEBAS.map((p, i) => {
       const hecho = estado.superadas.includes(i);
-      return el('span', { class: 'fragmento' + (hecho ? ' conseguido' : ''), 'aria-label': hecho ? `Fragmento ${i + 1}: ${p.datos.fragmento}` : `Fragmento ${i + 1}: oculto` }, hecho ? p.datos.fragmento : '··');
+      return el('span', { class: 'fragmento' + (hecho ? ' conseguido' : ''), 'aria-label': hecho ? `Código ${i + 1}: ${p.datos.fragmento}` : `Código ${i + 1}: oculto` }, hecho ? p.datos.fragmento : '··');
     }));
 
     document.body.dataset.energia = String(superadas);

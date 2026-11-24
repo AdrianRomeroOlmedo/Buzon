@@ -28,7 +28,7 @@
 
 window.CONTENIDO = {
 
-  version: 5,
+  version: 6,
   // Edición de la web: aparece en «Datos de la partida» para que el profesorado
   // anote qué versión se usó en cada sesión. Cámbiala al publicar cambios.
   edicion: "19-11-2026",
@@ -92,7 +92,7 @@ window.CONTENIDO = {
     noSeGuarda: {
       titulo: "Qué no se guarda",
       puntos: [
-        "Tu nombre, tu correo, tu dirección IP ni ningún dato que te identifique.",
+        "Tu nombre, tu correo, tu dirección IP ni cualquier dato que te identifique.",
       ],
     },
     notas: [
@@ -118,7 +118,7 @@ window.CONTENIDO = {
       "Combustible contaminado. Los bulos están diseñados para parecer verdad: lee la explicación y repite.",
       "El sistema detecta una incoherencia. Vuelve a intentarlo.",
     ],
-    alSuperarPrueba: "Módulo restaurado. Un 25 % más de energía y un fragmento del código de activación.",
+    alSuperarPrueba: "Módulo recargado. Un 25 % más de energía y un código más de la secuencia de activación.",
     alPedirPista: "Te paso los datos del análisis. Lo demás es cosa tuya.",
   },
 
@@ -129,7 +129,7 @@ window.CONTENIDO = {
   portada: {
     titulo: "Operación Verdad",
     aviso: "Señal de auxilio recibida",
-    subtitulo: "Tu terminal ha captado una llamada de socorro desde una nave averiada en órbita. Su reactor funciona con información verdadera, y su piloto, Vere, pide acceso remoto a alguien en la Tierra que le ayude a separarla de los bulos.",
+    subtitulo: "Tu terminal ha captado una llamada de socorro desde una nave alienígena averiada en órbita. Su reactor funciona con información verdadera, y su piloto, Vere, pide acceso remoto a alguien en la Tierra que le ayude a separar la verdad de los bulos.",
     // Datos que llegan con la señal. «correcto: true» se muestra como operativo.
     diagnostico: [
       { sistema: "Origen", estado: "órbita terrestre baja", correcto: true },
@@ -150,9 +150,9 @@ window.CONTENIDO = {
     dialogos: [
       "Te veo. Soy Vere. Lo que tienes en pantalla es la cabina de mi nave: te he dado acceso remoto a sus sistemas.",
       "Esta nave no funciona con combustible: funciona con verdad. Me quedé sin reservas al cruzar vuestra órbita y la información que capto de tu planeta está llena de datos adulterados que mis sensores no saben distinguir.",
-      "Las baterías de emergencia mantienen este enlace 20 minutos. Hay cuatro módulos que restaurar: cada uno devuelve un 25 % de energía y un fragmento del código de activación. Tú analizas desde ahí abajo; yo piloto desde aquí.",
+      "Las baterías de emergencia mantienen este enlace 20 minutos. Hay cuatro módulos que recargar: cada uno devuelve un 25 % de energía y un código de la secuencia de activación. Tú analizas desde ahí abajo; yo piloto desde aquí. Si todo va bien, recargaré mis reactores y podré continuar mi viaje por la galaxia.",
     ],
-    boton: "Empezar a restaurar la nave",
+    boton: "Empezar a recargar la nave",
   },
 
   // ---------------------------------------------------------------------------
@@ -161,7 +161,7 @@ window.CONTENIDO = {
   // · «mensaje»: lo que dice Vere por el canal mientras se juega el módulo.
   // · «instrucciones»: lo que se lee en la pantalla principal.
   // · «fragmento»: el trozo del código que entrega al superarlo. Los cuatro
-  //   juntos, en orden, forman el código de activación.
+  //   juntos, en orden, forman la secuencia de activación.
   // · «fuentes»: enlaces a la verificación real del caso (nombre y url).
   // ---------------------------------------------------------------------------
   pruebas: {
@@ -315,8 +315,8 @@ window.CONTENIDO = {
             metricas: "48 mil me gusta · 21 mil compartidos",
           },
           esVerdad: false,
-          pista: "Una búsqueda inversa de la imagen lleva hasta su primera publicación. ¿Dónde apareció?",
-          explicacion: "Es un bulo. La imagen se generó con inteligencia artificial (Midjourney) y se publicó por primera vez en un foro de Reddit dedicado a ese programa, según comprobó Maldita.es con una búsqueda inversa de imágenes. Que una foto parezca real ya no basta: hay que buscar su origen.",
+          pista: "Haz una búsqueda inversa: en lugar de escribir palabras, se busca con la propia foto (por ejemplo, con Google Lens, desde el móvil o con clic derecho en la imagen) y el buscador enseña dónde más aparece. Así se llega a su primera publicación. ¿Dónde apareció?",
+          explicacion: "Es un bulo. La imagen se generó con inteligencia artificial (Midjourney) y se publicó por primera vez en un foro de Reddit dedicado a ese programa, según comprobó Maldita.es con una búsqueda inversa de imágenes: buscar con la propia foto, en vez de con palabras, para ver dónde más ha aparecido. Que una foto parezca real ya no basta: hay que buscar su origen.",
           fuentes: [
             { nombre: "Maldita.es: Las imágenes del papa con un abrigo de plumas están creadas con IA", url: "https://maldita.es/malditatecnologia/20230327/papa-francisco-abrigo-plumas-bulo-inteligencia-artificial" },
           ],
@@ -383,10 +383,12 @@ window.CONTENIDO = {
     cuestionario: {
       nombre: "Cuestionario final",
       titulo: "Cuestionario de verificación",
-      instrucciones: "Responde a todas las preguntas y pulsa «Corregir». Las que falles podrás repetirlas.",
+      instrucciones: "Elige una respuesta y pulsa «Comprobar respuesta». Lee la explicación antes de pasar a la siguiente pregunta. Si fallas, puedes volver a intentarlo.",
       mensaje: "Último módulo. Este protocolo te servirá aquí y, sobre todo, ahí abajo.",
       fragmento: "DAD",
-      botonCorregir: "Corregir respuestas",
+      botonCorregir: "Comprobar respuesta",
+      // Si se falla: no se da la solución, para poder volver a intentarlo.
+      textoFallo: "Esa no es la respuesta correcta. Vuelve a leer la pregunta y prueba con otra opción.",
       preguntas: [
         {
           texto: "¿Qué diferencia la desinformación de la información errónea?",
@@ -421,7 +423,7 @@ window.CONTENIDO = {
             "Preguntar en el grupo de clase si alguien la ha visto",
           ],
           correcta: 1,
-          explicacion: "La búsqueda inversa de imágenes (Google Lens, TinEye…) muestra si la foto ya circulaba antes o en otro lugar. Así se descubrió el origen de la imagen del papa generada con IA.",
+          explicacion: "En una búsqueda inversa no se escriben palabras: se sube la foto (o se hace clic derecho sobre ella) en un buscador de imágenes como Google Lens o TinEye, y aparecen las páginas donde ya estaba. Así se ve si la foto circulaba antes o en otro lugar. Así se descubrió el origen de la imagen del papa generada con IA.",
           fuente: { nombre: "Maldita.es: el caso de la imagen del papa", url: "https://maldita.es/malditatecnologia/20230327/papa-francisco-abrigo-plumas-bulo-inteligencia-artificial" },
         },
         {
@@ -467,10 +469,10 @@ window.CONTENIDO = {
   // ---------------------------------------------------------------------------
   activacion: {
     titulo: "Activación de la nave",
-    texto: "Los cuatro módulos están restaurados. Introduce el código de activación uniendo los fragmentos en orden.",
-    mensaje: "Reactor al 100 %. Solo falta el código y nos vamos.",
+    texto: "Los cuatro módulos están recargados. Introduce la secuencia de activación uniendo los cuatro códigos en orden.",
+    mensaje: "Reactor al 100 %. Solo falta la secuencia de activación y nos vamos.",
     boton: "Activar la nave",
-    error: "Código incorrecto. Une los fragmentos en el orden de los módulos: 1, 2, 3 y 4.",
+    error: "Secuencia incorrecta. Une los códigos en el orden de los módulos: 1, 2, 3 y 4.",
     // Pasos de la secuencia de arranque que se encienden uno a uno.
     secuencia: ["Reactor de verdad", "Filtro de desinformación", "Navegación", "Propulsión"],
   },
@@ -487,7 +489,9 @@ window.CONTENIDO = {
     // El texto de la propuesta habla de «Vero»; aquí se ha cambiado por «Vere».
     version: "Propuesta 1 (no validada), con el personaje renombrado a Vere",
     titulo: "Cuestionario de opinión: Operación Verdad",
-    etiquetaCodigo: "Código de la partida, solo si te lo han facilitado",
+    // Se muestra encima de las preguntas; {codigo} es el código de la partida,
+    // que se guarda solo con las respuestas: no hay que escribirlo.
+    avisoCodigo: "Tus respuestas se guardan automáticamente junto a esta partida ({codigo}). No tienes que escribir ningún código.",
     introduccion: "Queremos conocer tu opinión sobre la actividad de Vere. No hay respuestas correctas ni incorrectas. Tus respuestas nos ayudarán a mejorar la actividad y no afectarán a tus calificaciones. No escribas tu nombre. Puedes dejar preguntas sin responder.",
     instrucciones: "Marca una opción para cada frase. Si no has llegado a esa parte o no puedes valorarla, marca NV. En la pregunta 12, marca NV si no has utilizado ninguna pista.",
     // Significado de cada valor de la escala, de 1 a 5.
@@ -527,7 +531,7 @@ window.CONTENIDO = {
     aprendido: [
       "Antes de compartir, para: la prisa y la emoción son las mejores aliadas de los bulos.",
       "Haz lectura lateral: sal de la página y busca qué dicen otras fuentes sobre ella.",
-      "Busca el origen de las imágenes con una búsqueda inversa.",
+      "Busca el origen de las imágenes con una búsqueda inversa: busca con la propia foto (por ejemplo, en Google Lens) para ver dónde apareció antes.",
       "Desconfía de las autoridades sin nombre, las amenazas y las promesas milagrosas.",
       "Que algo parezca real (o lo haya hecho una IA convincente) no lo hace verdadero.",
       "No demostrado no es lo mismo que falso: no lo difundas como un hecho.",
