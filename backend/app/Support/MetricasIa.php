@@ -22,28 +22,12 @@ class MetricasIa
     public const SIN_VERSION = '__sin_version__';
 
     /**
-     * Filtro por origen de la sugerencia (las sintéticas se crean con buzon:sinteticas).
-     *
-     * @var array<string, string>
-     */
-    public const ORIGENES = [
-        'reales' => 'Solo reales',
-        'sinteticas' => 'Solo sintéticas',
-    ];
-
-    /**
      * @return array<string, mixed>
      */
-    public static function calcular(?CarbonInterface $desde = null, ?CarbonInterface $hasta = null, ?string $modelo = null, ?string $origen = null): array
+    public static function calcular(?CarbonInterface $desde = null, ?CarbonInterface $hasta = null, ?string $modelo = null): array
     {
-        $sintetica = match ($origen) {
-            'reales' => false,
-            'sinteticas' => true,
-            default => null,
-        };
-
         $propuestas = PropuestaIa::query()
-            ->whereHas('sugerencia', fn ($q) => $q->when($sintetica !== null, fn ($q) => $q->where('sintetica', $sintetica)))
+            ->whereHas('sugerencia')
             ->when($desde, fn ($q) => $q->where('created_at', '>=', $desde->copy()->startOfDay()))
             ->when($hasta, fn ($q) => $q->where('created_at', '<=', $hasta->copy()->endOfDay()))
             ->when($modelo === self::SIN_VERSION, fn ($q) => $q->whereNull('modelo_version'))
@@ -58,7 +42,7 @@ class MetricasIa
         $anonimizadas = $propuestas->whereNotNull('privacidad_evaluada_at')->values();
 
         return [
-            'resumen' => self::resumen($propuestas, $clasificadas, $anonimizadas, $desde, $hasta, $sintetica),
+            'resumen' => self::resumen($propuestas, $clasificadas, $anonimizadas, $desde, $hasta),
             'clasificacion' => self::clasificacion($clasificadas),
             'urgencia' => self::urgencia($clasificadas),
             'ciudadano' => self::comparacionCiudadano($clasificadas),
@@ -113,10 +97,9 @@ class MetricasIa
      * @param  Collection<int, PropuestaIa>  $anonimizadas
      * @return array<string, int>
      */
-    private static function resumen(Collection $propuestas, Collection $clasificadas, Collection $anonimizadas, ?CarbonInterface $desde, ?CarbonInterface $hasta, ?bool $sintetica): array
+    private static function resumen(Collection $propuestas, Collection $clasificadas, Collection $anonimizadas, ?CarbonInterface $desde, ?CarbonInterface $hasta): array
     {
         $sugerencias = Sugerencia::query()
-            ->when($sintetica !== null, fn ($q) => $q->where('sintetica', $sintetica))
             ->when($desde, fn ($q) => $q->where('fecha_recepcion', '>=', $desde->copy()->startOfDay()))
             ->when($hasta, fn ($q) => $q->where('fecha_recepcion', '<=', $hasta->copy()->endOfDay()));
 

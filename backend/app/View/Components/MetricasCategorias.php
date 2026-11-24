@@ -15,7 +15,6 @@ use Illuminate\View\View;
  * propuesto la IA no se publica.
  *
  * - Las sugerencias en la papelera quedan fuera solas (SoftDeletes).
- * - Las sintéticas (pruebas de la IA, comando buzon:sinteticas) no se publican.
  * - Los duplicados SÍ cuentan: se marcaron sin borrar precisamente para
  *   conservar el recuento de envíos. Para excluirlos, descomenta la línea.
  */
@@ -25,9 +24,7 @@ class MetricasCategorias extends Component
     private const CACHE_MINUTOS = 10;
 
     public array $categorias;
-
     public int $total;
-
     public ?string $actualizado;
 
     public function __construct()
@@ -36,7 +33,6 @@ class MetricasCategorias extends Component
             $categorias = Categoria::query()
                 ->withCount(['sugerencias as total' => fn ($q) => $q
                     ->whereNotNull('clasificacion_revisada_at')
-                    ->where('sintetica', false),
                     // ->whereNull('duplicado_de_id')
                 ])
                 ->orderByDesc('total')

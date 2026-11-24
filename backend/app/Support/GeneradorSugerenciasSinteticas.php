@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\Categoria;
 use App\Models\HistorialSugerencia;
 use App\Models\Sugerencia;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -12,10 +13,11 @@ use RuntimeException;
 /**
  * Sugerencias inventadas para probar la IA real en la web publicada.
  *
- * Se crean igual que las del formulario público (texto original, elección del
- * ciudadano, zona, a veces contacto) y quedan pendientes de IA, para que el
- * modelo las procese y las personas revisoras las evalúen. Van marcadas con
- * «sintetica» para filtrarlas en las métricas y borrarlas de una vez.
+ * Se crean exactamente igual que las del formulario público (texto original,
+ * elección del ciudadano, zona) y quedan pendientes de IA, para que el modelo
+ * las procese y las personas revisoras las evalúen a ciegas. No llevan ninguna
+ * marca: la única forma de localizarlas es la lista de IDs que devuelve crear().
+ * Tampoco llevan contacto, para que nadie responda a una dirección inventada.
  *
  * Para que la prueba sirva:
  * - Unas cuantas llevan datos personales directos (inventados) y otras
@@ -137,9 +139,9 @@ class GeneradorSugerenciasSinteticas
     ];
 
     /**
-     * @return int Sugerencias creadas.
+     * @return list<int> IDs de las sugerencias creadas.
      */
-    public static function crear(int $cantidad): int
+    public static function crear(int $cantidad): array
     {
         $categorias = Categoria::with('subcategorias')->get()->keyBy('nombre');
 
@@ -149,43 +151,94 @@ class GeneradorSugerenciasSinteticas
 
         $escenarios = self::ESCENARIOS;
 
-        DB::transaction(function () use ($cantidad, $categorias, $escenarios) {
-            // Se recorren todos los escenarios en orden aleatorio antes de repetir ninguno.
-            for ($i = 0; $i < $cantidad; $i++) {
-                if ($i % count($escenarios) === 0) {
-                    shuffle($escenarios);
+        // Fechas de los últimos 7 días, en orden: así el orden de los IDs coincide con el de llegada.
+        $fechas = array_map(fn () => now()->subSeconds(random_int(60, 7 * 24 * 3600)), range(1, $cantidad));
+        usort($fechas, fn (Carbon $a, Carbon $b) => $a <=> $b);
+
+        try {
+            return DB::transaction(function () use ($cantidad, $categorias, $escenarios, $fechas) {
+                $ids = [];
+
+                // Se recorren todos los escenarios en orden aleatorio antes de repetir ninguno.
+                for ($i = 0; $i < $cantidad; $i++) {
+                    if ($i % count($escenarios) === 0) {
+                        shuffle($escenarios);
+                    }
+
+                    // Todas las marcas de tiempo (también created_at y la tabla pivote) con la fecha de llegada.
+                    Carbon::setTestNow($fechas[$i]);
+                    $ids[] = self::crearUna($escenarios[$i % count($escenarios)], $categorias);
                 }
 
-                self::crearUna($escenarios[$i % count($escenarios)], $categorias);
-            }
-        });
-
-        return $cantidad;
+                return $ids;
+            });
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 
     /**
-     * Borra del todo las sintéticas, con sus datos originales, contactos,
+     * Borra del todo las sugerencias indicadas, con sus datos originales, contactos,
      * propuestas de la IA y su historial (el historial no tiene clave foránea).
      *
+     * @param  list<int>  $ids
      * @return int Sugerencias borradas.
      */
-    public static function borrar(): int
+    public static function borrar(array $ids): int
     {
-        return DB::transaction(function () {
-            $ids = Sugerencia::withTrashed()->where('sintetica', true)->pluck('id');
-
+        return DB::transaction(function () use ($ids) {
             HistorialSugerencia::whereIn('sugerencia_id', $ids)->delete();
-            Sugerencia::withTrashed()->whereIn('id', $ids)->forceDelete();
 
-            return $ids->count();
+            return Sugerencia::withTrashed()->whereIn('id', $ids)->forceDelete();
         });
+    }
+
+    /**
+     * Lista de IDs compacta para apuntarla: [3, 4, 5, 9] → «3-5,9».
+     *
+     * @param  list<int>  $ids
+     */
+    public static function rangos(array $ids): string
+    {
+        sort($ids);
+        $tramos = [];
+
+        foreach ($ids as $id) {
+            $ultimo = array_key_last($tramos);
+            if ($ultimo !== null && $tramos[$ultimo][1] === $id - 1) {
+                $tramos[$ultimo][1] = $id;
+            } else {
+                $tramos[] = [$id, $id];
+            }
+        }
+
+        return implode(',', array_map(fn (array $t) => $t[0] === $t[1] ? (string) $t[0] : "{$t[0]}-{$t[1]}", $tramos));
+    }
+
+    /**
+     * Lo contrario de rangos(): «3-5,9» → [3, 4, 5, 9]. Null si el formato no es válido.
+     *
+     * @return list<int>|null
+     */
+    public static function leerRangos(string $texto): ?array
+    {
+        $ids = [];
+
+        foreach (array_filter(array_map('trim', explode(',', $texto)), 'strlen') as $tramo) {
+            if (! preg_match('/^(\d+)(?:-(\d+))?$/', $tramo, $m) || (isset($m[2]) && (int) $m[2] < (int) $m[1])) {
+                return null;
+            }
+            array_push($ids, ...range((int) $m[1], (int) ($m[2] ?? $m[1])));
+        }
+
+        return $ids === [] ? null : array_values(array_unique($ids));
     }
 
     /**
      * @param  array<int, mixed>  $escenario
      * @param  Collection<string, Categoria>  $categorias
      */
-    private static function crearUna(array $escenario, $categorias): void
+    private static function crearUna(array $escenario, $categorias): int
     {
         [$nombreCategoria, $nombresSubcategorias, $texto] = $escenario;
         $resultado = $escenario[3] ?? null;
@@ -206,9 +259,9 @@ class GeneradorSugerenciasSinteticas
                 ->pluck('id')->map(fn ($id) => (int) $id)->values()->all();
         }
 
-        $fecha = now()->subMinutes(random_int(10, 60 * 24 * 30));
+        $fecha = now();
 
-        $sugerencia = new Sugerencia([
+        $sugerencia = Sugerencia::create([
             'fecha_recepcion' => $fecha,
             'categoria_id' => $categoria->id,
             'categoria_ciudadano_id' => $categoria->id,
@@ -217,7 +270,6 @@ class GeneradorSugerenciasSinteticas
             'version_aviso_privacidad' => 'v1',
             'fecha_aceptacion' => $fecha,
         ]);
-        $sugerencia->forceFill(['sintetica' => true])->save();
         $sugerencia->subcategorias()->sync($subcategoriaIds);
 
         $sugerencia->datoOriginal()->create([
@@ -227,14 +279,7 @@ class GeneradorSugerenciasSinteticas
             'zona_origen' => random_int(1, 100) <= 80 ? $zona : null,
         ]);
 
-        // Correo de un dominio reservado (example.com): nunca llega a nadie.
-        if (random_int(1, 100) <= 25) {
-            $sugerencia->contacto()->create([
-                'canal' => 'vecino'.random_int(100, 999).'@example.com',
-                'consiente_respuesta' => true,
-                'fecha_consentimiento' => $fecha,
-            ]);
-        }
+        return $sugerencia->id;
     }
 
     /**
@@ -289,7 +334,7 @@ class GeneradorSugerenciasSinteticas
     {
         $usuario = strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', str_replace(' ', '.', $nombre)) ?: 'vecino');
 
-        return preg_replace('/[^a-z.]/', '', $usuario).random_int(1, 99).'@example.com';
+        return preg_replace('/[^a-z.]/', '', $usuario).random_int(1, 99).'@gmail.com';
     }
 
     /**

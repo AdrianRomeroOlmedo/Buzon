@@ -7,10 +7,9 @@ use App\Models\HistorialSugerencia;
 use App\Models\PropuestaIa;
 use App\Models\Sugerencia;
 use App\Support\GeneradorSugerenciasSinteticas;
-use App\Support\MetricasIa;
-use App\View\Components\MetricasCategorias;
 use Database\Seeders\CategoriaSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class SugerenciasSinteticasTest extends TestCase
@@ -35,48 +34,61 @@ class SugerenciasSinteticasTest extends TestCase
             'estado' => 'recibido',
             'version_aviso_privacidad' => 'v1',
             'fecha_aceptacion' => now(),
-            'clasificacion_revisada_at' => now(),
         ]);
     }
 
-    public function test_command_creates_pending_synthetic_suggestions_like_the_public_form(): void
+    public function test_creates_pending_suggestions_exactly_like_the_public_form(): void
     {
-        $this->artisan('buzon:sinteticas', ['cantidad' => 60, '--force' => true])->assertSuccessful();
+        $ids = GeneradorSugerenciasSinteticas::crear(60);
 
-        $sugerencias = Sugerencia::with(['datoOriginal', 'subcategorias'])->get();
+        $sugerencias = Sugerencia::with(['datoOriginal', 'subcategorias', 'contacto'])->orderBy('id')->get();
 
-        $this->assertCount(60, $sugerencias);
+        $this->assertSame($ids, $sugerencias->pluck('id')->all());
         foreach ($sugerencias as $s) {
-            $this->assertTrue($s->sintetica);
             $this->assertSame('pendiente', $s->refresh()->ia_estado);
             $this->assertSame('recibido', $s->estado);
             $this->assertNotEmpty($s->datoOriginal->texto_original);
             $this->assertStringNotContainsString('{zona}', $s->datoOriginal->texto_original);
             $this->assertNotEmpty($s->subcategorias_ciudadano);
             $this->assertCount(count($s->subcategorias_ciudadano), $s->subcategorias);
-            $this->assertNull($s->texto_desidentificado);
+            $this->assertNull($s->contacto);
+            // Sin rastro del momento real de creación.
+            $this->assertTrue($s->created_at->equalTo($s->fecha_recepcion));
+            $this->assertTrue($s->datoOriginal->created_at->equalTo($s->fecha_recepcion));
+            $this->assertTrue($s->fecha_recepcion->isPast());
         }
-        $this->assertSame(0, PropuestaIa::count());
+        $this->assertSame(
+            $sugerencias->pluck('fecha_recepcion')->map->timestamp->all(),
+            $sugerencias->pluck('fecha_recepcion')->map->timestamp->sort()->values()->all(),
+        );
+        $this->assertSame(
+            $sugerencias->pluck('fecha_recepcion')->map->toDateTimeString()->sort()->values()->all(),
+            DB::table('sugerencia_subcategoria')->whereIn('sugerencia_id', $ids)->distinct()->orderBy('created_at')->pluck('created_at')->map(fn ($f) => substr($f, 0, 19))->unique()->values()->all(),
+        );
     }
 
-    public function test_command_rejects_invalid_amounts(): void
+    public function test_command_prints_the_ids_and_validates_the_amount(): void
     {
+        $this->artisan('buzon:sinteticas', ['cantidad' => 3, '--force' => true])
+            ->expectsOutputToContain('1-3')
+            ->assertSuccessful();
+
         $this->artisan('buzon:sinteticas', ['cantidad' => '0', '--force' => true])->assertFailed();
         $this->artisan('buzon:sinteticas', ['cantidad' => 'muchas', '--force' => true])->assertFailed();
-
-        $this->assertSame(0, Sugerencia::count());
+        $this->assertSame(3, Sugerencia::count());
     }
 
-    public function test_deleting_removes_only_synthetic_ones_and_everything_attached(): void
+    public function test_deleting_by_ids_removes_only_those_and_everything_attached(): void
     {
         $real = $this->crearReal();
-        GeneradorSugerenciasSinteticas::crear(5);
-        $sintetica = Sugerencia::where('sintetica', true)->first();
+        $ids = GeneradorSugerenciasSinteticas::crear(4);
+        $sintetica = Sugerencia::find($ids[0]);
         PropuestaIa::create(['sugerencia_id' => $sintetica->id, 'nivel_urgencia' => 'ordinaria']);
         $sintetica->registrar('estado_cambiado');
-        Sugerencia::where('sintetica', true)->latest('id')->first()->delete();
+        Sugerencia::find($ids[1])->delete();
 
-        $this->artisan('buzon:sinteticas', ['--borrar' => true, '--force' => true])->assertSuccessful();
+        $this->artisan('buzon:sinteticas', ['--borrar' => GeneradorSugerenciasSinteticas::rangos($ids), '--force' => true])
+            ->assertSuccessful();
 
         $this->assertSame([$real->id], Sugerencia::withTrashed()->pluck('id')->all());
         $this->assertSame(0, PropuestaIa::count());
@@ -84,32 +96,20 @@ class SugerenciasSinteticasTest extends TestCase
         $this->assertDatabaseCount('datos_originales', 0);
     }
 
-    public function test_synthetic_suggestions_stay_out_of_the_public_chart(): void
+    public function test_invalid_id_list_deletes_nothing(): void
     {
         $this->crearReal();
-        GeneradorSugerenciasSinteticas::crear(3);
-        Sugerencia::where('sintetica', true)->update(['clasificacion_revisada_at' => now()]);
 
-        $this->assertSame(1, (new MetricasCategorias)->total);
+        $this->artisan('buzon:sinteticas', ['--borrar' => '5-2', '--force' => true])->assertFailed();
+        $this->artisan('buzon:sinteticas', ['--borrar' => 'todas', '--force' => true])->assertFailed();
+
+        $this->assertSame(1, Sugerencia::count());
     }
 
-    public function test_ai_metrics_can_be_filtered_by_origin(): void
+    public function test_id_ranges_round_trip(): void
     {
-        $real = $this->crearReal();
-        GeneradorSugerenciasSinteticas::crear(1);
-        $sintetica = Sugerencia::where('sintetica', true)->first();
-
-        foreach ([[$real, true], [$sintetica, false]] as [$sugerencia, $acierto]) {
-            PropuestaIa::create([
-                'sugerencia_id' => $sugerencia->id,
-                'nivel_urgencia' => 'ordinaria',
-                'revisada_at' => now(),
-                'categoria_correcta' => $acierto,
-            ]);
-        }
-
-        $this->assertSame(2, MetricasIa::calcular()['clasificacion']['categoria']['n']);
-        $this->assertSame(100.0, MetricasIa::calcular(origen: 'reales')['clasificacion']['categoria']['pct']);
-        $this->assertSame(0.0, MetricasIa::calcular(origen: 'sinteticas')['clasificacion']['categoria']['pct']);
+        $this->assertSame('3-5,9,11-12', GeneradorSugerenciasSinteticas::rangos([9, 3, 4, 5, 12, 11]));
+        $this->assertSame([3, 4, 5, 9, 11, 12], GeneradorSugerenciasSinteticas::leerRangos('3-5, 9,11-12'));
+        $this->assertNull(GeneradorSugerenciasSinteticas::leerRangos(''));
     }
 }

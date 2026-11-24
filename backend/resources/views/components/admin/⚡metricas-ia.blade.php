@@ -11,7 +11,6 @@ new class extends Component {
     #[Url(except: '')] public string $desde = '';
     #[Url(except: '')] public string $hasta = '';
     #[Url(except: '')] public string $modelo = '';
-    #[Url(except: '')] public string $origen = '';
 
     /** Por debajo de esta muestra el porcentaje se marca como poco fiable. */
     public const MUESTRA_MINIMA = 30;
@@ -23,7 +22,7 @@ new class extends Component {
 
     public function limpiar(): void
     {
-        $this->reset(['desde', 'hasta', 'modelo', 'origen']);
+        $this->reset(['desde', 'hasta', 'modelo']);
     }
 
     /**
@@ -36,7 +35,6 @@ new class extends Component {
             $this->fecha($this->desde),
             $this->fecha($this->hasta),
             $this->modelo ?: null,
-            $this->origen ?: null,
         );
     }
 
@@ -102,16 +100,7 @@ new class extends Component {
                 <option value="{{ \App\Support\MetricasIa::SIN_VERSION }}">Sin versión</option>
             </select>
         </label>
-        <label class="block">
-            <span class="block text-xs font-medium text-gray-500 mb-1">Origen</span>
-            <select wire:model.live="origen" class="rounded-md border-gray-300 text-sm">
-                <option value="">Reales y sintéticas</option>
-                @foreach (\App\Support\MetricasIa::ORIGENES as $valor => $etiqueta)
-                    <option value="{{ $valor }}">{{ $etiqueta }}</option>
-                @endforeach
-            </select>
-        </label>
-        @if ($desde || $hasta || $modelo || $origen)
+        @if ($desde || $hasta || $modelo)
             <button type="button" wire:click="limpiar" class="px-3 py-2 text-gray-600 hover:text-gray-900">Quitar filtros</button>
         @endif
         <span wire:loading class="text-xs text-gray-400">Calculando…</span>
