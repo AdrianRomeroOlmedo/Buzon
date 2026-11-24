@@ -19,6 +19,9 @@
                         <x-nav-link :href="route('admin.sugerencias.index')" :active="request()->routeIs('admin.sugerencias.*')">
                             {{ __('Sugerencias') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.metricas-ia')" :active="request()->routeIs('admin.metricas-ia')">
+                            {{ __('Eficacia de la IA') }}
+                        </x-nav-link>
                     @endcan
                 </div>
             </div>
@@ -78,6 +81,9 @@
             @can('revisar-sugerencias')
                 <x-responsive-nav-link :href="route('admin.sugerencias.index')" :active="request()->routeIs('admin.sugerencias.*')">
                     {{ __('Sugerencias') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.metricas-ia')" :active="request()->routeIs('admin.metricas-ia')">
+                    {{ __('Eficacia de la IA') }}
                 </x-responsive-nav-link>
             @endcan
         </div>

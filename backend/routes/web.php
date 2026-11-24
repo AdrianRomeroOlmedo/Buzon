@@ -55,6 +55,7 @@ Route::middleware(['auth', 'verified', 'can:revisar-sugerencias'])->group(functi
     Route::get('/sugerencias/{sugerencia}', [SugerenciaAdminController::class, 'show'])
         ->withTrashed()
         ->name('admin.sugerencias.show');
+    Route::view('/metricas-ia', 'admin.metricas-ia')->name('admin.metricas-ia');
 });
 
 Route::middleware('auth')->group(function () {

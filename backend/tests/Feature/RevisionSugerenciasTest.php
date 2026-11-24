@@ -198,12 +198,68 @@ class RevisionSugerenciasTest extends TestCase
 
         $propuesta->refresh();
         $this->assertFalse($propuesta->texto_editado);
+        $this->assertFalse($propuesta->datos_personales_omitidos);
+        $this->assertSame(0, $propuesta->identificadores_residuales);
+        $this->assertSame(100.0, $propuesta->similitud_texto);
+        $this->assertTrue($propuesta->propuesta_aplicada);
         $this->assertFalse($propuesta->categoria_correcta);
         $this->assertTrue($propuesta->subcategorias_correctas);
+        $this->assertSame(100.0, $propuesta->acierto_subcategorias);
         $this->assertTrue($propuesta->organismo_correcto);
         $this->assertTrue($propuesta->urgencia_correcta);
         $this->assertSame($this->revisor->id, $propuesta->revisada_por);
         $this->assertSame('La acera de una calle está rota.', $sugerencia->refresh()->texto_desidentificado);
+    }
+
+    public function test_reviewer_flags_personal_data_leaked_by_the_ai(): void
+    {
+        $sugerencia = $this->crearSugerencia();
+        $propuesta = PropuestaIa::create([
+            'sugerencia_id' => $sugerencia->id,
+            'texto_desidentificado' => 'Soy Ana, mi teléfono es 600123456. La acera está rota.',
+        ]);
+
+        Livewire::actingAs($this->revisor)
+            ->test('admin.revision-sugerencia', ['sugerencia' => $sugerencia])
+            ->set('textoDesidentificado', 'La acera está rota.')
+            ->set('iaOmitioDatos', true)
+            ->set('privacidadRevisada', true)
+            ->call('guardarAnonimizacion')
+            ->assertHasNoErrors();
+
+        $propuesta->refresh();
+        $this->assertTrue($propuesta->texto_editado);
+        $this->assertTrue($propuesta->datos_personales_omitidos);
+        $this->assertFalse($propuesta->sobreanonimizada);
+        $this->assertSame(1, $propuesta->identificadores_residuales);
+        $this->assertLessThan(100, $propuesta->similitud_texto);
+        $this->assertNotNull($propuesta->privacidad_evaluada_at);
+    }
+
+    public function test_partial_subcategory_match_is_recorded(): void
+    {
+        $sugerencia = $this->crearSugerencia();
+        [$primera, $segunda] = $this->urbanismo->subcategorias()->take(2)->pluck('id')->all();
+        $propuesta = PropuestaIa::create([
+            'sugerencia_id' => $sugerencia->id,
+            'categoria_id' => $this->urbanismo->id,
+            'subcategoria_1_id' => $primera,
+            'subcategoria_2_id' => $segunda,
+            'nivel_urgencia' => 'ordinaria',
+        ]);
+
+        Livewire::actingAs($this->revisor)
+            ->test('admin.revision-sugerencia', ['sugerencia' => $sugerencia])
+            ->set('categoriaId', $this->urbanismo->id)
+            ->set('subcategoriaIds', [$primera])
+            ->set('organismoId', $this->organismo->id)
+            ->call('guardarClasificacion')
+            ->assertHasNoErrors();
+
+        $propuesta->refresh();
+        $this->assertFalse($propuesta->subcategorias_correctas);
+        $this->assertSame(50.0, $propuesta->acierto_subcategorias);
+        $this->assertFalse($propuesta->propuesta_aplicada);
     }
 
     public function test_ai_can_insert_proposal_with_plain_sql(): void
