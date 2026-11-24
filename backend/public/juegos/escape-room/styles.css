@@ -725,15 +725,14 @@ body.despegando .final-contenido { animation: encender 600ms var(--curva) 3s bot
 @media (max-width: 520px) { .datos-lista div { grid-template-columns: 1fr; } }
 
 /* ---------- Cuestionario de opinión ---------- */
-.campo-codigo-participante { display: grid; gap: 6px; max-width: 420px; }
-.campo-codigo-participante label, .campo-abierto label { font-weight: 600; }
-.campo-codigo-participante input, .campo-abierto textarea {
+.campo-abierto label { font-weight: 600; }
+.campo-abierto textarea {
   min-height: 44px; padding: 10px 12px; border-radius: 6px; font: inherit;
   color: var(--texto); background: #050a11; border: 1px solid #2d384c;
 }
 .campo-abierto { display: grid; gap: 6px; }
 .campo-abierto textarea { resize: vertical; min-height: 84px; }
-.campo-codigo-participante input:focus-visible, .campo-abierto textarea:focus-visible { border-color: var(--ion); }
+.campo-abierto textarea:focus-visible { border-color: var(--ion); }
 .leyenda-escala { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .85rem; color: var(--texto-suave); padding: 10px 12px; border: 1px dashed #2a3548; border-radius: 6px; }
 .leyenda-escala strong { color: var(--ion); }
 .escala { clear: both; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; max-width: 420px; }
