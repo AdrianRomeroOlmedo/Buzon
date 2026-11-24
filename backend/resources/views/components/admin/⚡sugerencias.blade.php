@@ -310,6 +310,9 @@ new class extends Component {
                                 <tr class="border-b border-gray-100 align-top" wire:key="sugerencia-{{ $sugerencia->id }}">
                                     <td class="py-3 pr-4 text-gray-500">
                                         {{ $sugerencia->id }}
+                                        @if ($sugerencia->sintetica)
+                                            <span class="block mt-1 text-[10px] font-semibold uppercase text-sky-700" title="Sugerencia inventada para probar la IA">Sintética</span>
+                                        @endif
                                         @php $urgencia = $sugerencia->urgenciaEfectiva(); @endphp
                                         @if ($urgencia !== 'ordinaria')
                                             <span class="block mt-1 text-[10px] font-semibold uppercase {{ $urgencia === 'urgente' ? 'text-red-600' : 'text-orange-600' }}"

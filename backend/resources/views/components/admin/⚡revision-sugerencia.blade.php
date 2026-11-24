@@ -699,6 +699,9 @@ new class extends Component {
                     </dd>
                 </div>
                 <div><dt class="text-gray-500">Aviso de privacidad</dt><dd>{{ $s->version_aviso_privacidad }}</dd></div>
+                @if ($s->sintetica)
+                    <div><dt class="text-gray-500">Origen</dt><dd class="text-sky-700">Sintética: inventada para probar la IA</dd></div>
+                @endif
                 <div>
                     <dt class="text-gray-500">IA</dt>
                     <dd>

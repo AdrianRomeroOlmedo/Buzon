@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 
 class Sugerencia extends Model
 {
@@ -46,6 +47,7 @@ class Sugerencia extends Model
         'clasificacion_revisada_at' => 'datetime',
         'competencia_por_confirmar' => 'boolean',
         'subcategorias_ciudadano' => 'array',
+        'sintetica' => 'boolean',
     ];
 
     /**
@@ -104,7 +106,7 @@ class Sugerencia extends Model
     /**
      * Subcategorías que eligió la persona al enviar.
      *
-     * @return \Illuminate\Support\Collection<int, Subcategoria>
+     * @return Collection<int, Subcategoria>
      */
     public function subcategoriasCiudadano()
     {
@@ -131,6 +133,7 @@ class Sugerencia extends Model
     {
         return $this->hasOne(Contacto::class);
     }
+
     /** Propuesta más reciente de la IA (puede haber varias si se reprocesa). */
     public function propuestaIa(): HasOne
     {

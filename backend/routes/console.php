@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\Sugerencia;
 use App\Models\User;
+use App\Support\GeneradorSugerenciasSinteticas;
 use App\Support\InstagramUltimoPost;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -54,6 +56,44 @@ Artisan::command('buzon:revisor {email} {--quitar : Retira el permiso de revisi�
 
     return 0;
 })->purpose('Concede o retira el permiso de revisión de sugerencias');
+
+/*
+ * Sugerencias inventadas para probar la IA real en la web publicada. Quedan pendientes
+ * de IA, marcadas como sintéticas y fuera de la gráfica pública.
+ *   php artisan buzon:sinteticas 100          → crea 100
+ *   php artisan buzon:sinteticas --borrar     → borra todas las sintéticas (y lo que cuelga de ellas)
+ */
+Artisan::command('buzon:sinteticas {cantidad=100 : Cuántas crear} {--borrar : Borra todas las sintéticas} {--force : No pide confirmación}', function (string $cantidad) {
+    if ($this->option('borrar')) {
+        $total = Sugerencia::withTrashed()->where('sintetica', true)->count();
+
+        if ($total === 0) {
+            $this->info('No hay sugerencias sintéticas.');
+
+            return 0;
+        }
+        if (! $this->option('force') && ! $this->confirm("Se borrarán definitivamente {$total} sugerencias sintéticas, con sus propuestas de la IA. ¿Continuar?")) {
+            return 1;
+        }
+
+        $this->info('Borradas '.GeneradorSugerenciasSinteticas::borrar().' sugerencias sintéticas.');
+
+        return 0;
+    }
+
+    if (! ctype_digit($cantidad) || (int) $cantidad < 1 || (int) $cantidad > 1000) {
+        $this->error('La cantidad debe ser un número entre 1 y 1000.');
+
+        return 1;
+    }
+    if (! $this->option('force') && ! $this->confirm("Se crearán {$cantidad} sugerencias sintéticas en la base de datos «".config('database.connections.'.config('database.default').'.database').'». ¿Continuar?')) {
+        return 1;
+    }
+
+    $this->info('Creadas '.GeneradorSugerenciasSinteticas::crear((int) $cantidad).' sugerencias sintéticas, pendientes de la IA.');
+
+    return 0;
+})->purpose('Crea o borra sugerencias sintéticas para probar la IA');
 
 /*
  * Renueva el token de Instagram de la landing (caduca a los 60 días si no se renueva).
