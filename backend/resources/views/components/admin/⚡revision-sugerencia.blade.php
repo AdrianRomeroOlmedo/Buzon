@@ -22,6 +22,9 @@ new class extends Component {
     public bool $mostrarOriginal = false;
     /** El cuadro se ha rellenado con el texto de la IA y aún no se ha guardado. */
     public bool $textoDeIa = false;
+    /** Evaluación de la anonimización de la IA (métricas del modelo). */
+    public bool $iaOmitioDatos = false;
+    public bool $iaSobreanonimizo = false;
 
     /* Clasificación */
     public ?int $categoriaId = null;
@@ -31,6 +34,8 @@ new class extends Component {
     public bool $competenciaPorConfirmar = false;
     public string $nivelUrgencia = 'ordinaria';
     public string $motivoReasignacion = '';
+    /** Se pulsó «Usar» en la propuesta de la IA antes de confirmar (sesgo de automatización). */
+    public bool $propuestaAplicada = false;
 
     /* Seguimiento */
     public string $accionAdoptada = '';
@@ -70,6 +75,8 @@ new class extends Component {
             $this->resultadoDesidentificado = (string) $propuesta->propuesta_desidentificada;
             $this->textoDeIa = true;
         }
+        $this->iaOmitioDatos = (bool) $propuesta?->datos_personales_omitidos;
+        $this->iaSobreanonimizo = (bool) $propuesta?->sobreanonimizada;
 
         $this->categoriaId = (int) $s->categoria_id;
         $this->subcategoriaIds = $s->subcategorias()->pluck('subcategorias.id')->map(fn ($id) => (int) $id)->all();
@@ -154,8 +161,9 @@ new class extends Component {
 
     /**
      * Compara la propuesta de la IA con lo que hay ahora en el formulario.
+     * «subcategorias_parcial» es el % de subcategorías comunes sobre el total de distintas.
      *
-     * @return array{categoria: bool, subcategorias: bool, organismo: bool, urgencia: bool}|null
+     * @return array{categoria: bool, subcategorias: bool, subcategorias_parcial: float, organismo: bool, urgencia: bool}|null
      */
     #[Computed]
     public function coincidenciasIa(): ?array
@@ -174,6 +182,9 @@ new class extends Component {
         return [
             'categoria' => $p->categoria_id !== null && (int) $p->categoria_id === $this->categoriaId,
             'subcategorias' => $propuestas !== [] && $propuestas === $finales,
+            'subcategorias_parcial' => ($union = count(array_unique([...$propuestas, ...$finales])))
+                ? round(100 * count(array_intersect($propuestas, $finales)) / $union, 2)
+                : 0.0,
             'organismo' => $p->organismo_id !== null && (int) $p->organismo_id === $this->organismoId,
             'urgencia' => $p->nivel_urgencia !== null && $p->nivel_urgencia === $this->nivelUrgencia,
         ];
@@ -262,11 +273,9 @@ new class extends Component {
                 $s->registrar('privacidad_revisada', [
                     'identificadores_detectados' => count($this->hallazgos),
                 ]);
-
-                $this->propuesta?->update([
-                    'texto_editado' => $this->normalizar($this->propuesta->texto_desidentificado) !== $this->normalizar($this->textoDesidentificado)
-                        || $this->normalizar($this->propuesta->propuesta_desidentificada) !== $this->normalizar($this->resultadoDesidentificado),
-                ]);
+            }
+            if ($this->privacidadRevisada) {
+                $this->evaluarAnonimizacionIa();
             }
             if (! $this->privacidadRevisada && $estabaRevisada) {
                 $s->registrar('privacidad_reabierta');
@@ -306,6 +315,8 @@ new class extends Component {
         if (! $p) {
             return;
         }
+
+        $this->propuestaAplicada = true;
 
         if ($p->categoria_id) {
             $this->categoriaId = (int) $p->categoria_id;
@@ -425,9 +436,58 @@ new class extends Component {
             'revisada_at' => now(),
             'categoria_correcta' => $coincidencias['categoria'],
             'subcategorias_correctas' => $coincidencias['subcategorias'],
+            'acierto_subcategorias' => $coincidencias['subcategorias_parcial'],
             'organismo_correcto' => $coincidencias['organismo'],
             'urgencia_correcta' => $coincidencias['urgencia'],
+            // Si alguna vez se partió de la propuesta, el acierto puede estar inflado.
+            'propuesta_aplicada' => $this->propuestaAplicada || (bool) $this->propuesta->propuesta_aplicada,
         ]);
+    }
+
+    /**
+     * Anota cómo de bien desidentificó la IA respecto al texto que da por bueno
+     * la persona revisora. El error grave es dejar datos personales sin quitar.
+     */
+    private function evaluarAnonimizacionIa(): void
+    {
+        $p = $this->propuesta;
+
+        if (! $p || blank($p->texto_desidentificado)) {
+            return;
+        }
+
+        $textoIa = $this->normalizar($p->texto_desidentificado.' '.$p->propuesta_desidentificada);
+        $textoFinal = $this->normalizar($this->textoDesidentificado.' '.$this->resultadoDesidentificado);
+
+        $p->update([
+            'texto_editado' => $textoIa !== $textoFinal,
+            'datos_personales_omitidos' => $this->iaOmitioDatos,
+            'sobreanonimizada' => $this->iaSobreanonimizo,
+            'identificadores_residuales' => count($this->identificadoresEnTextoIa),
+            'similitud_texto' => self::similitud($textoIa, $textoFinal),
+            'privacidad_evaluada_at' => now(),
+        ]);
+    }
+
+    /**
+     * Identificadores directos que el detector encuentra en el texto que propuso la IA.
+     *
+     * @return list<array{tipo: string, etiqueta: string, valor: string, inicio: int, fin: int}>
+     */
+    #[Computed]
+    public function identificadoresEnTextoIa(): array
+    {
+        $p = $this->propuesta;
+
+        return $p ? DetectorDatosPersonales::detectar($p->texto_desidentificado."\n".$p->propuesta_desidentificada) : [];
+    }
+
+    /** Parecido entre dos textos de 0 a 100 (distancia de edición sobre la longitud mayor). */
+    private static function similitud(string $a, string $b): float
+    {
+        $longitud = max(strlen($a), strlen($b));
+
+        return $longitud === 0 ? 100.0 : round(100 * (1 - levenshtein($a, $b) / $longitud), 2);
     }
 
     private function normalizar(?string $texto): string
@@ -588,7 +648,7 @@ new class extends Component {
     private function terminar(string $seccion, string $mensaje): void
     {
         $this->rellenarDesdeModelo();
-        unset($this->historial, $this->propuesta, $this->coincidenciasIa, $this->eleccionCiudadano);
+        unset($this->historial, $this->propuesta, $this->coincidenciasIa, $this->eleccionCiudadano, $this->identificadoresEnTextoIa);
         $this->resetErrorBag();
         session()->flash("ok_{$seccion}", $mensaje);
     }
@@ -797,6 +857,28 @@ new class extends Component {
                         (una calle concreta, una fecha, un hecho poco frecuente o un relato muy detallado). Si existe ese riesgo,
                         generaliza la zona o la fecha o resume el relato. Usa el marcador <code>{{ \App\Support\DetectorDatosPersonales::MARCADOR }}</code>.
                     </div>
+
+                    @if ($this->propuesta && filled($this->propuesta->texto_desidentificado))
+                        <fieldset class="rounded-md border border-violet-200 bg-violet-50/50 p-3 text-sm">
+                            <legend class="px-1 text-xs font-medium text-violet-900">Evaluación del texto que propuso la IA</legend>
+                            @if (count($this->identificadoresEnTextoIa))
+                                <p class="mb-2 text-xs text-red-700">
+                                    El detector encuentra {{ count($this->identificadoresEnTextoIa) }}
+                                    {{ count($this->identificadoresEnTextoIa) === 1 ? 'identificador' : 'identificadores' }} en el texto de la IA
+                                    ({{ collect($this->identificadoresEnTextoIa)->pluck('etiqueta')->unique()->join(', ') }}).
+                                </p>
+                            @endif
+                            <label class="flex items-center gap-2">
+                                <input type="checkbox" wire:model="iaOmitioDatos" class="rounded border-gray-300 text-violet-600">
+                                La IA dejó datos que permiten identificar a alguien
+                            </label>
+                            <label class="mt-1 flex items-center gap-2">
+                                <input type="checkbox" wire:model="iaSobreanonimizo" class="rounded border-gray-300 text-violet-600">
+                                La IA eliminó información que no era personal
+                            </label>
+                            <p class="mt-2 text-xs text-gray-500">Se guarda al marcar la privacidad como revisada y sirve para medir la eficacia de la IA.</p>
+                        </fieldset>
+                    @endif
 
                     <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
                         <label class="inline-flex items-center gap-2 text-sm">
