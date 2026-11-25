@@ -19,8 +19,8 @@
                         <x-nav-link :href="route('admin.sugerencias.index')" :active="request()->routeIs('admin.sugerencias.*')">
                             {{ __('Sugerencias') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('admin.escape-room.opiniones')" :active="request()->routeIs('admin.escape-room.*')">
-                            {{ __('Opiniones escape room') }}
+                        <x-nav-link :href="route('admin.escape-room.partidas')" :active="request()->routeIs('admin.escape-room.*')">
+                            {{ __('Escape room') }}
                         </x-nav-link>
                         <x-nav-link :href="route('admin.metricas-ia')" :active="request()->routeIs('admin.metricas-ia')">
                             {{ __('Eficacia de la IA') }}
@@ -85,8 +85,8 @@
                 <x-responsive-nav-link :href="route('admin.sugerencias.index')" :active="request()->routeIs('admin.sugerencias.*')">
                     {{ __('Sugerencias') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('admin.escape-room.opiniones')" :active="request()->routeIs('admin.escape-room.*')">
-                    {{ __('Opiniones escape room') }}
+                <x-responsive-nav-link :href="route('admin.escape-room.partidas')" :active="request()->routeIs('admin.escape-room.*')">
+                    {{ __('Escape room') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.metricas-ia')" :active="request()->routeIs('admin.metricas-ia')">
                     {{ __('Eficacia de la IA') }}
