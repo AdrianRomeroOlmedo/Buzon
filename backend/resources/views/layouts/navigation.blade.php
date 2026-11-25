@@ -22,6 +22,9 @@
                         <x-nav-link :href="route('admin.escape-room.opiniones')" :active="request()->routeIs('admin.escape-room.*')">
                             {{ __('Opiniones escape room') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.metricas-ia')" :active="request()->routeIs('admin.metricas-ia')">
+                            {{ __('Eficacia de la IA') }}
+                        </x-nav-link>
                     @endcan
                 </div>
             </div>
@@ -84,6 +87,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.escape-room.opiniones')" :active="request()->routeIs('admin.escape-room.*')">
                     {{ __('Opiniones escape room') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.metricas-ia')" :active="request()->routeIs('admin.metricas-ia')">
+                    {{ __('Eficacia de la IA') }}
                 </x-responsive-nav-link>
             @endcan
         </div>

@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\Sugerencia;
 use App\Models\User;
+use App\Support\GeneradorSugerenciasSinteticas;
 use App\Support\InstagramUltimoPost;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -54,6 +56,57 @@ Artisan::command('buzon:revisor {email} {--quitar : Retira el permiso de revisi�
 
     return 0;
 })->purpose('Concede o retira el permiso de revisión de sugerencias');
+
+/*
+ * Sugerencias inventadas para probar la IA real en la web publicada. Se crean igual que
+ * las del formulario, sin ninguna marca: APUNTA LOS IDS que muestra, son la única forma
+ * de localizarlas después.
+ *   php artisan buzon:sinteticas 100                 → crea 100 y muestra sus IDs
+ *   php artisan buzon:sinteticas --borrar=120-219    → borra esas sugerencias (y lo que cuelga de ellas)
+ */
+Artisan::command('buzon:sinteticas {cantidad=100 : Cuántas crear} {--borrar= : IDs a borrar, p. ej. 120-219,225} {--force : No pide confirmación}', function (string $cantidad) {
+    if ($this->option('borrar') !== null) {
+        $ids = GeneradorSugerenciasSinteticas::leerRangos((string) $this->option('borrar'));
+
+        if ($ids === null) {
+            $this->error('Formato de IDs no válido. Ejemplo: --borrar=120-219,225');
+
+            return 1;
+        }
+
+        $existentes = Sugerencia::withTrashed()->whereIn('id', $ids)->pluck('id')->all();
+
+        if ($existentes === []) {
+            $this->info('No existe ninguna sugerencia con esos IDs.');
+
+            return 0;
+        }
+        if (! $this->option('force') && ! $this->confirm('Se borrarán definitivamente '.count($existentes).' sugerencias ('.GeneradorSugerenciasSinteticas::rangos($existentes).'), con sus propuestas de la IA. ¿Continuar?')) {
+            return 1;
+        }
+
+        $this->info('Borradas '.GeneradorSugerenciasSinteticas::borrar($existentes).' sugerencias.');
+
+        return 0;
+    }
+
+    if (! ctype_digit($cantidad) || (int) $cantidad < 1 || (int) $cantidad > 1000) {
+        $this->error('La cantidad debe ser un número entre 1 y 1000.');
+
+        return 1;
+    }
+    if (! $this->option('force') && ! $this->confirm("Se crearán {$cantidad} sugerencias en la base de datos «".config('database.connections.'.config('database.default').'.database').'». ¿Continuar?')) {
+        return 1;
+    }
+
+    $ids = GeneradorSugerenciasSinteticas::crear((int) $cantidad);
+
+    $this->info('Creadas '.count($ids).' sugerencias, pendientes de la IA.');
+    $this->warn('Apunta estos IDs: no se guardan en ningún sitio y son la única forma de borrarlas.');
+    $this->line(GeneradorSugerenciasSinteticas::rangos($ids));
+
+    return 0;
+})->purpose('Crea sugerencias de prueba para la IA o borra las indicadas');
 
 /*
  * Renueva el token de Instagram de la landing (caduca a los 60 días si no se renueva).

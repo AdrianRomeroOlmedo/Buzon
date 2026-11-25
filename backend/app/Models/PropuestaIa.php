@@ -31,6 +31,13 @@ class PropuestaIa extends Model
         'organismo_correcto',
         'urgencia_correcta',
         'texto_editado',
+        'datos_personales_omitidos',
+        'sobreanonimizada',
+        'identificadores_residuales',
+        'similitud_texto',
+        'privacidad_evaluada_at',
+        'acierto_subcategorias',
+        'propuesta_aplicada',
     ];
 
     protected function casts(): array
@@ -43,6 +50,13 @@ class PropuestaIa extends Model
             'organismo_correcto' => 'boolean',
             'urgencia_correcta' => 'boolean',
             'texto_editado' => 'boolean',
+            'datos_personales_omitidos' => 'boolean',
+            'sobreanonimizada' => 'boolean',
+            'identificadores_residuales' => 'integer',
+            'similitud_texto' => 'float',
+            'privacidad_evaluada_at' => 'datetime',
+            'acierto_subcategorias' => 'float',
+            'propuesta_aplicada' => 'boolean',
         ];
     }
 

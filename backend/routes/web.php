@@ -58,6 +58,7 @@ Route::middleware(['auth', 'verified', 'can:revisar-sugerencias'])->group(functi
         ->name('admin.sugerencias.show');
     Route::get('/escape-room/opiniones', [OpinionEscapeRoomController::class, 'index'])
         ->name('admin.escape-room.opiniones');
+    Route::view('/metricas-ia', 'admin.metricas-ia')->name('admin.metricas-ia');
 });
 
 Route::middleware('auth')->group(function () {
