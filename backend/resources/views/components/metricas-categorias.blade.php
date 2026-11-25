@@ -37,7 +37,7 @@
     .metricas__segmento { transition: stroke-width .15s; }
     .metricas__segmento:hover { stroke-width: 7; }
     .metricas__centro { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; }
-    .metricas__centro strong { font-size: 2.5rem; line-height: 1; color: #111827; }
+    .metricas__centro strong { font-size: 2.5rem; line-height: 1; }
     .metricas__centro span { margin-top: .25rem; font-size: .8rem; color: #6b7280; max-width: 7rem; }
     .metricas__leyenda { flex: 1 1 16rem; list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
     .metricas__item { display: flex; align-items: center; gap: .6rem; font-size: .95rem; }
