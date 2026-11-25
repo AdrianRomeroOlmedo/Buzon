@@ -130,6 +130,7 @@ Abre `content.js` con cualquier editor de texto. Está comentado por secciones.
 - No borres las comas, ni las llaves `{ }`, ni los corchetes `[ ]`.
 - Las líneas que empiezan por `//` son comentarios.
 - Cuando cambies las pruebas, **sube el número de `version`** para que nadie continúe una partida antigua.
+- **En la web publicada**, sube también el número `?v=` de `styles.css`, `content.js` y `app.js` en `index.html` (por ejemplo, a la fecha del cambio). El servidor guarda esos archivos en caché 7 días y, si no, los navegadores seguirían usando la versión antigua.
 - Guarda y recarga la página. Si algo se rompe, la pantalla principal mostrará un aviso: casi siempre falta una coma o una comilla.
 
 Ejemplos:
