@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\OpinionEscapeRoomController;
 use App\Http\Controllers\Admin\SugerenciaAdminController;
 use App\Http\Controllers\PartidaEscapeRoomController;
 use App\Http\Controllers\ProfileController;
@@ -55,6 +56,8 @@ Route::middleware(['auth', 'verified', 'can:revisar-sugerencias'])->group(functi
     Route::get('/sugerencias/{sugerencia}', [SugerenciaAdminController::class, 'show'])
         ->withTrashed()
         ->name('admin.sugerencias.show');
+    Route::get('/escape-room/opiniones', [OpinionEscapeRoomController::class, 'index'])
+        ->name('admin.escape-room.opiniones');
 });
 
 Route::middleware('auth')->group(function () {
