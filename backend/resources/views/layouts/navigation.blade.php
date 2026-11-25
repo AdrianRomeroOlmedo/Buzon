@@ -19,6 +19,9 @@
                         <x-nav-link :href="route('admin.sugerencias.index')" :active="request()->routeIs('admin.sugerencias.*')">
                             {{ __('Sugerencias') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.escape-room.opiniones')" :active="request()->routeIs('admin.escape-room.*')">
+                            {{ __('Opiniones escape room') }}
+                        </x-nav-link>
                     @endcan
                 </div>
             </div>
@@ -78,6 +81,9 @@
             @can('revisar-sugerencias')
                 <x-responsive-nav-link :href="route('admin.sugerencias.index')" :active="request()->routeIs('admin.sugerencias.*')">
                     {{ __('Sugerencias') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.escape-room.opiniones')" :active="request()->routeIs('admin.escape-room.*')">
+                    {{ __('Opiniones escape room') }}
                 </x-responsive-nav-link>
             @endcan
         </div>
