@@ -29,9 +29,18 @@ Las baterías de la nave solo mantienen el enlace **20 minutos**, y así lo expl
 - **Tres monitores encastrados en el panel de control**:
   - **Estado de la nave**: los cuatro módulos (pendiente, en curso o recargado), su código y el reactor.
   - **Pantalla principal**: donde se juega. En pantallas grandes tiene su propio desplazamiento.
-  - **Canal de comunicación**: Vere, el extraterrestre, que reacciona a cada respuesta. Debajo están los ajustes: sonido (apagado al empezar), volumen, ampliar texto, datos de la partida y reiniciar.
+  - **Canal de comunicación**: Vere, el extraterrestre, que reacciona a cada respuesta. Debajo están los ajustes: sonido (apagado al empezar), voz, leer, volumen, ampliar texto, datos de la partida y reiniciar.
 
 El juego es una página estática: HTML, CSS y JavaScript, sin frameworks ni instalación. El sonido se genera en el propio navegador, sin archivos de audio.
+
+### Lectura en voz alta
+
+Usa la síntesis de voz del navegador (Web Speech API), sin archivos ni servidores:
+
+- **Voz** (apagada al empezar): Vere dice en voz alta cada mensaje nuevo, también los de la introducción, las reacciones a las respuestas y los avisos de batería. Se recuerda en el dispositivo, como el sonido.
+- **Leer**: lee la pantalla principal (publicaciones, preguntas, explicaciones…). Mientras lee, el botón pasa a **Parar**. Al cambiar de pantalla se deja de leer la anterior.
+- El volumen de la voz es el mismo control de **Volumen**.
+- Solo se usan **voces en español instaladas en el dispositivo**: las voces «en línea» de algunos navegadores (por ejemplo, las «Google» de Chrome o las «Natural» de Edge) envían el texto a un servidor externo. En Windows vienen instaladas Helena, Laura y Pablo; en Android, iPhone y Mac también hay voces locales. Si el dispositivo no tiene ninguna, los dos botones aparecen desactivados y el juego funciona igual.
 
 ## Privacidad
 
@@ -191,4 +200,5 @@ Esta carpeta se sirve también desde la web de la Cátedra, en `/juegos/escape-r
 - Los avisos y las reacciones de Vere se anuncian a los lectores de pantalla.
 - Las animaciones se desactivan si el sistema tiene activado «reducir movimiento».
 - El botón **Ampliar** agranda la letra para proyectar.
+- Los botones **Voz** y **Leer** leen en voz alta los mensajes de Vere y la pantalla principal.
 - La ventana de datos de la partida se cierra con Esc y devuelve el foco al juego.

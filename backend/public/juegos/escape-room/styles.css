@@ -324,6 +324,11 @@ body.conectando .monitor-sistemas::after { animation: ruido .2s steps(1) infinit
 .mando[aria-pressed="true"] .icono-ondas { display: inline; }
 .mando[aria-pressed="true"] .icono-silencio { display: none; }
 .mando span { white-space: nowrap; }
+.mando .icono-parar { display: none; }
+.mando.leyendo { border-color: var(--ion); color: var(--ion); }
+.mando.leyendo .icono-leer { display: none; }
+.mando.leyendo .icono-parar { display: inline; }
+.mando:disabled { opacity: .45; cursor: not-allowed; }
 .volumen { display: inline-flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--texto-suave); }
 .volumen input { width: 90px; accent-color: var(--ion); }
 .volumen[hidden] { display: none; }
