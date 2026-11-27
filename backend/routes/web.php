@@ -39,6 +39,8 @@ Route::view('/privacidad', 'privacidad')->name('privacidad');
 // publicable también en GitHub Pages. Se apunta a index.html y no a la carpeta porque Laravel quita la
 // barra final de las redirecciones, y sin ella fallarían las rutas relativas del juego (styles.css…).
 Route::redirect('/escape-room', '/juegos/escape-room/index.html')->name('escape-room');
+// Guía docente del escape room: página estática con sus PDF (guía completa y ficha del alumnado).
+Route::redirect('/escape-room/guia-docente', '/juegos/escape-room/guia-docente/index.html')->name('escape-room.guia-docente');
 // Métricas de las partidas, solo si se ha aceptado el aviso del juego. La página del juego es estática y no
 // lleva token CSRF; no hay sesión ni cuenta que proteger: la petición solo guarda la propia partida.
 Route::post('/escape-room/partidas', [PartidaEscapeRoomController::class, 'store'])
