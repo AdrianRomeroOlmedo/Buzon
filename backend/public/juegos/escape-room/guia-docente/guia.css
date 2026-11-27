@@ -80,6 +80,14 @@ img { max-width: 100%; height: auto; display: block; }
 .boton-secundario { background: transparent; color: #fff; border-color: rgba(220, 230, 242, .5); }
 .boton-secundario:hover { background: rgba(220, 230, 242, .12); border-color: #fff; }
 
+/* Logo de la Cátedra: en la portada (arriba a la derecha), en el pie y en la ficha impresa */
+.portada-interior { position: relative; }
+.logo-catedra { display: block; width: 132px; height: auto; border-radius: 6px; }
+.portada .logo-catedra { position: absolute; top: 0; right: 0; box-shadow: 0 0 0 1px rgba(220, 230, 242, .25); }
+@media (max-width: 720px) { .portada .logo-catedra { position: static; width: 112px; margin-bottom: 24px; } }
+.logo-pie { width: 120px; margin-bottom: 16px; }
+.logo-catedra.solo-imprimir { display: none; }
+
 /* ---------- Estructura: índice + documento ---------- */
 .marco { max-width: 1120px; margin: 0 auto; padding: 40px 24px 64px; display: grid; gap: 40px; }
 @media (min-width: 1024px) {
@@ -242,6 +250,12 @@ blockquote {
   .linea.corta { flex: 0 0 35mm; }
   .hueco { display: block; height: 30mm; border-bottom: 1px dotted var(--tinta-suave); margin-bottom: 2mm; }
   .pie { break-inside: avoid; }
+  .portada .logo-catedra { width: 34mm; }
+  .ficha-alumnado { position: relative; }
+  .logo-catedra.solo-imprimir { display: block; }
+  .logo-ficha { position: absolute; top: 0; right: 0; width: 30mm; }
+  .ficha-alumnado .anexo-etiqueta, .ficha-alumnado > h2 { padding-right: 36mm; }
+  .logo-pie { width: 30mm; }
   .cronograma { break-inside: avoid; }
   .preguntas-titulo { break-before: page; padding-top: 0; margin-top: 0; }
 
