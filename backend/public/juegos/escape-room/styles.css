@@ -324,6 +324,11 @@ body.conectando .monitor-sistemas::after { animation: ruido .2s steps(1) infinit
 .mando[aria-pressed="true"] .icono-ondas { display: inline; }
 .mando[aria-pressed="true"] .icono-silencio { display: none; }
 .mando span { white-space: nowrap; }
+.mando .icono-parar { display: none; }
+.mando.leyendo { border-color: var(--ion); color: var(--ion); }
+.mando.leyendo .icono-leer { display: none; }
+.mando.leyendo .icono-parar { display: inline; }
+.mando:disabled { opacity: .45; cursor: not-allowed; }
 .volumen { display: inline-flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--texto-suave); }
 .volumen input { width: 90px; accent-color: var(--ion); }
 .volumen[hidden] { display: none; }
@@ -588,7 +593,7 @@ body.conectando .monitor-sistemas::after { animation: ruido .2s steps(1) infinit
 .conexiones {
   position: relative; display: grid; align-items: start;
   grid-template-columns: minmax(0, 1fr) clamp(36px, 12%, 120px) minmax(0, 1fr);
-  user-select: none; -webkit-user-select: none; touch-action: none;
+  user-select: none; -webkit-user-select: none;
 }
 .conexiones-lineas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 .conexiones-lineas path { fill: none; stroke-width: 2.5; stroke-linecap: round; }
@@ -602,7 +607,7 @@ body.conectando .monitor-sistemas::after { animation: ruido .2s steps(1) infinit
 .nodo {
   position: relative; display: grid; gap: 2px; width: 100%; min-height: 54px; text-align: left; cursor: pointer;
   padding: 10px 14px; border-radius: 6px; font-size: .95rem; line-height: 1.4;
-  background: rgba(10, 18, 28, .9); border: 1px solid #263246; touch-action: none;
+  background: rgba(10, 18, 28, .9); border: 1px solid #263246;
   transition: border-color var(--t-rapida) ease, background var(--t-rapida) ease;
 }
 .nodo:hover:not(:disabled) { border-color: rgba(120, 200, 230, .6); }
@@ -617,8 +622,11 @@ body.conectando .monitor-sistemas::after { animation: ruido .2s steps(1) infinit
 .nodo-explicacion { font-size: .82rem; color: var(--verificado); }
 .puerto {
   position: absolute; top: 50%; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%;
-  background: var(--cristal); border: 2px solid #4b5a72; pointer-events: none;
+  background: var(--cristal); border: 2px solid #4b5a72;
+  touch-action: none; /* solo el conector inicia el arrastre con el dedo; el resto de la tarjeta deja desplazar la página */
 }
+/* Zona táctil del conector más grande que el punto visible */
+.puerto::before { content: ''; position: absolute; inset: -14px; border-radius: 50%; }
 .columna-ejemplos .puerto { right: -8px; }
 .columna-tipos .puerto { left: -8px; }
 .nodo.elegido .puerto, .nodo.unido .puerto { border-color: var(--ion); background: var(--ion); }
