@@ -254,7 +254,7 @@ blockquote {
   .ficha-alumnado { position: relative; }
   .logo-catedra.solo-imprimir { display: block; }
   .logo-ficha { position: absolute; top: 0; right: 0; width: 30mm; }
-  .ficha-alumnado .anexo-etiqueta, .ficha-alumnado > h2 { padding-right: 36mm; }
+  .ficha-alumnado .anexo-etiqueta, .ficha-alumnado > h2, .ficha-alumnado .ficha-datos { padding-right: 36mm; }
   .logo-pie { width: 30mm; }
   .cronograma { break-inside: avoid; }
   .preguntas-titulo { break-before: page; padding-top: 0; margin-top: 0; }
