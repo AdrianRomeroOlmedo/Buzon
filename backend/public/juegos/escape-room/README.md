@@ -8,7 +8,7 @@ El reactor de la nave funciona con **información verdadera**, y para recargarlo
 
 1. **Detectar el bulo**: dos publicaciones (red social, WhatsApp, medio digital o SMS); hay que elegir la verdadera.
 2. **Verificar la noticia**: una publicación y un veredicto, «Verdadera» o «Bulo».
-3. **Clasificar los bulos**: unir cada ejemplo con su tipo de desinformación mediante líneas. Se puede arrastrar, tocar un elemento de cada columna o usar el teclado.
+3. **Clasificar los bulos**: unir cada ejemplo con su tipo de desinformación mediante líneas. Se puede tocar un elemento de cada columna, arrastrar (con ratón, desde cualquier parte del elemento; con el dedo, desde su punto de conexión, para que el resto de la tarjeta deje desplazar la página) o usar el teclado.
 4. **Cuestionario final**: seis preguntas, de una en una. Cada respuesta se comprueba y su explicación aparece siempre, también al acertar, antes de pasar a la siguiente. Si se falla, se puede volver a intentar.
 
 Cada módulo da un 25 % de energía y un código de la secuencia de activación. Con los cuatro códigos se introduce la secuencia (`VERACIDAD`) y empieza la secuencia de despegue. Al despegar, la nave se aleja y **el enlace se pierde**: vuelve la estática con el rótulo «Señal perdida» y el canal de comunicación queda con el último mensaje recibido.
