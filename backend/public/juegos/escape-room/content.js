@@ -331,7 +331,7 @@ window.CONTENIDO = {
     clasificar: {
       nombre: "Clasificar los bulos",
       titulo: "Clasifica los bulos",
-      instrucciones: "Une cada ejemplo con el tipo de desinformación al que pertenece. Arrastra desde un ejemplo hasta su tipo, o toca un ejemplo y después su tipo.",
+      instrucciones: "Une cada ejemplo con el tipo de desinformación al que pertenece. Toca un ejemplo y después su tipo, o arrastra desde el punto de un ejemplo hasta su tipo.",
       mensaje: "Para calibrar el filtro necesito saber cómo engañan, no solo si engañan. Clasifica estos casos.",
       fragmento: "CI",
       pista: "Pregúntate qué se ha falseado: ¿el contexto de algo real, el propio contenido, quién lo firma, el titular… o todo?",

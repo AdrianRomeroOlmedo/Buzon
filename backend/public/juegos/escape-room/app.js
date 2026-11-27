@@ -6,9 +6,11 @@
    · #juego (pantalla principal): arranque, transmisión, los cuatro módulos,
      la activación y el final.
    · Panel de sistemas: los cuatro módulos con su estado, el reactor, el código
-     de activación y los mandos (sonido, volumen, texto grande, reiniciar).
+     de activación y los mandos (sonido, voz, volumen, texto grande, reiniciar).
    · Canal de comunicación: Vere, el extraterrestre (alienSVG), y lo que dice.
    · Sonido: sintetizado con Web Audio (sin archivos), apagado por defecto.
+   · Voz: lectura en voz alta con la síntesis de voz del navegador, apagada
+     por defecto («Voz» lee lo que dice Vere; «Leer», la pantalla principal).
    ========================================================================== */
 (function () {
   'use strict';
@@ -90,7 +92,7 @@
   let estado = leer(CLAVE_PROGRESO, (guardado) => guardado.version === C.version ? Object.assign(estadoInicial(), guardado.estado) : null) || estadoInicial();
   let temporal = temporalInicial();
   const preferencias = Object.assign(
-    { sonido: false, volumen: typeof C.ajustes.volumen === 'number' ? C.ajustes.volumen : 0.5, textoGrande: false },
+    { sonido: false, voz: false, volumen: typeof C.ajustes.volumen === 'number' ? C.ajustes.volumen : 0.5, textoGrande: false },
     leer(CLAVE_PREFERENCIAS, (p) => p) || {}
   );
 
@@ -303,6 +305,121 @@
   })();
 
   // ---------------------------------------------------------------------------
+  // Voz: lectura en voz alta con la síntesis de voz del navegador (Web Speech).
+  // Solo se usan voces en español instaladas en el dispositivo (localService):
+  // las voces «en línea» de algunos navegadores envían el texto a un servidor
+  // externo, y el juego no hace ninguna petición externa.
+  // ---------------------------------------------------------------------------
+  const Voz = (function () {
+    const sintesis = window.speechSynthesis;
+    const soportada = !!(sintesis && window.SpeechSynthesisUtterance);
+    let voz = null;
+    let enCola = [];          // referencias a las frases (Chrome las pierde si no)
+    let alTerminar = null;
+    let textoActual = '';
+    let origenActual = '';    // 'vere' (canal) o 'pantalla' (botón Leer)
+    const avisos = [];
+
+    function elegirVoz() {
+      if (!soportada) return;
+      const espanolas = sintesis.getVoices().filter((v) => v.localService && /^es([-_]|$)/i.test(v.lang));
+      voz = espanolas.find((v) => /^es[-_]ES/i.test(v.lang)) || espanolas[0] || null;
+      avisos.forEach((f) => f());
+    }
+    if (soportada) {
+      elegirVoz();
+      sintesis.addEventListener('voiceschanged', elegirVoz);
+      window.addEventListener('pagehide', () => sintesis.cancel());
+    }
+
+    // Chrome corta las frases de más de unos 15 segundos: se lee en trozos.
+    function trozos(texto) {
+      const frases = String(texto).replace(/\s+/g, ' ').match(/[^.!?…]+[.!?…]*/g) || [];
+      const salida = [];
+      let actual = '';
+      // Se corta solo entre frases (tras un espacio), nunca dentro de «maldita.es».
+      frases.forEach((frase) => {
+        if ((actual + frase).length > 220 && actual.trim() && /^\s/.test(frase)) { salida.push(actual.trim()); actual = frase; }
+        else actual += frase;
+      });
+      if (actual.trim()) salida.push(actual.trim());
+      return salida;
+    }
+
+    function callar() {
+      if (!soportada) return;
+      const terminar = alTerminar;
+      alTerminar = null;
+      enCola = [];
+      textoActual = origenActual = '';
+      sintesis.cancel();
+      if (terminar) terminar();
+    }
+
+    return {
+      disponible() { return soportada && !!voz; },
+      alCambiarVoces(f) { avisos.push(f); },
+      leyendo(origen) { return enCola.length > 0 && (!origen || origen === origenActual); },
+      diciendo(texto) { return enCola.length > 0 && texto === textoActual; },
+      callar,
+      // Lee el texto (cortando lo que se estuviera leyendo) y avisa al acabar.
+      leer(texto, origen, terminar) {
+        if (!this.disponible()) return;
+        callar();
+        const partes = trozos(texto);
+        if (!partes.length) return;
+        textoActual = texto;
+        origenActual = origen;
+        alTerminar = terminar || null;
+        enCola = partes.map((parte, i) => {
+          const frase = new SpeechSynthesisUtterance(parte);
+          frase.voice = voz;
+          frase.lang = voz.lang;
+          frase.volume = Math.max(0.1, preferencias.volumen);
+          if (i === partes.length - 1) {
+            frase.onend = frase.onerror = () => {
+              if (enCola[enCola.length - 1] !== frase) return; // ya se canceló
+              enCola = [];
+              textoActual = origenActual = '';
+              const f = alTerminar;
+              alTerminar = null;
+              if (f) f();
+            };
+          }
+          return frase;
+        });
+        enCola.forEach((frase) => sintesis.speak(frase));
+      },
+    };
+  })();
+
+  // Texto que se ve en la pantalla principal, en orden de lectura. Se salta lo
+  // decorativo (aria-hidden) y usa la etiqueta accesible de lo que no tiene texto.
+  function textoParaLeer(raiz) {
+    const piezas = [];
+    (function recorrer(nodo) {
+      if (nodo.nodeType === Node.TEXT_NODE) { piezas.push(nodo.textContent); return; }
+      if (nodo.nodeType !== Node.ELEMENT_NODE) return;
+      if (nodo.hidden || nodo.getAttribute('aria-hidden') === 'true') return;
+      if (/^(SVG|svg|SCRIPT|STYLE|INPUT|SELECT|TEXTAREA|NOSCRIPT)$/.test(nodo.tagName)) return;
+      const estilo = getComputedStyle(nodo);
+      if (estilo.display === 'none' || estilo.visibility === 'hidden') return;
+      const bloque = estilo.display !== 'inline';
+      if (bloque) piezas.push('. ');
+      if (nodo.hasAttribute('aria-label') && nodo.tagName !== 'BUTTON') piezas.push(nodo.getAttribute('aria-label'));
+      else nodo.childNodes.forEach(recorrer);
+      if (bloque) piezas.push('. ');
+      else piezas.push(' ');
+    })(raiz);
+    return piezas.join('')
+      .replace(/\s+/g, ' ')
+      .replace(/\s*\.(\s*\.)+/g, '.')                 // puntos repetidos entre bloques
+      .replace(/([.!?…:;,])\s*\./g, '$1')             // no añadir punto tras otro signo
+      .replace(/^\s*\.\s*/, '')
+      .trim();
+  }
+
+  // ---------------------------------------------------------------------------
   // Vere en el canal de comunicación: un alienígena de cráneo alargado, ojos
   // negros rasgados y manchas bioluminiscentes, con cuatro expresiones
   // (neutral, contento, preocupado, sorprendido).
@@ -363,12 +480,24 @@
 
   // Cada pantalla dice qué cuenta Vere. Si hay una reacción pendiente
   // (acierto, fallo, pista), se muestra esa en su lugar.
-  let canal = { expresion: 'neutral', texto: '' };
+  // «voz» es lo que Vere dice en voz alta si no coincide con el canal (en la
+  // introducción, el último mensaje que aparece en la pantalla principal).
+  let canal = { expresion: 'neutral', texto: '', voz: '' };
   let canalPintado = null;
-  function comunicar(expresion, texto) {
-    canal = { expresion, texto };
+  let vozPintada = null;
+  function comunicar(expresion, texto, voz) {
+    canal = { expresion, texto, voz: voz || '' };
+  }
+  function textoVere() {
+    return temporal.reaccion ? temporal.reaccion.texto : canal.voz || canal.texto;
   }
   function pintarCanal() {
+    const decir = textoVere();
+    if (decir !== vozPintada) {
+      vozPintada = decir;
+      if (preferencias.voz && decir && !Voz.diciendo(decir)) Voz.leer(decir, 'vere', actualizarBotonLeer);
+    }
+    actualizarBotonLeer();
     const r = temporal.reaccion || canal;
     const clave = r.expresion + '|' + r.texto;
     if (clave === canalPintado) return; // no repetir el aviso al lector de pantalla
@@ -658,7 +787,7 @@
     const intro = C.introduccion;
     const visibles = Math.min(estado.paso + 1, intro.dialogos.length);
     const ultimo = visibles === intro.dialogos.length;
-    comunicar(ultimo ? 'neutral' : 'preocupado', intro.estadoCanal);
+    comunicar(ultimo ? 'neutral' : 'preocupado', intro.estadoCanal, intro.dialogos[visibles - 1]);
     return el('section', { class: 'pantalla' },
       el('div', { class: 'cabecera-modulo' }, el('p', {}, intro.titulo), el('p', { class: 'progreso-ronda' }, `${visibles} de ${intro.dialogos.length}`)),
       titulo(`Mensaje de ${C.alien.nombre}`),
@@ -1643,6 +1772,8 @@
     // Si el foco estaba en un control que se vuelve a dibujar, pasa a su copia nueva.
     const conFoco = document.activeElement && document.activeElement.getAttribute('data-foco');
     const vista = !estado.aviso ? 'aviso' : temporal.reanudar ? 'reanudar' : `${estado.pantalla}:${estado.paso}:${temporal.secuencia}`;
+    // Al cambiar de pantalla se deja de leer la anterior (Vere sigue hablando).
+    if (vista !== ultimaVista && ultimaVista !== null && Voz.leyendo('pantalla')) Voz.callar();
     try {
       const pantalla = !estado.aviso ? pantallaAviso()
         : temporal.reanudar ? pantallaReanudar() : (PANTALLAS[estado.pantalla] || pantallaPortada)();
@@ -1672,6 +1803,18 @@
       const copia = juego.querySelector(`[data-foco="${conFoco}"]`);
       if (copia && !copia.disabled) copia.focus({ preventScroll: true });
     }
+  }
+
+  // Se declara aquí (y busca los botones al llamarse) porque pintarCanal la usa
+  // antes de que se monten los mandos.
+  function actualizarBotonLeer() {
+    const boton = document.getElementById('boton-leer');
+    const texto = document.getElementById('boton-leer-texto');
+    if (!boton) return;
+    const leyendo = Voz.leyendo('pantalla');
+    boton.classList.toggle('leyendo', leyendo);
+    texto.textContent = leyendo ? 'Parar' : 'Leer';
+    boton.title = leyendo ? 'Parar la lectura en voz alta' : 'Leer en voz alta la pantalla principal';
   }
 
   function reiniciar() {
@@ -1723,6 +1866,35 @@
     document.addEventListener('pointerdown', () => Sonido.activar(true), { once: true });
   }
   aplicarSonido();
+
+  // Voz: «Voz» lee cada mensaje nuevo de Vere; «Leer» lee
+  // la pantalla principal (y, si ya está leyendo, la para).
+  const botonVoz = document.getElementById('boton-voz');
+  const botonLeer = document.getElementById('boton-leer');
+  function aplicarVoz() {
+    const hay = Voz.disponible();
+    botonVoz.disabled = botonLeer.disabled = !hay;
+    botonVoz.setAttribute('aria-pressed', preferencias.voz && hay ? 'true' : 'false');
+    const sinVoz = 'Este navegador no tiene ninguna voz en español instalada en el dispositivo';
+    botonVoz.title = !hay ? sinVoz : preferencias.voz ? 'Dejar de leer en voz alta lo que dice Vere' : 'Leer en voz alta lo que dice Vere';
+    actualizarBotonLeer();
+    if (!hay) botonLeer.title = sinVoz;
+  }
+  botonVoz.addEventListener('click', () => {
+    preferencias.voz = !preferencias.voz;
+    guardarPreferencias();
+    aplicarVoz();
+    if (preferencias.voz) Voz.leer(textoVere(), 'vere', actualizarBotonLeer);
+    else Voz.callar();
+    actualizarBotonLeer();
+  });
+  botonLeer.addEventListener('click', () => {
+    if (Voz.leyendo('pantalla')) { Voz.callar(); actualizarBotonLeer(); return; }
+    Voz.leer(textoParaLeer(juego), 'pantalla', actualizarBotonLeer);
+    actualizarBotonLeer();
+  });
+  Voz.alCambiarVoces(aplicarVoz); // las voces llegan tarde en algunos navegadores
+  aplicarVoz();
 
   function aplicarTextoGrande() {
     document.documentElement.classList.toggle('texto-grande', preferencias.textoGrande);
